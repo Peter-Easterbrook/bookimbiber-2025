@@ -1,0 +1,72 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFonts } from 'expo-font';
+import { Link, Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useContext } from 'react';
+import { useColorScheme } from 'react-native';
+import ThemeToggle from '../components/ThemeToggle';
+import { Colors } from '../constants/Colors';
+import { BooksProvider } from '../contexts/BooksContext';
+import { ThemeContext, ThemeProvider } from '../contexts/ThemeContext';
+import { UserProvider } from '../contexts/UserContext';
+
+export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    'berlin-sans-fb': require('../assets/fonts/Berlinsans.otf'),
+    'berlin-sans-fb-bold': require('../assets/fonts/Berlinsans_bold.ttf'),
+  });
+
+  if (!fontsLoaded) {
+    // return <ThemedLoader />;
+    return null;
+  }
+
+  return (
+    <ThemeProvider>
+      <InnerLayout />
+    </ThemeProvider>
+  );
+}
+
+function InnerLayout() {
+  const { scheme } = useContext(ThemeContext);
+  const fallback = useColorScheme();
+  const theme = Colors[scheme || fallback] ?? Colors.light;
+
+  return (
+    <UserProvider>
+      <BooksProvider>
+        <StatusBar value='auto' />
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: theme.navBackground },
+            headerTintColor: theme.title,
+            headerTitleAlign: 'center',
+            headerShadowVisible: false,
+          }}
+        >
+          {/* Individual Screens */}
+          <Stack.Screen name='(auth)' options={{ headerShown: false }} />
+          <Stack.Screen name='(dashboard)' options={{ headerShown: false }} />
+          <Stack.Screen
+            name='index'
+            options={{
+              title: 'home',
+              headerTitle: '',
+              headerLeft: () => (
+                <Link href='/create' style={{ marginLeft: 16 }}>
+                  <MaterialCommunityIcons
+                    name='book-edit-outline'
+                    size={24}
+                    color={theme.iconColor}
+                  />
+                </Link>
+              ),
+              headerRight: () => <ThemeToggle />,
+            }}
+          />
+        </Stack>
+      </BooksProvider>
+    </UserProvider>
+  );
+}
