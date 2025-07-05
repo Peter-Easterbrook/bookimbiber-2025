@@ -32,14 +32,17 @@ export const useResponsiveButtonText = () => {
 // Button style adjustments for responsive design
 export const useResponsiveButtonStyle = () => {
   const { width } = useWindowDimensions();
+  const showButtonText = width >= 400;
 
   const baseButtonStyle = {
+    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 0,
-    paddingHorizontal: width < 400 ? 4 : 8,
-    minWidth: width < 400 ? 50 : 100,
+    justifyContent: showButtonText ? 'space-between' : 'center',
+    paddingVertical: 2,
+    paddingHorizontal: showButtonText ? 12 : 8,
+    minWidth: width < 400 ? 50 : 120, // Increased minWidth when showing text
+    width: '100%', // Ensure button takes full container width
   };
 
   return {
