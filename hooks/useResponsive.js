@@ -5,7 +5,7 @@ const baseHeadingStyle = {
   letterSpacing: 1,
   width: '100%',
   fontSize: 16,
-  marginBottom: 10,
+  marginBottom: 20,
   textAlign: 'left',
 };
 
