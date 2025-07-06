@@ -66,6 +66,7 @@ export function BooksProvider({ children }) {
         read: data.read || false,
         // Optional Google Books fields (only if they exist in the database)
         ...(data.categories && { categories: data.categories }),
+        ...(data.publishedDate && { publishedDate: data.publishedDate }),
         ...(data.thumbnail && { thumbnail: data.thumbnail }),
         ...(data.averageRating && { averageRating: data.averageRating }),
         ...(data.ratingsCount !== undefined && {

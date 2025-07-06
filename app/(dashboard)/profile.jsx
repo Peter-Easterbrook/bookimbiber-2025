@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   },
   readBookDate: {
     fontSize: 12,
-    paddingTop: 10,
+    marginTop: 20,
     opacity: 0.6,
   },
   loaderContainer: {

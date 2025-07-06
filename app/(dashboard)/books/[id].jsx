@@ -42,7 +42,15 @@ const BookDetails = () => {
   // ✅ 3. All effects
   useEffect(() => {
     async function loadBook() {
+      console.log('🔍 Fetching book with ID:', id);
       const bookData = await fetchBookById(id);
+      console.log('📚 Full book data received:', bookData);
+      console.log('📅 Published date specifically:', bookData?.publishedDate);
+      console.log('📊 All date-related fields:', {
+        publishedDate: bookData?.publishedDate,
+        createdAt: bookData?.$createdAt,
+        updatedAt: bookData?.$updatedAt,
+      });
       setBook(bookData);
     }
 
@@ -53,7 +61,12 @@ const BookDetails = () => {
 
   // ✅ 4. Derived values that DON'T depend on book state
   const theme = Colors[scheme || fallback] ?? Colors.light;
-  const showImage = Dimensions.get('window').width > 450;
+  // const showImage = Dimensions.get('window').width > 450;
+  const screenWidth = Dimensions.get('window').width;
+  const imageSize =
+    screenWidth > 450
+      ? { width: 120, height: 160 }
+      : { width: 80, height: 107 };
 
   // ✅ 5. Early returns AFTER all hooks but BEFORE book-dependent logic
   if (!book) {
@@ -218,6 +231,9 @@ const BookDetails = () => {
     }
   };
 
+  // Get book image URL with fallback
+  const bookImageUrl = book.thumbnail || book.coverImage;
+
   // ✅ 8. Main render
   return (
     <ThemedView safe={true} style={styles.container}>
@@ -230,28 +246,27 @@ const BookDetails = () => {
             <View style={styles.headerInfoSection}>
               <View>
                 <ThemedText
-                  style={[styles.title, { textAlign: 'center' }]}
+                  style={styles.title}
                   numberOfLines={1}
                   ellipsizeMode='tail'
                 >
-                  {book.title && book.title.length > 30
-                    ? book.title.slice(0, 40) + '...'
+                  {book.title && book.title.length > 20
+                    ? book.title.slice(0, 30) + '...'
                     : book.title}
                 </ThemedText>
                 <ThemedText style={styles.author}>
                   Written by {book.author}
                 </ThemedText>
-                {/* Rating */}
-                {book.averageRating > 0 && (
-                  <View style={styles.ratingContainer}>
-                    <Ionicons name='star' size={16} color='#FFD700' />
-                    <ThemedText style={styles.rating}>
-                      {book.averageRating.toFixed(1)} ({book.ratingsCount || 0}
-                      reviews)
+
+                {/* Categories */}
+                {book.publishedDate && book.publishedDate.length > 0 && (
+                  <View style={styles.categoriesContainer}>
+                    <ThemedText style={styles.categoriesLabel}>
+                      Published:{' '}
+                      {book.publishedDate?.substring?.(0, 4) || 'Unknown'}
                     </ThemedText>
                   </View>
                 )}
-
                 {/* Categories */}
                 {book.categories && book.categories.length > 0 && (
                   <View style={styles.categoriesContainer}>
@@ -263,23 +278,33 @@ const BookDetails = () => {
                     </ThemedText>
                   </View>
                 )}
+                {/* Rating */}
+                {book.averageRating > 0 && (
+                  <View style={styles.ratingContainer}>
+                    <Ionicons name='star' size={16} color='#FFD700' />
+                    <ThemedText style={styles.rating}>
+                      {book.averageRating.toFixed(1)} ({book.ratingsCount || 0}
+                      reviews)
+                    </ThemedText>
+                  </View>
+                )}
               </View>
-              {showImage &&
-                (book.thumbnail || book.coverImage ? (
-                  <CachedImage
-                    source={{ uri: book.thumbnail || book.coverImage }}
-                    style={styles.bookCover}
-                    resizeMode='cover'
-                  />
-                ) : (
-                  <Image
-                    source={Logo}
-                    style={{ width: 60, height: 60 }}
-                    resizeMode='contain'
-                    accessibilityLabel='Placeholder Book Cover'
-                    accessibilityRole='image'
-                  />
-                ))}
+              {/* {showImage && */}
+              {bookImageUrl ? (
+                <CachedImage
+                  source={{ uri: bookImageUrl }}
+                  style={[styles.bookCover, imageSize]}
+                  resizeMode='cover'
+                />
+              ) : (
+                <Image
+                  source={Logo}
+                  style={[styles.bookCover, imageSize]}
+                  resizeMode='contain'
+                  accessibilityLabel='Placeholder Book Cover'
+                  accessibilityRole='image'
+                />
+              )}
             </View>
           </View>
 
@@ -382,16 +407,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   bookCover: {
-    width: 120,
-    height: 160,
     borderRadius: 8,
-  },
-  bookCoverPlaceholder: {
-    width: 120,
-    height: 160,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   title: {
     fontFamily: 'berlin-sans-fb-bold',

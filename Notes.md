@@ -18,3 +18,8 @@ You can now build your app using the commands from your **EAS Cheatsheet**:
   ```sh
   npx eas build -p android --profile production
   ```
+- **Check the Google API:**
+
+```
+https://www.googleapis.com/books/v1/volumes?q=flowers+inauthor:keyes
+```

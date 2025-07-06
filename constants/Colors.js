@@ -36,7 +36,7 @@ export const Colors = {
     rippleColor: '#006bd8',
   },
   light: {
-    text: '#003162',
+    text: '#00274e',
     title: '#001427',
     background: '#fffff0',
     navBackground: '#fff9c9',

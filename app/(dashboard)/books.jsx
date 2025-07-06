@@ -36,69 +36,74 @@ const Books = () => {
         data={books || []}
         keyExtractor={(item) => item.$id}
         contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => router.push(`/books/${item.$id}`)}
-            android_ripple={{ color: theme.rippleColor, borderless: false }}
-            style={[
-              styles.card,
-              {
-                backgroundColor: theme.uiBackground,
-                borderLeftColor: theme.uiButtonBorder,
-              },
-            ]}
-          >
-            <View style={styles.cardContent}>
-              {/* Book Cover */}
-              {item.thumbnail || item.coverImage ? (
-                <CachedImage
-                  source={{ uri: item.thumbnail || item.coverImage }}
-                  style={styles.bookCover}
-                  resizeMode='cover'
-                />
-              ) : (
-                <View style={styles.bookCoverPlaceholder}>
-                  <Image
-                    source={Logo}
-                    style={{ width: 60, height: 60 }}
-                    resizeMode='contain'
-                    accessibilityLabel='Placeholder Book Cover'
-                    accessibilityRole='image'
+        renderItem={({ item }) => {
+          const bookImageUrl = item.thumbnail || item.coverImage;
+
+          return (
+            <Pressable
+              onPress={() => router.push(`/books/${item.$id}`)}
+              android_ripple={{ color: theme.rippleColor, borderless: false }}
+              style={[
+                styles.card,
+                {
+                  backgroundColor: theme.uiBackground,
+                  borderLeftColor: theme.uiButtonBorder,
+                },
+              ]}
+            >
+              <View style={styles.cardContent}>
+                {/* Book Cover */}
+                {bookImageUrl ? (
+                  <CachedImage
+                    source={{ uri: bookImageUrl }}
+                    style={styles.bookCover}
+                    resizeMode='cover'
                   />
-                </View>
-              )}
-
-              {/* Book Info */}
-              <View style={styles.bookInfo}>
-                <ThemedText style={styles.title} numberOfLines={2}>
-                  {item.title}
-                </ThemedText>
-                <ThemedText style={styles.author} numberOfLines={1}>
-                  Written by {item.author}
-                </ThemedText>
-
-                {/* Rating */}
-                {item.averageRating > 0 && (
-                  <View style={styles.ratingContainer}>
-                    <Ionicons name='star' size={14} color='#FFD700' />
-                    <ThemedText style={styles.metadata}>
-                      {item.averageRating.toFixed(1)} ({item.ratingsCount || 0}
-                      reviews)
-                    </ThemedText>
+                ) : (
+                  <View style={styles.bookCoverPlaceholder}>
+                    <Image
+                      source={Logo}
+                      style={{ width: 60, height: 60 }}
+                      resizeMode='contain'
+                      accessibilityLabel='Placeholder Book Cover'
+                      accessibilityRole='image'
+                    />
                   </View>
                 )}
-              </View>
 
-              {/* Chevron */}
-              <Ionicons
-                name='chevron-forward'
-                size={20}
-                color={theme.iconColor}
-                style={styles.chevron}
-              />
-            </View>
-          </Pressable>
-        )}
+                {/* Book Info */}
+                <View style={styles.bookInfo}>
+                  <ThemedText style={styles.title} numberOfLines={2}>
+                    {item.title}
+                  </ThemedText>
+                  <ThemedText style={styles.author} numberOfLines={1}>
+                    Written by {item.author}
+                  </ThemedText>
+
+                  {/* Rating */}
+                  {item.averageRating > 0 && (
+                    <View style={styles.ratingContainer}>
+                      <Ionicons name='star' size={14} color='#FFD700' />
+                      <ThemedText style={styles.metadata}>
+                        {item.averageRating.toFixed(1)} (
+                        {item.ratingsCount || 0}
+                        reviews)
+                      </ThemedText>
+                    </View>
+                  )}
+                </View>
+
+                {/* Chevron */}
+                <Ionicons
+                  name='chevron-forward'
+                  size={20}
+                  color={theme.iconColor}
+                  style={styles.chevron}
+                />
+              </View>
+            </Pressable>
+          );
+        }}
         ListEmptyComponent={
           <ThemedText style={[styles.fallbackText, { color: theme.textColor }]}>
             Nothing on your reading list!

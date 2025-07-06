@@ -62,6 +62,7 @@ const Create = () => {
           thumbnail: selectedBook.thumbnail,
           averageRating: selectedBook.averageRating,
           ratingsCount: selectedBook.ratingsCount,
+          publishedDate: selectedBook.publishedDate?.substring(0, 4) || null,
         }),
       };
 
@@ -71,10 +72,12 @@ const Create = () => {
         hasThumbnail: !!selectedBook?.thumbnail,
         hasAverageRating: selectedBook?.averageRating !== undefined,
         hasRatingsCount: selectedBook?.ratingsCount !== undefined,
+        hasPublishedDate: !!selectedBook?.publishedDate,
         categories: selectedBook?.categories,
         thumbnail: selectedBook?.thumbnail,
         averageRating: selectedBook?.averageRating,
         ratingsCount: selectedBook?.ratingsCount,
+        publishedDate: selectedBook?.publishedDate,
       });
 
       const result = await createBook(bookData);
@@ -149,6 +152,7 @@ const Create = () => {
       thumbnail: book.thumbnail,
       averageRating: book.averageRating,
       ratingsCount: book.ratingsCount,
+      publishedDate: book.publishedDate,
     });
   };
 
@@ -205,8 +209,15 @@ const Create = () => {
                     >
                       {selectedBook.title}
                     </ThemedText>
-                    <ThemedText style={styles.selectedBookAuthor}>
-                      by {selectedBook.author}
+                    <ThemedText style={styles.selectedBookData}>
+                      By {selectedBook.author}
+                    </ThemedText>
+                    <ThemedText style={styles.selectedBookData}>
+                      Published:{' '}
+                      {selectedBook.publishedDate?.substring(0, 4) || 'Unknown'}
+                    </ThemedText>
+                    <ThemedText style={styles.selectedBookData}>
+                      Category: {selectedBook.categories || 'N/A'}
                     </ThemedText>
                   </View>
                   {(selectedBook.thumbnail || selectedBook.coverImage) && (
@@ -359,7 +370,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   searchButtonText: {
-    fontFamily: 'berlin-sans-fb-bold',
+    fontFamily: 'berlin-sans-fb',
     letterSpacing: 1,
     fontSize: 16,
   },
@@ -375,10 +386,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   selectedBookLabel: {
-    fontFamily: 'berlin-sans-fb',
     letterSpacing: 1,
     fontSize: 12,
-    opacity: 0.7,
+    opacity: 0.9,
   },
   clearButton: {
     padding: 4,
@@ -398,36 +408,25 @@ const styles = StyleSheet.create({
   },
   selectedBookTitle: {
     fontFamily: 'berlin-sans-fb-bold',
-    letterSpacing: 1,
     fontSize: 14,
-    fontWeight: '400',
     letterSpacing: 0.5,
     marginBottom: 4,
   },
-  selectedBookAuthor: {
-    fontFamily: 'berlin-sans-fb-bold',
+  selectedBookData: {
     letterSpacing: 1,
-    fontSize: 12,
-    opacity: 0.8,
-    marginBottom: 2,
-  },
-  selectedBookYear: {
-    fontFamily: 'berlin-sans-fb-bold',
-    letterSpacing: 1,
-    fontSize: 12,
-    opacity: 0.6,
+    fontSize: 13,
+    opacity: 0.9,
+    marginBottom: 4,
   },
   inputSection: {
     width: '100%',
     maxWidth: 500,
   },
   input: {
-    fontFamily: 'berlin-sans-fb',
     letterSpacing: 1,
     fontSize: 16,
   },
   multiline: {
-    fontFamily: 'berlin-sans-fb',
     letterSpacing: 1,
     minHeight: 100,
     // Removed marginHorizontal to match searchSection width

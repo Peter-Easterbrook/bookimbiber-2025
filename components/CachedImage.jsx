@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react';
 import { Image } from 'react-native';
-import { useImageCache } from '../hooks/useImageCache';
 
 const CachedImage = ({
   source,
@@ -9,47 +7,27 @@ const CachedImage = ({
   fallbackSource,
   ...props
 }) => {
-  const [imageSource, setImageSource] = useState(source);
-  const [hasError, setHasError] = useState(false);
-  const { getImageSource } = useImageCache();
-
-  useEffect(() => {
-    if (source?.uri) {
-      loadCachedImage(source.uri);
-    } else {
-      setImageSource(source);
-    }
-  }, [source]);
-
-  const loadCachedImage = async (url) => {
-    try {
-      // Try direct URL first (bypass cache in preview builds)
-      setImageSource({ uri: url });
-
-      // Then try cached version
-      const cachedSource = await getImageSource(url);
-      if (cachedSource) {
-        setImageSource(cachedSource);
-      }
-    } catch (error) {
-      console.error('Error loading cached image:', error);
-      setHasError(true);
-      // Fallback to original source or placeholder
-      setImageSource(fallbackSource || source);
-    }
+  // Helper function to ensure HTTPS URLs for better production compatibility
+  const getSecureImageUrl = (url) => {
+    if (!url) return null;
+    return url.replace('http://', 'https://');
   };
 
+  // Process the source to ensure HTTPS
+  const processedSource = source?.uri
+    ? { uri: getSecureImageUrl(source.uri) }
+    : source;
+
   const handleError = (error) => {
-    console.error('Image load error:', error);
-    setHasError(true);
-    if (fallbackSource) {
-      setImageSource(fallbackSource);
-    }
+    console.log(
+      'Image load error:',
+      error.nativeEvent?.error || 'Unknown error'
+    );
   };
 
   return (
     <Image
-      source={imageSource}
+      source={processedSource}
       style={style}
       resizeMode={resizeMode}
       onError={handleError}
