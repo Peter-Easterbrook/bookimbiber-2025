@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "bookimbiber2025",
+    "name": "BookImbiber",
     "slug": "bookimbiber2025",
     "scheme": "bookimbiber2025",
     "version": "1.0.0",
@@ -13,27 +13,27 @@
       "resizeMode": "contain",
       "backgroundColor": "#fffff0"
     },
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000"
       },
-      "package": "com.petereasterbro1.inkimbiber2025"
+      "package": "com.petereasterbro1.bookimbiber2025"
     },
-    "web": {
-      "favicon": "./assets/favicon.png",
-      "themeColor": "#000"
-    },
-    "plugins": ["expo-router", "expo-font", "expo-localization"],
+    "platforms": [
+      "android"
+    ],
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-localization"
+    ],
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "1c4131f2-a24a-4fec-a540-ecc79c6dc351"
+        "projectId": "857bd7f6-dcc6-4786-9aed-5e8e74ef8e50"
       }
     }
   }
