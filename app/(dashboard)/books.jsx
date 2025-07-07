@@ -10,7 +10,6 @@ import {
   View,
 } from 'react-native';
 import Logo from '../../assets/icon.png';
-import CachedImage from '../../components/CachedImage';
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
 import { Colors } from '../../constants/Colors';
@@ -54,10 +53,18 @@ const Books = () => {
               <View style={styles.cardContent}>
                 {/* Book Cover */}
                 {bookImageUrl ? (
-                  <CachedImage
-                    source={{ uri: bookImageUrl }}
+                  <Image
+                    source={{
+                      uri: bookImageUrl.replace('http://', 'https://'),
+                    }}
                     style={styles.bookCover}
                     resizeMode='cover'
+                    onError={(error) => {
+                      console.log(
+                        'Books list image error:',
+                        error.nativeEvent.error
+                      );
+                    }}
                   />
                 ) : (
                   <View style={styles.bookCoverPlaceholder}>
@@ -73,7 +80,11 @@ const Books = () => {
 
                 {/* Book Info */}
                 <View style={styles.bookInfo}>
-                  <ThemedText style={styles.title} numberOfLines={2}>
+                  <ThemedText
+                    style={styles.title}
+                    numberOfLines={2}
+                    title={true}
+                  >
                     {item.title}
                   </ThemedText>
                   <ThemedText style={styles.author} numberOfLines={1}>

@@ -9,7 +9,6 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-import CachedImage from '../../../components/CachedImage';
 import { Colors } from '../../../constants/Colors';
 import { ThemeContext } from '../../../contexts/ThemeContext';
 import { useBooks } from '../../../hooks/useBooks';
@@ -247,6 +246,7 @@ const BookDetails = () => {
                   style={styles.title}
                   numberOfLines={1}
                   ellipsizeMode='tail'
+                  title={true}
                 >
                   {book.title && book.title.length > 20
                     ? book.title.slice(0, 28) + '...'
@@ -259,8 +259,10 @@ const BookDetails = () => {
                 {/* Categories */}
                 {book.publishedDate && book.publishedDate.length > 0 && (
                   <View style={styles.categoriesContainer}>
-                    <ThemedText style={styles.categoriesLabel}>
+                    <ThemedText style={styles.categoriesLabel} title={true}>
                       Published:{' '}
+                    </ThemedText>
+                    <ThemedText style={styles.categories}>
                       {book.publishedDate?.substring?.(0, 4) || 'Unknown'}
                     </ThemedText>
                   </View>
@@ -268,8 +270,8 @@ const BookDetails = () => {
                 {/* Categories */}
                 {book.categories && book.categories.length > 0 && (
                   <View style={styles.categoriesContainer}>
-                    <ThemedText style={styles.categoriesLabel}>
-                      Categories:
+                    <ThemedText style={styles.categoriesLabel} title={true}>
+                      Categories:{' '}
                     </ThemedText>
                     <ThemedText style={styles.categories}>
                       {book.categories}
@@ -280,8 +282,8 @@ const BookDetails = () => {
                 {book.averageRating > 0 && (
                   <View style={styles.ratingContainer}>
                     <Ionicons name='star' size={16} color='#FFD700' />
-                    <ThemedText style={styles.rating}>
-                      {book.averageRating.toFixed(1)} ({book.ratingsCount || 0}
+                    <ThemedText style={styles.rating} title={true}>
+                      {book.averageRating.toFixed(1)} ({book.ratingsCount || 0}{' '}
                       reviews)
                     </ThemedText>
                   </View>
@@ -289,10 +291,16 @@ const BookDetails = () => {
               </View>
               {/* {showImage && */}
               {bookImageUrl ? (
-                <CachedImage
-                  source={{ uri: bookImageUrl }}
+                <Image
+                  source={{ uri: bookImageUrl.replace('http://', 'https://') }}
                   style={[styles.bookCover, imageSize]}
                   resizeMode='cover'
+                  onError={(error) => {
+                    console.log(
+                      'BookDetails image error:',
+                      error.nativeEvent.error
+                    );
+                  }}
                 />
               ) : (
                 <Image
@@ -408,61 +416,50 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   title: {
-    fontFamily: 'berlin-sans-fb-bold',
     letterSpacing: 1,
     fontSize: 20,
-    fontWeight: '400',
   },
   author: {
-    fontFamily: 'berlin-sans-fb',
     letterSpacing: 1,
     fontSize: 16,
-    opacity: 0.8,
     marginBottom: 8,
   },
   metadata: {
-    fontFamily: 'berlin-sans-fb-bold',
     letterSpacing: 1,
     fontSize: 14,
-    opacity: 0.6,
     marginBottom: 4,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 4,
+    marginVertical: 6,
     gap: 4,
   },
   rating: {
-    fontFamily: 'berlin-sans-fb',
     letterSpacing: 1,
     fontSize: 14,
-    opacity: 0.8,
   },
   categoriesContainer: {
-    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
   },
   categoriesLabel: {
-    fontFamily: 'berlin-sans-fb-bold',
     letterSpacing: 1,
     fontSize: 14,
-    fontWeight: '500',
     marginBottom: 2,
   },
   categories: {
-    fontFamily: 'berlin-sans-fb',
     letterSpacing: 1,
     fontSize: 14,
-    opacity: 0.7,
+    marginBottom: 2,
   },
   descriptionTitle: {
-    fontFamily: 'berlin-sans-fb-bold',
     letterSpacing: 1,
     fontSize: 16,
     marginBottom: 8,
   },
   description: {
-    fontFamily: 'berlin-sans-fb',
     letterSpacing: 1,
     fontSize: 15,
     lineHeight: 22,

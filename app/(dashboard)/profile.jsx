@@ -71,9 +71,6 @@ const Profile = () => {
         Hello, {user.name}
       </ThemedText>
       <Spacer height={10} />
-      {/* <ThemedText title={true} style={styles.heading}>
-        {user.email}
-      </ThemedText> */}
       <Spacer height={20} />
       {readBooks.length > 0 && (
         <ThemedText title={true} style={responsiveHeading}>
@@ -104,7 +101,11 @@ const Profile = () => {
             >
               <View style={styles.readBookItemContent}>
                 <View style={styles.bookInfo}>
-                  <ThemedText style={styles.readBookTitle}>
+                  <ThemedText
+                    style={styles.readBookTitle}
+                    numberOfLines={2}
+                    title={true}
+                  >
                     {book.title}
                   </ThemedText>
                   <ThemedText style={styles.readBookAuthor}>
@@ -120,9 +121,20 @@ const Profile = () => {
                 <>
                   {book.thumbnail || book.coverImage ? (
                     <Image
-                      source={{ uri: book.thumbnail || book.coverImage }}
+                      source={{
+                        uri: (book.thumbnail || book.coverImage).replace(
+                          'http://',
+                          'https://'
+                        ),
+                      }}
                       style={styles.bookCover}
                       resizeMode='cover'
+                      onError={(error) => {
+                        console.log(
+                          'Profile image error:',
+                          error.nativeEvent.error
+                        );
+                      }}
                     />
                   ) : (
                     <View style={styles.bookCoverPlaceholder}>
@@ -184,7 +196,6 @@ const styles = StyleSheet.create({
   },
   readBookStatement: {
     fontSize: 16,
-    fontWeight: '300',
     textAlign: 'center',
   },
   readBooksSection: {
@@ -227,23 +238,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   readBookTitle: {
-    fontFamily: 'berlin-sans-fb-bold',
-    fontWeight: '300',
     letterSpacing: 1,
     fontSize: 16,
     paddingVertical: 2,
   },
   readBookAuthor: {
-    fontFamily: 'berlin-sans-fb',
-    fontWeight: 'normal',
     letterSpacing: 1,
     fontSize: 14,
-    opacity: 0.8,
   },
   readBookDate: {
     fontSize: 12,
     marginTop: 20,
-    opacity: 0.6,
   },
   loaderContainer: {
     width: '100%',

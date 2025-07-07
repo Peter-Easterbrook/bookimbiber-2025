@@ -157,9 +157,13 @@ const Create = () => {
   };
 
   const handleDescriptionChange = (text) => {
-    // Limit manual input to 500 characters total
-    if (text.length <= 500) {
+    // Limit manual input to 300 characters total
+    if (text.length <= 300) {
       setDescription(text);
+    } else {
+      // If text exceeds 300 characters, truncate and add ellipsis
+      const truncatedText = text.substring(0, 297) + '...';
+      setDescription(truncatedText);
     }
   };
 
@@ -274,11 +278,11 @@ const Create = () => {
               onChangeText={handleDescriptionChange}
               multiline={true}
               textAlignVertical='top'
-              maxLength={500}
+              maxLength={300}
             />
             <View style={styles.characterCounter}>
               <ThemedText style={styles.counterText}>
-                {description.length}/500 characters
+                {description.length}/300 characters
               </ThemedText>
             </View>
             <Spacer height={10} />
@@ -429,6 +433,8 @@ const styles = StyleSheet.create({
   multiline: {
     letterSpacing: 1,
     minHeight: 100,
+    fontFamily: 'berlin-sans-fb',
+    opacity: 1.1,
     // Removed marginHorizontal to match searchSection width
   },
   characterCounter: {

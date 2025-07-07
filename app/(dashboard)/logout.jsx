@@ -1,12 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useContext, useEffect } from 'react';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  View,
-  useColorScheme,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, useColorScheme } from 'react-native';
+import ThemedText from '../../components/ThemedText'; // Add this import
+import ThemedView from '../../components/ThemedView'; // Add this import
 import { Colors } from '../../constants/Colors';
 import { ThemeContext } from '../../contexts/ThemeContext';
 import { useUser } from '../../hooks/useUser';
@@ -36,14 +32,14 @@ export default function LogoutScreen() {
   }, [logout, router]);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <ThemedView style={styles.container}>
       <ActivityIndicator
         size='large'
         color={theme.iconColor}
         style={styles.spinner}
       />
-      <Text style={[styles.text, { color: theme.text }]}>Logging out...</Text>
-    </View>
+      <ThemedText style={styles.text}>Logging out...</ThemedText>
+    </ThemedView>
   );
 }
 
@@ -60,6 +56,6 @@ const styles = StyleSheet.create({
     fontFamily: 'berlin-sans-fb',
     fontSize: 16,
     letterSpacing: 1,
-    opacity: 0.7,
+    textAlign: 'center',
   },
 });

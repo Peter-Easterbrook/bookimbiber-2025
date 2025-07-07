@@ -71,9 +71,20 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
       <View style={styles.bookItemContent}>
         {item.thumbnail || item.coverImage ? (
           <Image
-            source={{ uri: item.thumbnail || item.coverImage }}
+            source={{
+              uri: (item.thumbnail || item.coverImage).replace(
+                'http://',
+                'https://'
+              ),
+            }}
             style={styles.bookCover}
             resizeMode='cover'
+            onError={(error) => {
+              console.log(
+                'BookSearchModal image error:',
+                error.nativeEvent.error
+              );
+            }}
           />
         ) : (
           <View

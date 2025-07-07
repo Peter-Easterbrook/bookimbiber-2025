@@ -16,7 +16,7 @@ const ThemedText = ({ style, title = false, ...props }) => {
         style,
         {
           color: textColor,
-          fontFamily: title ? 'berlin-sans-fb-bold' : 'berlin-sans-fb',
+          fontFamily: 'berlin-sans-fb-bold',
           letterSpacing: 1,
         },
       ]}
