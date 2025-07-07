@@ -64,7 +64,7 @@ const BookDetails = () => {
   // const showImage = Dimensions.get('window').width > 450;
   const screenWidth = Dimensions.get('window').width;
   const imageSize =
-    screenWidth > 450 ? { width: 110, height: 150 } : { width: 70, height: 97 };
+    screenWidth > 450 ? { width: 120, height: 160 } : { width: 70, height: 97 };
 
   // ✅ 5. Early returns AFTER all hooks but BEFORE book-dependent logic
   if (!book) {
@@ -249,7 +249,7 @@ const BookDetails = () => {
                   ellipsizeMode='tail'
                 >
                   {book.title && book.title.length > 20
-                    ? book.title.slice(0, 26) + '...'
+                    ? book.title.slice(0, 28) + '...'
                     : book.title}
                 </ThemedText>
                 <ThemedText style={styles.author}>
