@@ -131,29 +131,22 @@ const Create = () => {
     setLoading(false);
   }
   const handleBookSelect = (book) => {
-    console.log('Selected book from Google Books:', book);
+    if (!book) return;
     setSelectedBook(book);
-    setTitle(book.title);
-    setAuthor(book.author);
+    setTitle(book.title?.trim() || '');
+    setAuthor(book.author?.trim() || '');
 
     // Limit description to 497 characters with ellipsis
     const bookDescription = book.description || '';
     const limitedDescription =
-      bookDescription.length > 495
-        ? bookDescription.substring(0, 495) + '...'
+      bookDescription.length > 300
+        ? bookDescription.substring(0, 295) + '...'
         : bookDescription;
 
     setDescription(limitedDescription);
     setError(null);
-
-    // Debug: Log the Google Books metadata fields
-    console.log('Google Books metadata:', {
-      categories: book.categories,
-      thumbnail: book.thumbnail,
-      averageRating: book.averageRating,
-      ratingsCount: book.ratingsCount,
-      publishedDate: book.publishedDate,
-    });
+    setShowSearchModal(false);
+    Keyboard.dismiss();
   };
 
   const handleDescriptionChange = (text) => {
@@ -162,7 +155,7 @@ const Create = () => {
       setDescription(text);
     } else {
       // If text exceeds 300 characters, truncate and add ellipsis
-      const truncatedText = text.substring(0, 297) + '...';
+      const truncatedText = text.substring(0, 295) + '...';
       setDescription(truncatedText);
     }
   };
