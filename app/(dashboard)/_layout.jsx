@@ -21,7 +21,11 @@ export default function DashboardLayout() {
       <Tabs
         key={scheme}
         screenOptions={() => ({
-          animation: 'fade',
+          tabBarHideOnKeyboard: true,
+          tabBarActiveTintColor: theme.iconColorFocused,
+          tabBarInactiveTintColor: theme.iconColor,
+          headerShadowVisible: false,
+          tabBarAnimation: 'shift',
           headerShown: true,
           headerStyle: { backgroundColor: theme.navBackground },
           headerTintColor: theme.title,
@@ -52,10 +56,6 @@ export default function DashboardLayout() {
             padding: 0,
             height: '100%',
           },
-          tabBarHideOnKeyboard: true,
-          tabBarActiveTintColor: theme.iconColorFocused,
-          tabBarInactiveTintColor: theme.iconColor,
-          headerShadowVisible: false,
         })}
       >
         <Tabs.Screen
@@ -74,7 +74,6 @@ export default function DashboardLayout() {
               </Link>
             ),
             headerRight: () => <ThemeToggle />,
-
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 size={24}
@@ -92,7 +91,6 @@ export default function DashboardLayout() {
             headerTitle: '',
             headerTransparent: true,
             headerBlurEffect: 'systemChromeMaterial',
-            headerShadowVisible: true,
             headerLeft: () => (
               <Link href='/' style={{ marginLeft: 16 }}>
                 <Ionicons
@@ -154,6 +152,7 @@ export default function DashboardLayout() {
             href: null,
             headerShown: true,
             title: '',
+            tabBarShowLabel: false,
             headerLeft: () => (
               <Link href='/books' style={{ marginLeft: 16 }}>
                 <Ionicons

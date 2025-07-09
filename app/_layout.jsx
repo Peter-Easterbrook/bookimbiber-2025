@@ -3,7 +3,8 @@ import { useFonts } from 'expo-font';
 import { Link, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useContext } from 'react';
-import { useColorScheme } from 'react-native';
+import { ActivityIndicator, useColorScheme } from 'react-native';
+import ThemedView from '../components/ThemedView';
 import ThemeToggle from '../components/ThemeToggle';
 import { Colors } from '../constants/Colors';
 import { BooksProvider } from '../contexts/BooksContext';
@@ -18,7 +19,13 @@ export default function RootLayout() {
 
   if (!fontsLoaded) {
     // return <ThemedLoader />;
-    return null;
+    return (
+      <ThemedView
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <ActivityIndicator size='large' color={theme.iconColor} />
+      </ThemedView>
+    );
   }
 
   return (
@@ -43,6 +50,7 @@ function InnerLayout() {
             headerTintColor: theme.title,
             headerTitleAlign: 'center',
             headerShadowVisible: false,
+            animation: 'slide_from_right',
           }}
         >
           {/* Individual Screens */}
@@ -53,6 +61,7 @@ function InnerLayout() {
             options={{
               title: 'home',
               headerTitle: '',
+
               headerLeft: () => (
                 <Link href='/create' style={{ marginLeft: 16 }}>
                   <MaterialCommunityIcons
