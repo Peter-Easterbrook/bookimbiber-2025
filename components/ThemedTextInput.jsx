@@ -15,7 +15,7 @@ export default function ThemedTextInput({
   return (
     <TextInput
       // use 50% opacity placeholder by default
-      placeholderTextColor={placeholderTextColor || `${theme.text}80`}
+      placeholderTextColor={placeholderTextColor || `${theme.text}B3`}
       autoCapitalize='none'
       style={[
         {

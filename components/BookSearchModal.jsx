@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -22,6 +22,7 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -159,6 +160,13 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
           returnKeyType='search'
         />
         <ThemedButton
+          onPress={() => setShowScanner(true)}
+          style={styles.scanButton}
+          accessibilityLabel='Scan ISBN'
+        >
+          <Ionicons name='barcode-sharp' size={24} color={theme.iconColor} />
+        </ThemedButton>
+        <ThemedButton
           onPress={handleSearch}
           disabled={isSearching || !searchQuery.trim()}
           style={styles.searchButton}
@@ -171,6 +179,16 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
         </ThemedButton>
       </View>
 
+      <Spacer />
+      {/* {showScanner && (
+        <ISBNScanner
+          onBookFound={(book) => {
+            handleBookSelect(book);
+            setShowScanner(false);
+          }}
+          onClose={() => setShowScanner(false)}
+        />
+      )} */}
       <Spacer />
 
       {isSearching ? (
@@ -239,6 +257,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     shadowOpacity: 0,
     elevation: 0,
+  },
+  scanButton: {
+    width: 48,
+    height: 48,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    shadowOpacity: 0,
+    elevation: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   searchButtonText: {},
   loadingContainer: {

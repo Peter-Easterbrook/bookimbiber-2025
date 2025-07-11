@@ -14,7 +14,6 @@
       "backgroundColor": "#fffff0"
     },
     "android": {
-      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
@@ -22,7 +21,7 @@
       "package": "com.petereasterbro1.bookimbiber2025"
     },
     "platforms": ["android"],
-    "plugins": ["expo-router", "expo-font", "expo-localization"],
+    "plugins": ["expo-router", "expo-font", "expo-localization", "expo-camera"],
     "extra": {
       "router": {
         "origin": false

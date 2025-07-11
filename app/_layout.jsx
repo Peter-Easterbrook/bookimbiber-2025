@@ -9,15 +9,32 @@ import ThemeToggle from '../components/ThemeToggle';
 import { Colors } from '../constants/Colors';
 import { BooksProvider } from '../contexts/BooksContext';
 import { ThemeContext, ThemeProvider } from '../contexts/ThemeContext';
-import { UserProvider } from '../contexts/UserContext';
+import { UserContext, UserProvider } from '../contexts/UserContext';
 
 export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <UserProvider>
+        <BooksProvider>
+          <RootLayoutContent />
+        </BooksProvider>
+      </UserProvider>
+    </ThemeProvider>
+  );
+}
+
+function RootLayoutContent() {
+  const { scheme } = useContext(ThemeContext);
+  const fallback = useColorScheme();
+  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const { user, authChecked } = useContext(UserContext);
+
   const [fontsLoaded] = useFonts({
     'berlin-sans-fb': require('../assets/fonts/Berlinsans.otf'),
     'berlin-sans-fb-bold': require('../assets/fonts/Berlinsans_bold.ttf'),
   });
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || !authChecked) {
     return (
       <ThemedView
         style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
@@ -27,10 +44,15 @@ export default function RootLayout() {
     );
   }
 
+  if (!user) {
+    return <LoginScreen />;
+  }
+
   return (
-    <ThemeProvider>
+    <>
+      <StatusBar style='auto' />
       <InnerLayout />
-    </ThemeProvider>
+    </>
   );
 }
 
@@ -40,41 +62,35 @@ function InnerLayout() {
   const theme = Colors[scheme || fallback] ?? Colors.light;
 
   return (
-    <UserProvider>
-      <BooksProvider>
-        <StatusBar value='auto' />
-        <Stack
-          screenOptions={{
-            headerStyle: { backgroundColor: theme.navBackground },
-            headerTintColor: theme.title,
-            headerTitleAlign: 'center',
-            headerShadowVisible: false,
-            animation: 'slide_from_right',
-          }}
-        >
-          {/* Individual Screens */}
-          <Stack.Screen name='(auth)' options={{ headerShown: false }} />
-          <Stack.Screen name='(dashboard)' options={{ headerShown: false }} />
-          <Stack.Screen
-            name='index'
-            options={{
-              title: 'home',
-              headerTitle: '',
-
-              headerLeft: () => (
-                <Link href='/create' style={{ marginLeft: 16 }}>
-                  <MaterialCommunityIcons
-                    name='book-edit-outline'
-                    size={24}
-                    color={theme.iconColor}
-                  />
-                </Link>
-              ),
-              headerRight: () => <ThemeToggle />,
-            }}
-          />
-        </Stack>
-      </BooksProvider>
-    </UserProvider>
+    <Stack
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.navBackground },
+        headerTintColor: theme.title,
+        headerTitleAlign: 'center',
+        headerShadowVisible: false,
+        animation: 'slide_from_right',
+      }}
+    >
+      {/* Individual Screens */}
+      <Stack.Screen name='(auth)' options={{ headerShown: false }} />
+      <Stack.Screen name='(dashboard)' options={{ headerShown: false }} />
+      <Stack.Screen
+        name='index'
+        options={{
+          title: 'home',
+          headerTitle: '',
+          headerLeft: () => (
+            <Link href='/create' style={{ marginLeft: 16 }}>
+              <MaterialCommunityIcons
+                name='book-edit-outline'
+                size={24}
+                color={theme.iconColor}
+              />
+            </Link>
+          ),
+          headerRight: () => <ThemeToggle />,
+        }}
+      />
+    </Stack>
   );
 }

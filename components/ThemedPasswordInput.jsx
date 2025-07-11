@@ -25,7 +25,7 @@ export default function ThemedPasswordInput({
       <TextInput
         {...props}
         secureTextEntry={!showPassword}
-        placeholderTextColor={placeholderTextColor || `${theme.text}80`}
+        placeholderTextColor={placeholderTextColor || `${theme.text}B3`}
         autoCapitalize='none'
         style={[
           {

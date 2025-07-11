@@ -29,7 +29,8 @@ const Login = () => {
   const [error, setError] = useState(null);
 
   const navigation = useRouter();
-  const { login } = useUser();
+  const { login, user, logout } = useUser();
+
   const { scheme } = useContext(ThemeContext);
   const fallback = useColorScheme();
   const theme = Colors[scheme || fallback] ?? Colors.light;
