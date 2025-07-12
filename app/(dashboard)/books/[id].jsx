@@ -41,15 +41,12 @@ const BookDetails = () => {
   // ✅ 3. All effects
   useEffect(() => {
     async function loadBook() {
-      console.log('🔍 Fetching book with ID:', id);
       const bookData = await fetchBookById(id);
-      console.log('📚 Full book data received:', bookData);
-      console.log('📅 Published date specifically:', bookData?.publishedDate);
-      console.log('📊 All date-related fields:', {
-        publishedDate: bookData?.publishedDate,
-        createdAt: bookData?.$createdAt,
-        updatedAt: bookData?.$updatedAt,
-      });
+      if (!bookData) {
+        console.error('Book not found:', id);
+        router.replace('/books');
+        return;
+      }
       setBook(bookData);
     }
 
@@ -143,15 +140,15 @@ const BookDetails = () => {
               <View>
                 <ThemedText
                   style={styles.title}
-                  numberOfLines={1}
+                  numberOfLines={2}
                   ellipsizeMode='tail'
                   title={true}
                 >
                   {book.title && book.title.length > 20
-                    ? book.title.slice(0, 28) + '...'
+                    ? book.title.slice(0, 42) + '...'
                     : book.title}
                 </ThemedText>
-                <ThemedText style={styles.author}>
+                <ThemedText style={styles.author} numberOfLines={2}>
                   Written by{' '}
                   {book.author && book.author.length > 20
                     ? book.author.slice(0, 28) + '...'
@@ -320,11 +317,18 @@ const styles = StyleSheet.create({
   title: {
     letterSpacing: 1,
     fontSize: 20,
+    paddingRight: 0,
+    maxWidth: 22 * 12, // Approximate: 20 chars * 12px per char (adjust as needed)
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   author: {
     letterSpacing: 1,
     fontSize: 16,
     marginBottom: 8,
+    maxWidth: 30 * 10, // Approximate: 20 chars * 10px per char (adjust as needed)
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   metadata: {
     letterSpacing: 1,
@@ -374,7 +378,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '100%',
     maxWidth: 500,
-    paddingHorizontal: 5, // Reduced padding
     gap: 5, // Add small gap between buttons
   },
   bookButton: {

@@ -7,6 +7,9 @@ export const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
+
+  console.log('🔄 UserProvider rendered', { user: !!user, authChecked });
 
   async function login(email, password) {
     try {
@@ -65,17 +68,30 @@ export const UserProvider = ({ children }) => {
   }
 
   async function getInitialUserValue() {
+    if (isInitializing) {
+      console.log('⚠️ Already initializing, skipping...');
+      return;
+    }
+
+    setIsInitializing(true);
+    console.log('🚀 getInitialUserValue called');
+
     try {
       const response = await account.get();
+      console.log('✅ Appwrite session found:', response);
       setUser(response);
     } catch (error) {
+      console.error('❌ Appwrite get() error:', error);
       setUser(null);
     } finally {
+      console.log('🏁 Setting authChecked to true');
       setAuthChecked(true);
+      setIsInitializing(false);
     }
   }
 
   useEffect(() => {
+    console.log('🎯 useEffect triggered');
     getInitialUserValue();
   }, []);
 

@@ -1,17 +1,15 @@
 import { Stack } from 'expo-router';
-import { StatusBar } from 'react-native';
 import GuestOnly from '../../components/auth/GuestOnly';
 import ThemedView from '../../components/ThemedView';
 
 export default function AuthLayout() {
   return (
-    <ThemedView style={{ flex: 1 }}>
-      <GuestOnly>
-        <StatusBar style='auto' />
+    <GuestOnly>
+      <ThemedView style={{ flex: 1 }}>
         <Stack
-          screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
+          screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}
         />
-      </GuestOnly>
-    </ThemedView>
+      </ThemedView>
+    </GuestOnly>
   );
 }

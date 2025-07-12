@@ -44,13 +44,12 @@ function RootLayoutContent() {
     );
   }
 
-  if (!user) {
-    return <LoginScreen />;
-  }
-
   return (
     <>
-      <StatusBar style='auto' />
+      <StatusBar
+        style={scheme === 'dark' ? 'light' : 'dark'}
+        translucent={true}
+      />
       <InnerLayout />
     </>
   );
@@ -60,6 +59,7 @@ function InnerLayout() {
   const { scheme } = useContext(ThemeContext);
   const fallback = useColorScheme();
   const theme = Colors[scheme || fallback] ?? Colors.light;
+  const { user } = useContext(UserContext);
 
   return (
     <Stack
@@ -68,10 +68,10 @@ function InnerLayout() {
         headerTintColor: theme.title,
         headerTitleAlign: 'center',
         headerShadowVisible: false,
-        animation: 'slide_from_right',
+        animation: 'fade_from_bottom',
       }}
     >
-      {/* Individual Screens */}
+      {/* Always declare all screens */}
       <Stack.Screen name='(auth)' options={{ headerShown: false }} />
       <Stack.Screen name='(dashboard)' options={{ headerShown: false }} />
       <Stack.Screen
