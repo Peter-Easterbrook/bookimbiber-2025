@@ -77,12 +77,27 @@ export const UserProvider = ({ children }) => {
     console.log('🚀 getInitialUserValue called');
 
     try {
-      const response = await account.get();
-      console.log('✅ Appwrite session found:', response);
-      setUser(response);
+      // First check if there's an active session
+      const session = await account.getSession('current');
+
+      if (session) {
+        // Only call account.get() if there's an active session
+        const response = await account.get();
+        console.log('✅ Appwrite session found:', response);
+        setUser(response);
+      } else {
+        console.log('ℹ️ No active session found');
+        setUser(null);
+      }
     } catch (error) {
-      console.error('❌ Appwrite get() error:', error);
-      setUser(null);
+      // Handle both session and account.get() errors gracefully
+      if (error.code === 401 || error.message.includes('missing scope')) {
+        console.log('ℹ️ No authenticated user, setting user to null');
+        setUser(null);
+      } else {
+        console.error('❌ Unexpected Appwrite error:', error);
+        setUser(null);
+      }
     } finally {
       console.log('🏁 Setting authChecked to true');
       setAuthChecked(true);

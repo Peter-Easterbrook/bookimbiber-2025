@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { Image, useColorScheme } from 'react-native';
-import DarkLogo from '../assets/img/logo_dark1.png';
-import LightLogo from '../assets/img/logo_light1.png';
+import DarkLogo from '../assets/img/logo_dark.png';
+import LightLogo from '../assets/img/logo_light.png';
 import { ThemeContext } from '../contexts/ThemeContext';
 
 const ThemedLogo = ({ width = 250, height = 250, style, ...props }) => {
