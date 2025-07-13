@@ -5,7 +5,7 @@ import ThemedView from '../../components/ThemedView';
 export default function AuthLayout() {
   return (
     <GuestOnly>
-      <ThemedView style={{ flex: 1 }}>
+      <ThemedView>
         <Stack
           screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}
         />

@@ -110,6 +110,14 @@ const Register = () => {
               </View>
               <Spacer />
               {error && <ThemedText style={styles.error}>{error}</ThemedText>}
+              {error && (
+                <ThemedText style={styles.error}>
+                  {error.includes('Rate limit') || error.includes('Too many')
+                    ? '⏱️ '
+                    : '❌ '}
+                  {error}
+                </ThemedText>
+              )}
             </View>
           </ThemedView>
         </Pressable>

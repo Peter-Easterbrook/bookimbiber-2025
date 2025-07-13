@@ -4,6 +4,7 @@ import { Link, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useContext } from 'react';
 import { ActivityIndicator, useColorScheme } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ThemedView from '../components/ThemedView';
 import ThemeToggle from '../components/ThemeToggle';
 import { Colors } from '../constants/Colors';
@@ -13,13 +14,15 @@ import { UserContext, UserProvider } from '../contexts/UserContext';
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <UserProvider>
-        <BooksProvider>
-          <RootLayoutContent />
-        </BooksProvider>
-      </UserProvider>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <UserProvider>
+          <BooksProvider>
+            <RootLayoutContent />
+          </BooksProvider>
+        </UserProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -46,10 +49,7 @@ function RootLayoutContent() {
 
   return (
     <>
-      <StatusBar
-        style={scheme === 'dark' ? 'light' : 'dark'}
-        translucent={true}
-      />
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <InnerLayout />
     </>
   );

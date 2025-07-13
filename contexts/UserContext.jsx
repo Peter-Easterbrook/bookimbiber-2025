@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useEffect, useRef, useState } from 'react';
 import { ID } from 'react-native-appwrite';
 import { account } from '../lib/appwrite';
 
@@ -8,6 +8,7 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  const hasInitialized = useRef(false); // Add this
 
   console.log('🔄 UserProvider rendered', { user: !!user, authChecked });
 
@@ -18,7 +19,21 @@ export const UserProvider = ({ children }) => {
       setUser(response);
     } catch (error) {
       console.error('Error creating account:', error);
-      throw Error('Please check your input.');
+      if (error.code === 429 || error.message.includes('Rate limit')) {
+        throw new Error(
+          'Too many login attempts. Please wait a minute and try again.'
+        );
+      } else if (error.code === 401) {
+        throw new Error(
+          'Invalid email or password. Please check your credentials.'
+        );
+      } else if (error.message.includes('network')) {
+        throw new Error(
+          'Network error. Please check your connection and try again.'
+        );
+      } else {
+        throw new Error('Login failed. Please try again.');
+      }
     }
   }
 
@@ -45,16 +60,16 @@ export const UserProvider = ({ children }) => {
       console.error('Registration error:', error);
 
       // Handle specific Appwrite error codes
-      if (error.code === 409) {
+      // Handle rate limiting
+      if (error.code === 429 || error.message.includes('Rate limit')) {
+        throw new Error(
+          'Too many registration attempts. Please wait a minute and try again.'
+        );
+      } else if (error.code === 409) {
         throw new Error('An account with this email already exists');
       } else if (error.code === 400) {
         throw new Error('Invalid input. Please check your details');
-      } else if (error.message.includes('password')) {
-        throw new Error('Password must be at least 8 characters long');
-      } else if (error.message.includes('email')) {
-        throw new Error('Please enter a valid email address');
       } else {
-        // Throw the actual error message instead of generic one
         throw new Error(
           error.message || 'Registration failed. Please try again.'
         );
@@ -77,11 +92,9 @@ export const UserProvider = ({ children }) => {
     console.log('🚀 getInitialUserValue called');
 
     try {
-      // First check if there's an active session
       const session = await account.getSession('current');
 
       if (session) {
-        // Only call account.get() if there's an active session
         const response = await account.get();
         console.log('✅ Appwrite session found:', response);
         setUser(response);
@@ -90,8 +103,14 @@ export const UserProvider = ({ children }) => {
         setUser(null);
       }
     } catch (error) {
-      // Handle both session and account.get() errors gracefully
-      if (error.code === 401 || error.message.includes('missing scope')) {
+      // Check specifically for rate limiting
+      if (error.code === 429 || error.message.includes('Rate limit')) {
+        console.log('🚫 STILL RATE LIMITED - waiting for ban to lift');
+        setUser(null);
+      } else if (
+        error.code === 401 ||
+        error.message.includes('missing scope')
+      ) {
         console.log('ℹ️ No authenticated user, setting user to null');
         setUser(null);
       } else {
@@ -107,7 +126,12 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     console.log('🎯 useEffect triggered');
-    getInitialUserValue();
+
+    // Only run once on mount
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      getInitialUserValue();
+    }
   }, []);
 
   return (
