@@ -99,7 +99,6 @@ const Login = () => {
                 </ThemedButton>
               </View>
               <Spacer />
-              {error && <ThemedText style={styles.error}>{error}</ThemedText>}
               {error && (
                 <ThemedText style={styles.error}>
                   {error.includes('Rate limit') || error.includes('Too many')

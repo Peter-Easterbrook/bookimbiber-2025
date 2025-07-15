@@ -77,6 +77,7 @@ function InnerLayout() {
       <Stack.Screen
         name='index'
         options={{
+          headerShown: false,
           title: 'home',
           headerTitle: '',
           headerLeft: () => (
