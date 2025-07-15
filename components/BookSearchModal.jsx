@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Logo from '../assets/icon.png'; // Placeholder image for book cover
 import { searchBooks } from '../lib/googleBooks';
+// import ISBNScanner from './ISBNScanner';
 import Spacer from './Spacer';
 import ThemedButton from './ThemedButton';
 import ThemedText from './ThemedText';
@@ -22,7 +23,7 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
+  // const [showScanner, setShowScanner] = useState(false);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -159,13 +160,13 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
           onSubmitEditing={handleSearch}
           returnKeyType='search'
         />
-        <ThemedButton
+        {/* <ThemedButton
           onPress={() => setShowScanner(true)}
           style={styles.scanButton}
           accessibilityLabel='Scan ISBN'
         >
           <Ionicons name='barcode-sharp' size={24} color={theme.iconColor} />
-        </ThemedButton>
+        </ThemedButton> */}
         <ThemedButton
           onPress={handleSearch}
           disabled={isSearching || !searchQuery.trim()}
@@ -180,7 +181,7 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
       </View>
 
       <Spacer />
-      {/* {showScanner && (
+      {showScanner && (
         <ISBNScanner
           onBookFound={(book) => {
             handleBookSelect(book);
@@ -188,7 +189,7 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
           }}
           onClose={() => setShowScanner(false)}
         />
-      )} */}
+      )}
       <Spacer />
 
       {isSearching ? (

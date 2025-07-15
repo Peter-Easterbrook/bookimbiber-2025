@@ -39,7 +39,7 @@
 | `eas build:configure`                                    | Configure EAS build without starting a build |
 | `npx eas build --profile development --platform android` | 🤖 Build a development client for Android    |
 | `npx eas build --profile development --platform ios`     | 🍎 Build a development client for iOS        |
-| `npx eas build -p android --profile preview`             | Build a preview version for Android          |
+| `npx eas build -p android --profile preview`             | Build a preview version for testing          |
 | `eas update --auto`                                      | Update your app using EAS Update             |
 | `eas update --branch main`                               | Publish an update to the main branch         |
 

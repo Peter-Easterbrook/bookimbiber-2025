@@ -88,7 +88,7 @@ const Profile = () => {
           style={{ width: '100%' }}
           contentContainerStyle={styles.readBooksSection}
         >
-          {readBooks.map((book) => (
+          {[...readBooks].reverse().map((book) => (
             <View
               key={book.$id || book.id}
               style={[

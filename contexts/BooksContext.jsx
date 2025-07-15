@@ -32,6 +32,9 @@ export function BooksProvider({ children }) {
         (book) => book.read || book.readAt
       );
 
+      // Sort read books by readAt date, descending
+      booksAlreadyRead.sort((a, b) => new Date(b.readAt) - new Date(a.readAt));
+
       setBooks(unreadBooks);
       setReadBooks(booksAlreadyRead);
     } catch (error) {
@@ -209,11 +212,13 @@ export function BooksProvider({ children }) {
               const exists = prevReadBooks.some(
                 (book) => book.$id === payload.$id
               );
-              return exists
-                ? prevReadBooks.map((book) =>
-                    book.$id === payload.$id ? payload : book
-                  )
-                : [...prevReadBooks, payload];
+              if (exists) {
+                return prevReadBooks.map((book) =>
+                  book.$id === payload.$id ? payload : book
+                );
+              }
+              // Add new read book to the beginning of the list
+              return [payload, ...prevReadBooks];
             });
           } else {
             // Update in books array
