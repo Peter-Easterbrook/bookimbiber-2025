@@ -192,7 +192,7 @@ const Create = () => {
               onPress={() => setShowSearchModal(true)}
               style={styles.iconButton}
             >
-              <ThemedText>Search Books</ThemedText>
+              <ThemedText>Search books</ThemedText>
               <Ionicons name='search' size={24} color={theme.iconColor} />
             </ThemedButton>
 
@@ -250,7 +250,7 @@ const Create = () => {
           <View style={styles.inputSection}>
             <ThemedTextInput
               style={styles.input}
-              placeholder='Title...'
+              placeholder='Add title...'
               value={title}
               onChangeText={setTitle}
               autoCapitalize='words'
@@ -258,7 +258,7 @@ const Create = () => {
             <Spacer height={10} />
             <ThemedTextInput
               style={styles.input}
-              placeholder='Author...'
+              placeholder='Add author...'
               value={author}
               onChangeText={setAuthor}
               autoCapitalize='words'
@@ -266,7 +266,7 @@ const Create = () => {
             <Spacer height={10} />
             <ThemedTextInput
               style={styles.multiline}
-              placeholder='Description...'
+              placeholder='Add description...'
               value={description}
               onChangeText={handleDescriptionChange}
               multiline={true}
@@ -289,7 +289,7 @@ const Create = () => {
                 styles.iconButton,
               ]}
             >
-              <ThemedText>{loading ? 'Saving...' : 'Create Book'}</ThemedText>
+              <ThemedText>{loading ? 'Saving...' : 'Create book'}</ThemedText>
               <MaterialCommunityIcons
                 size={24}
                 name='book-edit-outline'

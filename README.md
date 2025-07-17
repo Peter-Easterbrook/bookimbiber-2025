@@ -1,10 +1,10 @@
-# 📚 Bookimbiber 2025 - Your Digital Bookshelf
+# 📚 Book Imbiber 2025 - Your Digital Bookshelf
 
 > A modern React Native book management app built with Expo, helping you organize and track your personal library with style! 📱✨
 
-## 🌟 What is Bookimbiber?
+## 🌟 What is Book Imbiber?
 
-Bookimbiber is your personal digital librarian! Keep track of books you've read, want to read, or are currently reading. Search for books using Google Books API, add custom descriptions, and maintain your own curated collection.
+Book Imbiber is your personal digital librarian! Keep track of books you've read, want to read, or are currently reading. Search for books using Google Books API, add custom descriptions, and maintain your own curated collection.
 
 Perfect for book lovers who want to:
 
