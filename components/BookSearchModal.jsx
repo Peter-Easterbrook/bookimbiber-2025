@@ -43,7 +43,7 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
         );
       }
     } catch (error) {
-      console.error('Search error:', error);
+      // Replace console.error with a proper error alert
       Alert.alert(
         'Search Error',
         'Failed to search for books. Please check your internet connection and try again.'
@@ -79,11 +79,8 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
             }}
             style={styles.bookCover}
             resizeMode='cover'
-            onError={(error) => {
-              console.log(
-                'BookSearchModal image error:',
-                error.nativeEvent.error
-              );
+            onError={() => {
+              // Remove console.log, silently handle errors by letting default behavior occur
             }}
           />
         ) : (

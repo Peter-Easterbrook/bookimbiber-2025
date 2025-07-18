@@ -82,6 +82,36 @@ export const UserProvider = ({ children }) => {
     setUser(null);
   }
 
+  async function deleteBooks() {
+    if (!user) {
+      throw new Error('No user is currently logged in');
+    }
+    try {
+      // 1. First delete all user's books
+      const { databases } = require('../lib/appwrite');
+      const { Query } = require('react-native-appwrite');
+      const DATABASE_ID = '681e133100381d53f199';
+      const COLLECTION_ID = '681e13450007197b1942';
+
+      // Query for all user's books
+      const userBooks = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTION_ID,
+        [Query.equal('userId', user.$id)]
+      );
+
+      // Delete each book
+      for (const book of userBooks.documents) {
+        await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, book.$id);
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      throw new Error(
+        error.message || 'Failed to delete account. Please try again.'
+      );
+    }
+  }
+
   async function getInitialUserValue() {
     if (isInitializing) {
       console.log('⚠️ Already initializing, skipping...');
@@ -136,7 +166,7 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider
-      value={{ user, login, register, logout, authChecked }}
+      value={{ user, login, register, logout, authChecked, deleteBooks }}
     >
       {children}
     </UserContext.Provider>

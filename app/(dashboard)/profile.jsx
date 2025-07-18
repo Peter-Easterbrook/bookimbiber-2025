@@ -1,7 +1,10 @@
+import { Ionicons } from '@expo/vector-icons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -11,6 +14,7 @@ import {
 } from 'react-native';
 import Logo from '../../assets/icon.png';
 import Spacer from '../../components/Spacer';
+import ThemedButton from '../../components/ThemedButton';
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
 import { Colors } from '../../constants/Colors';
@@ -23,10 +27,11 @@ const Profile = () => {
   const { scheme } = useContext(ThemeContext);
   const fallback = useColorScheme();
   const theme = Colors[scheme || fallback] ?? Colors.light;
-  const { user } = useUser();
+  const { user, deleteBooks } = useUser();
   const { books, readBooks, booksLoading } = useBooks();
   const navigation = useRouter();
   const responsiveHeading = useResponsiveHeadingStyle();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const getInitial = (user) => {
     if (!user) return '';
@@ -50,6 +55,34 @@ const Profile = () => {
       </ThemedView>
     );
   }
+
+  const handleDeleteBooks = () => {
+    Alert.alert(
+      'Delete All Books',
+      'Are you sure you want to delete your books?\nThis action cannot be undone and all your book data will be permanently deleted.\nTo completely delete your account, please email us at    support@onestepweb.dev',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setIsDeleting(true);
+            try {
+              await deleteBooks();
+              navigation.replace('/login');
+            } catch (error) {
+              Alert.alert(
+                'Error',
+                error.message || 'Failed to delete account. Please try again.'
+              );
+            } finally {
+              setIsDeleting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -157,6 +190,28 @@ const Profile = () => {
           No books read yet
         </ThemedText>
       )}
+      <Spacer height={30} />
+      <View style={styles.admin}>
+        {/* <ThemedText style={styles.privacyNote}>
+          To completely delete your account, please email us at
+          support@onestepweb.dev
+          </ThemedText> */}
+        <ThemedButton href='/privacy-policy' style={styles.deleteButton}>
+          <ThemedText>Privacy Policy</ThemedText>
+          <MaterialIcons name='policy' size={24} color='black' />
+        </ThemedButton>
+        <ThemedButton
+          onPress={handleDeleteBooks}
+          disabled={isDeleting}
+          style={[{ opacity: 1.2 }, styles.deleteButton]}
+        >
+          <ThemedText>
+            {isDeleting ? 'Deleting books...' : 'Delete books'}
+          </ThemedText>
+
+          <Ionicons name='trash-outline' size={24} color={Colors.warning} />
+        </ThemedButton>
+      </View>
     </ThemedView>
   );
 };
@@ -256,13 +311,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  themedButton: {
+  deleteButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    maxWidth: 200,
-    width: '49%',
-    paddingVertical: 10,
+    width: 150,
+    maxWidth: '100%',
+    alignSelf: 'center',
+    paddingVertical: 6,
     paddingHorizontal: 10,
+  },
+
+  deleteButtonText: {
+    fontWeight: 'normal',
+    textAlign: 'center',
+  },
+  privacyNote: {
+    width: '100%',
+    maxWidth: 350,
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 10,
+    paddingHorizontal: 20,
+  },
+  admin: {
+    width: '100%',
+    maxWidth: 500,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
   },
 });

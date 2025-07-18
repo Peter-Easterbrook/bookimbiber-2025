@@ -1,4 +1,5 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useFonts } from 'expo-font';
 import { Link, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -90,6 +91,21 @@ function InnerLayout() {
             </Link>
           ),
           headerRight: () => <ThemeToggle />,
+        }}
+      />
+      <Stack.Screen
+        name='privacy-policy'
+        options={{
+          title: '',
+          headerLeft: () => (
+            <Link href='/'>
+              <Ionicons
+                name='arrow-back-sharp'
+                size={24}
+                color={theme.iconColor}
+              />
+            </Link>
+          ),
         }}
       />
     </Stack>
