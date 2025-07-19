@@ -198,7 +198,7 @@ const Profile = () => {
           </ThemedText> */}
         <ThemedButton href='/privacy-policy' style={styles.deleteButton}>
           <ThemedText>Privacy Policy</ThemedText>
-          <MaterialIcons name='policy' size={24} color='black' />
+          <MaterialIcons name='policy' size={24} color={theme.iconColor} />
         </ThemedButton>
         <ThemedButton
           onPress={handleDeleteBooks}

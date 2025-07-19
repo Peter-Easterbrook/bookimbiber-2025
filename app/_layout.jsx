@@ -43,7 +43,7 @@ function RootLayoutContent() {
       <ThemedView
         style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
       >
-        <ActivityIndicator size='large' color={theme.iconColor} />
+        <ActivityIndicator size="large" color={theme.iconColor} />
       </ThemedView>
     );
   }
@@ -73,18 +73,18 @@ function InnerLayout() {
       }}
     >
       {/* Always declare all screens */}
-      <Stack.Screen name='(auth)' options={{ headerShown: false }} />
-      <Stack.Screen name='(dashboard)' options={{ headerShown: false }} />
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="(dashboard)" options={{ headerShown: false }} />
       <Stack.Screen
-        name='index'
+        name="index"
         options={{
           headerShown: false,
           title: 'home',
           headerTitle: '',
           headerLeft: () => (
-            <Link href='/create' style={{ marginLeft: 16 }}>
+            <Link href="/create" style={{ marginLeft: 16 }}>
               <MaterialCommunityIcons
-                name='book-edit-outline'
+                name="book-edit-outline"
                 size={24}
                 color={theme.iconColor}
               />
@@ -94,13 +94,13 @@ function InnerLayout() {
         }}
       />
       <Stack.Screen
-        name='privacy-policy'
+        name="privacy-policy"
         options={{
           title: '',
           headerLeft: () => (
-            <Link href='/'>
+            <Link href="/">
               <Ionicons
-                name='arrow-back-sharp'
+                name="arrow-back-circle-outline"
                 size={24}
                 color={theme.iconColor}
               />
