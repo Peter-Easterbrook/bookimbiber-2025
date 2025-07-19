@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import Spacer from '../../components/Spacer';
 import ThemedButton from '../../components/ThemedButton';
-import ThemedLogo from '../../components/ThemedLogo';
+import ThemedLogoText from '../../components/ThemedLogoText';
 import ThemedPasswordInput from '../../components/ThemedPasswordInput';
 import ThemedText from '../../components/ThemedText';
 import ThemedTextInput from '../../components/ThemedTextInput';
@@ -51,18 +51,18 @@ const Login = () => {
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps='handled'
+        keyboardShouldPersistTaps="handled"
       >
         <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
           <ThemedView style={styles.container}>
-            <ThemedLogo width={200} height={200} />
+            <ThemedLogoText width={200} height={200} />
             <Spacer height={30} />
             <View style={styles.headerIconBlock}>
               <ThemedText title={true} style={styles.title}>
                 Login to your account
               </ThemedText>
               <Ionicons
-                name='person-circle-outline'
+                name="person-circle-outline"
                 size={30}
                 color={theme.iconColor}
               />
@@ -71,31 +71,31 @@ const Login = () => {
             <View style={styles.inputBlock}>
               <ThemedTextInput
                 style={{ marginBottom: 20 }}
-                placeholder='Email...'
+                placeholder="Email..."
                 value={email}
                 onChangeText={setEmail}
-                keyboardType='email-address'
+                keyboardType="email-address"
               />
               <ThemedPasswordInput
                 style={{ marginBottom: 20 }}
-                placeholder='Password...'
+                placeholder="Password..."
                 value={password}
                 onChangeText={setPassword}
               />
               <View style={styles.buttons}>
                 <ThemedButton
-                  href='/register'
+                  href="/register"
                   style={[{ opacity: 0.8 }, styles.themedButton]}
                 >
                   <ThemedText>Register</ThemedText>
-                  <Entypo name='feather' size={24} color={theme.iconColor} />
+                  <Entypo name="feather" size={24} color={theme.iconColor} />
                 </ThemedButton>
                 <ThemedButton
                   onPress={handleSubmit}
                   style={[{ opacity: 1.2 }, styles.themedButton]}
                 >
                   <ThemedText>Login</ThemedText>
-                  <AntDesign name='login' size={24} color={theme.iconColor} />
+                  <AntDesign name="login" size={24} color={theme.iconColor} />
                 </ThemedButton>
               </View>
               <Spacer />

@@ -8,7 +8,7 @@ import { useUser } from '../hooks/useUser';
 
 import Spacer from '../components/Spacer';
 import ThemedButton from '../components/ThemedButton';
-import ThemedLogo from '../components/ThemedLogo';
+import ThemedLogoText from '../components/ThemedLogoText';
 import ThemedText from '../components/ThemedText';
 import { Colors } from '../constants/Colors';
 
@@ -36,7 +36,7 @@ const Home = () => {
       end={{ x: 0, y: 0 }}
       style={styles.container}
     >
-      <ThemedLogo width={250} height={250} />
+      <ThemedLogoText width={250} height={250} />
       <Spacer />
 
       <ThemedText style={styles.title} title={true}>
@@ -51,7 +51,7 @@ const Home = () => {
       {user ? (
         // User is logged in - show Profile and Logout buttons
         <>
-          <ThemedButton href='/profile' style={styles.themedButton}>
+          <ThemedButton href="/profile" style={styles.themedButton}>
             <ThemedText>Profile</ThemedText>
             <Ionicons
               size={24}
@@ -61,14 +61,14 @@ const Home = () => {
           </ThemedButton>
           <ThemedButton onPress={handleLogout} style={styles.themedButton}>
             <ThemedText>Logout</ThemedText>
-            <AntDesign name='logout' size={24} color={theme.iconColor} />
+            <AntDesign name="logout" size={24} color={theme.iconColor} />
           </ThemedButton>
         </>
       ) : (
         // User is not logged in - show only Login button
-        <ThemedButton href='/login' style={styles.themedButton}>
+        <ThemedButton href="/login" style={styles.themedButton}>
           <ThemedText>Login</ThemedText>
-          <AntDesign name='login' size={24} color={theme.iconColor} />
+          <AntDesign name="login" size={24} color={theme.iconColor} />
         </ThemedButton>
       )}
     </LinearGradient>

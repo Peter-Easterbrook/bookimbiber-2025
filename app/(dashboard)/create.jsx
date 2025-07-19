@@ -17,7 +17,7 @@ import BookSearchModal from '../../components/BookSearchModal';
 import Spacer from '../../components/Spacer';
 import ThemedButton from '../../components/ThemedButton';
 import ThemedCard from '../../components/ThemedCard';
-import ThemedLogo from '../../components/ThemedLogo';
+import ThemedLogoText from '../../components/ThemedLogoText';
 import ThemedText from '../../components/ThemedText';
 import ThemedTextInput from '../../components/ThemedTextInput';
 import ThemedView from '../../components/ThemedView';
@@ -178,7 +178,7 @@ const Create = () => {
         >
           <View style={styles.headerIconBlock}>
             <Spacer height={10} />
-            <ThemedLogo width={200} height={200} />
+            <ThemedLogoText width={200} height={200} />
             <Spacer height={10} />
             <ThemedText title={true} style={styles.title}>
               Add a New Book
@@ -193,7 +193,7 @@ const Create = () => {
               style={styles.iconButton}
             >
               <ThemedText>Search books</ThemedText>
-              <Ionicons name='search' size={24} color={theme.iconColor} />
+              <Ionicons name="search" size={24} color={theme.iconColor} />
             </ThemedButton>
 
             {selectedBook && (
@@ -223,7 +223,7 @@ const Create = () => {
                         uri: selectedBook.thumbnail || selectedBook.coverImage,
                       }}
                       style={styles.selectedBookCover}
-                      resizeMode='cover'
+                      resizeMode="cover"
                     />
                   )}
                 </View>
@@ -237,7 +237,7 @@ const Create = () => {
                     style={styles.clearButton}
                   >
                     <Ionicons
-                      name='trash-outline'
+                      name="trash-outline"
                       size={24}
                       color={theme.iconColor}
                     />
@@ -250,27 +250,27 @@ const Create = () => {
           <View style={styles.inputSection}>
             <ThemedTextInput
               style={styles.input}
-              placeholder='Add title...'
+              placeholder="Add title..."
               value={title}
               onChangeText={setTitle}
-              autoCapitalize='words'
+              autoCapitalize="words"
             />
             <Spacer height={10} />
             <ThemedTextInput
               style={styles.input}
-              placeholder='Add author...'
+              placeholder="Add author..."
               value={author}
               onChangeText={setAuthor}
-              autoCapitalize='words'
+              autoCapitalize="words"
             />
             <Spacer height={10} />
             <ThemedTextInput
               style={styles.multiline}
-              placeholder='Add description...'
+              placeholder="Add description..."
               value={description}
               onChangeText={handleDescriptionChange}
               multiline={true}
-              textAlignVertical='top'
+              textAlignVertical="top"
               maxLength={300}
             />
             <View style={styles.characterCounter}>
@@ -292,7 +292,7 @@ const Create = () => {
               <ThemedText>{loading ? 'Saving...' : 'Create book'}</ThemedText>
               <MaterialCommunityIcons
                 size={24}
-                name='book-edit-outline'
+                name="book-edit-outline"
                 color={theme.iconColor}
               />
             </ThemedButton>
@@ -305,8 +305,8 @@ const Create = () => {
         {/* Book Search Modal */}
         <Modal
           visible={showSearchModal}
-          animationType='slide'
-          presentationStyle='pageSheet'
+          animationType="slide"
+          presentationStyle="pageSheet"
         >
           <BookSearchModal
             visible={showSearchModal}

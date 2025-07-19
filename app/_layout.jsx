@@ -1,13 +1,10 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useFonts } from 'expo-font';
-import { Link, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useContext } from 'react';
 import { ActivityIndicator, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ThemedView from '../components/ThemedView';
-import ThemeToggle from '../components/ThemeToggle';
 import { Colors } from '../constants/Colors';
 import { BooksProvider } from '../contexts/BooksContext';
 import { ThemeContext, ThemeProvider } from '../contexts/ThemeContext';
@@ -31,7 +28,7 @@ function RootLayoutContent() {
   const { scheme } = useContext(ThemeContext);
   const fallback = useColorScheme();
   const theme = Colors[scheme || fallback] ?? Colors.light;
-  const { user, authChecked } = useContext(UserContext);
+  const { authChecked } = useContext(UserContext);
 
   const [fontsLoaded] = useFonts({
     'berlin-sans-fb': require('../assets/fonts/Berlinsans.otf'),
@@ -51,63 +48,17 @@ function RootLayoutContent() {
   return (
     <>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      <InnerLayout />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(dashboard)" />
+        <Stack.Screen
+          name="privacy-policy"
+          options={{
+            headerShown: false,
+          }}
+        />
+      </Stack>
     </>
-  );
-}
-
-function InnerLayout() {
-  const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
-  const theme = Colors[scheme || fallback] ?? Colors.light;
-  const { user } = useContext(UserContext);
-
-  return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: theme.navBackground },
-        headerTintColor: theme.title,
-        headerTitleAlign: 'center',
-        headerShadowVisible: false,
-        animation: 'fade_from_bottom',
-      }}
-    >
-      {/* Always declare all screens */}
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(dashboard)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="index"
-        options={{
-          headerShown: false,
-          title: 'home',
-          headerTitle: '',
-          headerLeft: () => (
-            <Link href="/create" style={{ marginLeft: 16 }}>
-              <MaterialCommunityIcons
-                name="book-edit-outline"
-                size={24}
-                color={theme.iconColor}
-              />
-            </Link>
-          ),
-          headerRight: () => <ThemeToggle />,
-        }}
-      />
-      <Stack.Screen
-        name="privacy-policy"
-        options={{
-          title: '',
-          headerLeft: () => (
-            <Link href="/">
-              <Ionicons
-                name="arrow-back-circle-outline"
-                size={24}
-                color={theme.iconColor}
-              />
-            </Link>
-          ),
-        }}
-      />
-    </Stack>
   );
 }

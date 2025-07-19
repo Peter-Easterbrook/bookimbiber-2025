@@ -58,7 +58,7 @@ const Books = () => {
                       uri: bookImageUrl.replace('http://', 'https://'),
                     }}
                     style={styles.bookCover}
-                    resizeMode='cover'
+                    resizeMode="cover"
                     onError={(error) => {
                       console.log(
                         'Books list image error:',
@@ -71,9 +71,9 @@ const Books = () => {
                     <Image
                       source={Logo}
                       style={{ width: 60, height: 60 }}
-                      resizeMode='contain'
-                      accessibilityLabel='Placeholder Book Cover'
-                      accessibilityRole='image'
+                      resizeMode="contain"
+                      accessibilityLabel="Placeholder Book Cover"
+                      accessibilityRole="image"
                     />
                   </View>
                 )}
@@ -94,7 +94,7 @@ const Books = () => {
                   {/* Rating */}
                   {item.averageRating > 0 && (
                     <View style={styles.ratingContainer}>
-                      <Ionicons name='star' size={14} color='#FFD700' />
+                      <Ionicons name="star" size={14} color="#FFD700" />
                       <ThemedText style={styles.metadata}>
                         {item.averageRating.toFixed(1)} (
                         {item.ratingsCount || 0}
@@ -106,7 +106,7 @@ const Books = () => {
 
                 {/* Chevron */}
                 <Ionicons
-                  name='chevron-forward'
+                  name="chevron-forward"
                   size={20}
                   color={theme.iconColor}
                   style={styles.chevron}
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'stretch',
-    marginTop: 20,
+    marginTop: 0,
   },
 
   list: {

@@ -1,14 +1,49 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useContext } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Spacer from '../components/Spacer';
 import ThemedText from '../components/ThemedText';
 import ThemedView from '../components/ThemedView';
+import { Colors } from '../constants/Colors';
+import { ThemeContext } from '../contexts/ThemeContext';
 
 export default function PrivacyPolicy() {
   const router = useRouter();
+  const { scheme } = useContext(ThemeContext);
+  const fallback = useColorScheme();
+  const theme = Colors[scheme || fallback] ?? Colors.light;
 
   return (
     <ThemedView style={styles.container}>
+      <SafeAreaView
+        style={{ backgroundColor: theme.navBackground }}
+        edges={['top']}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            activeOpacity={0.7}
+            style={styles.backButton}
+          >
+            <Ionicons
+              name="arrow-back-circle-outline"
+              size={24}
+              color={theme.iconColor}
+            />
+          </TouchableOpacity>
+          <View style={{ width: 24 }} />
+        </View>
+      </SafeAreaView>
+
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -946,6 +981,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  backButton: {
+    padding: 8,
+  },
+  headerTitle: {
+    fontSize: 18,
   },
   scrollView: {
     flex: 1,

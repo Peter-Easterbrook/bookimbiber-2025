@@ -78,8 +78,37 @@ export const UserProvider = ({ children }) => {
   }
 
   async function logout() {
-    await account.deleteSession('current');
-    setUser(null);
+    try {
+      // First check if there's a valid session
+      try {
+        const session = await account.getSession('current');
+        if (session && session.$id) {
+          await account.deleteSession('current');
+        } else {
+          console.log('No active session found, user already logged out');
+        }
+      } catch (error) {
+        // If error is 401 or missing scope, user is already logged out
+        if (error.code === 401 || error.message?.includes('missing scope')) {
+          console.log('No valid session found, user already logged out');
+        } else {
+          // For other errors, try to delete the session anyway
+          try {
+            await account.deleteSession('current');
+          } catch (innerError) {
+            console.error('Error during fallback logout:', innerError);
+          }
+        }
+      }
+
+      // Always set user to null regardless of whether logout succeeded
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still set user to null even if there was an error
+      setUser(null);
+      throw error;
+    }
   }
 
   async function deleteBooks() {

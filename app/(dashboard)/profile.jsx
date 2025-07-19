@@ -1,5 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import { useContext, useState } from 'react';
 import {
@@ -14,7 +12,6 @@ import {
 } from 'react-native';
 import Logo from '../../assets/icon.png';
 import Spacer from '../../components/Spacer';
-import ThemedButton from '../../components/ThemedButton';
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
 import { Colors } from '../../constants/Colors';
@@ -103,8 +100,7 @@ const Profile = () => {
       <ThemedText title={true} style={styles.heading}>
         Hello, {user.name}
       </ThemedText>
-      <Spacer height={10} />
-      <Spacer height={20} />
+      <Spacer height={30} />
       {readBooks.length > 0 && (
         <ThemedText title={true} style={responsiveHeading}>
           Reading History:
@@ -113,7 +109,7 @@ const Profile = () => {
 
       {booksLoading ? (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size='large' color={theme.text} />
+          <ActivityIndicator size="large" color={theme.text} />
         </View>
       ) : readBooks.length > 0 ? (
         <ScrollView
@@ -161,7 +157,7 @@ const Profile = () => {
                         ),
                       }}
                       style={styles.bookCover}
-                      resizeMode='cover'
+                      resizeMode="cover"
                       onError={(error) => {
                         console.log(
                           'Profile image error:',
@@ -174,9 +170,9 @@ const Profile = () => {
                       <Image
                         source={Logo}
                         style={{ width: 60, height: 60 }}
-                        resizeMode='contain'
-                        accessibilityLabel='Placeholder Book Cover'
-                        accessibilityRole='image'
+                        resizeMode="contain"
+                        accessibilityLabel="Placeholder Book Cover"
+                        accessibilityRole="image"
                       />
                     </View>
                   )}
@@ -191,27 +187,6 @@ const Profile = () => {
         </ThemedText>
       )}
       <Spacer height={30} />
-      <View style={styles.admin}>
-        {/* <ThemedText style={styles.privacyNote}>
-          To completely delete your account, please email us at
-          support@onestepweb.dev
-          </ThemedText> */}
-        <ThemedButton href='/privacy-policy' style={styles.deleteButton}>
-          <ThemedText>Privacy Policy</ThemedText>
-          <MaterialIcons name='policy' size={24} color={theme.iconColor} />
-        </ThemedButton>
-        <ThemedButton
-          onPress={handleDeleteBooks}
-          disabled={isDeleting}
-          style={[{ opacity: 1.2 }, styles.deleteButton]}
-        >
-          <ThemedText>
-            {isDeleting ? 'Deleting books...' : 'Delete books'}
-          </ThemedText>
-
-          <Ionicons name='trash-outline' size={24} color={Colors.warning} />
-        </ThemedButton>
-      </View>
     </ThemedView>
   );
 };
