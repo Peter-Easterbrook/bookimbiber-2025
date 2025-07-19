@@ -56,7 +56,7 @@ const Profile = () => {
   const handleDeleteBooks = () => {
     Alert.alert(
       'Delete All Books',
-      'Are you sure you want to delete your books?\nThis action cannot be undone and all your book data will be permanently deleted.\nTo completely delete your account, please email us at    support@onestepweb.dev',
+      'Are you sure you want to delete your books?\nThis action cannot be undone and all your book data will be permanently deleted.',
       [
         { text: 'Cancel', style: 'cancel' },
         {

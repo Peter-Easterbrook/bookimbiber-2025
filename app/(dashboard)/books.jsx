@@ -9,7 +9,7 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-import Logo from '../../assets/icon.png';
+import ThemedLogoMyBooks from '../../components/ThemedLogoMyBooks';
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
 import { Colors } from '../../constants/Colors';
@@ -116,9 +116,14 @@ const Books = () => {
           );
         }}
         ListEmptyComponent={
-          <ThemedText style={[styles.fallbackText, { color: theme.textColor }]}>
-            Nothing on your reading list!
-          </ThemedText>
+          <View style={styles.emptyListPlaceholder}>
+            <ThemedLogoMyBooks width={250} height={250} />
+            <ThemedText
+              style={[styles.fallbackText, { color: theme.textColor }]}
+            >
+              Nothing on your reading list!
+            </ThemedText>
+          </View>
         }
       />
       {/* <Spacer height={40} /> */}
@@ -136,7 +141,7 @@ const styles = StyleSheet.create({
   },
 
   list: {
-    marginTop: 50,
+    marginTop: 0,
     paddingBottom: 60,
     marginBottom: 0,
   },
@@ -169,6 +174,12 @@ const styles = StyleSheet.create({
     marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  emptyListPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   bookInfo: {
     flex: 1,

@@ -34,6 +34,8 @@ export const Colors = {
     uiButtonBorder: '#1488ff',
     buttonText: '#f8fcff',
     rippleColor: '#1488ff',
+    activeBackground: '#00274e',
+    activeText: '#f8fcff',
   },
   light: {
     text: '#00274e',
@@ -49,6 +51,8 @@ export const Colors = {
     uiBorder: '#f6a800',
     buttonText: '#001427',
     rippleColor: '#ffc445',
+    activeBackground: '#fff9c9',
+    activeText: '#001427',
   },
 };
 export const cornShades = [

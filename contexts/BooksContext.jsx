@@ -184,6 +184,42 @@ export function BooksProvider({ children }) {
     }
   }
 
+  async function deleteBooks() {
+    if (!user) {
+      throw new Error('No user is currently logged in');
+    }
+
+    try {
+      setBooksLoading(true);
+
+      // Check if there are books to delete
+      if (!books || books.length === 0) {
+        console.log('No books to delete');
+        return;
+      }
+
+      // Delete each book with proper error handling for IDs
+      const promises = books.map((book) => {
+        if (!book.$id) {
+          console.error('Missing document ID for book:', book);
+          return Promise.resolve(); // Skip this book
+        }
+        return databases.deleteDocument(DATABASE_ID, COLLECTION_ID, book.$id);
+      });
+
+      await Promise.all(promises);
+
+      // Clear the local state
+      setBooks([]);
+      setReadBooks && setReadBooks([]);
+    } catch (error) {
+      console.error('Error deleting books:', error);
+      throw new Error('Failed to delete books. Please try again.');
+    } finally {
+      setBooksLoading(false);
+    }
+  }
+
   // Update the real-time subscription to handle both arrays
   useEffect(() => {
     let unsubscribe;
@@ -261,6 +297,7 @@ export function BooksProvider({ children }) {
         deleteBook,
         updateBook,
         markAsRead,
+        deleteBooks,
       }}
     >
       {children}

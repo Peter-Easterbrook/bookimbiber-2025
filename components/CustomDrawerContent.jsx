@@ -1,4 +1,4 @@
-import { AntDesign, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import {
   DrawerContentScrollView,
   DrawerItem,
@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { useContext } from 'react';
 import { Alert, StyleSheet, useColorScheme, View } from 'react-native';
 import { Colors } from '../constants/Colors';
+import { useBooks } from '../hooks/useBooks';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { useUser } from '../hooks/useUser';
 import ThemedLogo from './ThemedLogo';
@@ -19,15 +20,14 @@ export default function CustomDrawerContent(props) {
   const theme = Colors[scheme || fallback] ?? Colors.light;
   const { user, logout } = useUser();
   const router = useRouter();
+  const { deleteBooks } = useBooks();
 
   const handleLogout = async () => {
     try {
       await logout();
-      // After logout, navigate to login screen
       router.replace('/login');
     } catch (error) {
       console.error('Error during logout:', error);
-      // Even if there's an error, try to navigate to login
       router.replace('/login');
     }
   };
@@ -41,13 +41,30 @@ export default function CustomDrawerContent(props) {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            // Implement delete books functionality here
-            console.log('Delete all books');
+          onPress: async () => {
+            try {
+              await deleteBooks(); // Call the actual function
+              Alert.alert('Success', 'All books have been deleted');
+              // Refresh the books list
+              router.replace('/books');
+            } catch (error) {
+              Alert.alert(
+                'Error',
+                error.message || 'Failed to delete books. Please try again.'
+              );
+            }
           },
         },
       ]
     );
+  };
+
+  // Create a consistent label style
+  const customLabelStyle = {
+    color: theme.text,
+    fontFamily: 'berlin-sans-fb',
+    letterSpacing: 2,
+    fontSize: 16,
   };
 
   return (
@@ -73,7 +90,7 @@ export default function CustomDrawerContent(props) {
           <View
             style={{
               borderBottomWidth: 0.5,
-              borderBottomColor: theme.borderColor || 'rgba(0,0,0,0.2)',
+              borderBottomColor: theme.uiBorder,
               marginVertical: 10,
               marginHorizontal: 15,
             }}
@@ -82,13 +99,9 @@ export default function CustomDrawerContent(props) {
             label="Delete All Books"
             onPress={handleDeleteBooks}
             icon={({ size }) => (
-              <MaterialIcons
-                name="delete-outline"
-                size={size}
-                color={theme.text}
-              />
+              <Ionicons name="trash-outline" size={size} color={theme.text} />
             )}
-            labelStyle={{ color: theme.text }}
+            labelStyle={customLabelStyle}
           />
           <DrawerItem
             label="Privacy Policy"
@@ -96,7 +109,7 @@ export default function CustomDrawerContent(props) {
             icon={({ size }) => (
               <MaterialIcons name="policy" size={size} color={theme.text} />
             )}
-            labelStyle={{ color: theme.text }}
+            labelStyle={customLabelStyle}
           />
           <DrawerItem
             label="Logout"
@@ -104,7 +117,7 @@ export default function CustomDrawerContent(props) {
             icon={({ size }) => (
               <AntDesign name="logout" size={size} color={theme.text} />
             )}
-            labelStyle={{ color: theme.text }}
+            labelStyle={customLabelStyle}
           />
         </>
       )}
@@ -122,9 +135,11 @@ const styles = StyleSheet.create({
     fontFamily: 'berlin-sans-fb',
     fontSize: 20,
     marginTop: 10,
+    letterSpacing: 2,
   },
   userName: {
     fontSize: 16,
+    letterSpacing: 2,
     marginTop: 5,
   },
 });
