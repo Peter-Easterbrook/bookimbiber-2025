@@ -1,0 +1,43 @@
+Release Notes - Book Imbiber v1.0.1
+📚 Welcome to Book Imbiber!
+Book Imbiber is your personal book tracking companion, designed to help you manage your reading collection and track your literary journey.
+
+✨ Features in this Release
+User Account Management
+
+Secure registration and login
+Personal profile with reading statistics
+User data stored securely on Appwrite
+Book Collection
+
+Add books manually or search via Google Books API
+View book details including cover art, author information, and ratings
+Mark books as read to track your reading history
+Delete books from your collection
+Advanced Search Functionality
+
+Search books by title, author, or ISBN
+Scan book barcodes using your device's camera
+View detailed book information from Google Books
+Reading Tracking
+
+Maintain separate lists for books you want to read and books you've finished
+View your reading history with completion dates
+Track reading progress over time
+User Interface
+
+Clean, intuitive design optimized for Android devices
+Responsive layout for different screen sizes
+Built with accessibility in mind
+Privacy & Security
+
+Comprehensive privacy policy added
+Minimal data collection (email and name only)
+Secure authentication via Appwrite
+🐛 Bug Fixes
+Fixed issues with book metadata handling
+Improved error messaging throughout the app
+Enhanced input validation on registration and book creation
+📱 Platform Support
+Android devices (version 5.0+)
+We hope you enjoy using Book Imbiber to track your reading journey! Please send feedback and suggestions to support@bookimbiber.com.

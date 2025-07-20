@@ -123,7 +123,7 @@ export default function DashboardLayout() {
         name="create"
         options={{
           title: 'Create Book',
-          headerTitle: 'Create Book Page',
+          headerTitle: '',
           drawerLabel: 'Add Book',
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons

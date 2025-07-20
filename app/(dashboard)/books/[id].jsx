@@ -141,7 +141,7 @@ const BookDetails = () => {
                 <ThemedText
                   style={styles.title}
                   numberOfLines={2}
-                  ellipsizeMode='tail'
+                  ellipsizeMode="tail"
                   title={true}
                 >
                   {book.title && book.title.length > 20
@@ -180,7 +180,7 @@ const BookDetails = () => {
                 {/* Rating */}
                 {book.averageRating > 0 && (
                   <View style={styles.ratingContainer}>
-                    <Ionicons name='star' size={16} color='#FFD700' />
+                    <Ionicons name="star" size={16} color="#FFD700" />
                     <ThemedText style={styles.rating} title={true}>
                       {book.averageRating.toFixed(1)} ({book.ratingsCount || 0}{' '}
                       reviews)
@@ -193,7 +193,7 @@ const BookDetails = () => {
                 <Image
                   source={{ uri: bookImageUrl.replace('http://', 'https://') }}
                   style={[styles.bookCover, imageSize]}
-                  resizeMode='cover'
+                  resizeMode="cover"
                   onError={(error) => {
                     console.log(
                       'BookDetails image error:',
@@ -205,9 +205,9 @@ const BookDetails = () => {
                 <Image
                   source={Logo}
                   style={[styles.bookCover, imageSize]}
-                  resizeMode='contain'
-                  accessibilityLabel='Placeholder Book Cover'
-                  accessibilityRole='image'
+                  resizeMode="contain"
+                  accessibilityLabel="Placeholder Book Cover"
+                  accessibilityRole="image"
                 />
               )}
             </View>
@@ -231,7 +231,7 @@ const BookDetails = () => {
               <View style={buttonStyle}>
                 {showButtonText && <ThemedText>Delete</ThemedText>}
                 <Ionicons
-                  name='trash-outline'
+                  name="trash-outline"
                   size={24}
                   color={Colors.warning}
                 />
@@ -244,7 +244,7 @@ const BookDetails = () => {
             >
               <View style={buttonStyle}>
                 {showButtonText && <ThemedText>Amazon</ThemedText>}
-                <Ionicons name='logo-amazon' size={24} color={Colors.amazon} />
+                <Ionicons name="logo-amazon" size={24} color={Colors.amazon} />
               </View>
             </ThemedButton>
 
@@ -256,18 +256,18 @@ const BookDetails = () => {
               <View style={buttonStyle}>
                 {isRead ? (
                   <>
-                    {showButtonText && <ThemedText>Read!</ThemedText>}
+                    {showButtonText && <ThemedText>Done!</ThemedText>}
                     <Ionicons
-                      name='checkmark-circle-outline'
+                      name="checkmark-circle-outline"
                       size={24}
-                      color='green'
+                      color="green"
                     />
                   </>
                 ) : (
                   <>
-                    {showButtonText && <ThemedText>Mark Read</ThemedText>}
+                    {showButtonText && <ThemedText>Finished?</ThemedText>}
                     <Ionicons
-                      name='bookmark-outline'
+                      name="bookmark-outline"
                       size={24}
                       color={Colors.amazon}
                     />

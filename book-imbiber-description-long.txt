@@ -1,0 +1,11 @@
+Book Imbiber - App Descriptions
+Main Description (Full)
+Book Imbiber: Your Personal Reading Journey Tracker
+
+Book Imbiber is the ultimate companion for passionate readers who want to organize their literary adventures. Easily catalog books you've read or want to read, keep track of your reading history, and discover new titles through our seamless integration with Google Books.
+
+With Book Imbiber, you can: • Create your personalized digital bookshelf • Search for books by title, author, or scan ISBN barcodes • View detailed book information including cover art, ratings, and descriptions • Mark books as "read" when you finish them • Track your reading history with completion dates • Purchase books you love directly through Amazon links • Enjoy a clean, intuitive interface with customizable dark/light themes
+
+Whether you're an avid bibliophile managing hundreds of titles or simply want to remember what you've read, Book Imbiber provides a distraction-free, privacy-focused way to celebrate your reading journey. Your data remains secure with minimal collection - we only store what's needed to make your experience personal.
+
+Start imbibing knowledge, one book at a time!

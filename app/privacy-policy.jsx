@@ -24,7 +24,7 @@ export default function PrivacyPolicy() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView
-        style={{ backgroundColor: theme.navBackground }}
+        // style={{ backgroundColor: theme.navBackground }}
         edges={['top']}
       >
         <View style={styles.header}>
@@ -986,8 +986,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
   },
   backButton: {
     padding: 8,
