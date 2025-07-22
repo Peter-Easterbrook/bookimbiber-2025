@@ -6,15 +6,15 @@
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "platforms": ["android"],
-    "plugins": ["expo-router", "expo-font", "expo-localization", "expo-camera"],
+    "plugins": ["expo-router", "expo-font", "expo-localization"],
     "description": "Book Imbiber is an app for book lovers to track their reading habits and share recommendations.",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#fffff0"
+      "backgroundColor": "#fffbdd"
     },
     "android": {
       "package": "com.petereasterbro1.bookimbiber2025",
