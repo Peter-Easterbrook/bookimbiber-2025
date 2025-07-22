@@ -12,7 +12,7 @@
     "plugins": ["expo-router", "expo-font", "expo-localization"],
     "description": "Book Imbiber is an app for book lovers to track their reading habits and share recommendations.",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#fffbdd"
     },

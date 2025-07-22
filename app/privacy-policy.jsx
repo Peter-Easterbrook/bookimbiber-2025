@@ -95,6 +95,14 @@ export default function PrivacyPolicy() {
         <Spacer height={10} />
 
         <ThemedText style={styles.heading} title={true}>
+          Inactive Account Deletion
+        </ThemedText>
+
+        <ThemedText style={styles.paragraph}>
+          If your account remains inactive for a period of 12 months, we may delete your account and associated data. We will attempt to notify you by email before any such deletion.
+        </ThemedText>
+
+        <ThemedText style={styles.heading} title={true}>
           1. WHAT INFORMATION DO WE COLLECT?
         </ThemedText>
 
@@ -501,8 +509,7 @@ export default function PrivacyPolicy() {
             If you are located in Switzerland, you may contact the Federal Data
             Protection and Information Commissioner.
           </ThemedText>
-          <ThemedText style={styles.listItem}>
-            <ThemedText style={styles.bold}>
+          <TheThemedText style={styles.bold}>
               Withdrawing your consent:{' '}
             </ThemedText>
             If we are relying on your consent to process your personal
