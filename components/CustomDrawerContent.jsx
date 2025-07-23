@@ -8,8 +8,8 @@ import { useRouter } from 'expo-router';
 import { useContext } from 'react';
 import { Alert, StyleSheet, useColorScheme, View } from 'react-native';
 import { Colors } from '../constants/Colors';
-import { useBooks } from '../hooks/useBooks';
 import { ThemeContext } from '../contexts/ThemeContext';
+import { useBooks } from '../hooks/useBooks';
 import { useUser } from '../hooks/useUser';
 import ThemedLogo from './ThemedLogo';
 import ThemedText from './ThemedText';
@@ -44,7 +44,7 @@ export default function CustomDrawerContent(props) {
           onPress: async () => {
             try {
               await deleteBooks(); // Call the actual function
-              Alert.alert('Success', 'All books have been deleted');
+              Alert.alert('Success!', 'All the books have been deleted.');
               // Refresh the books list
               router.replace('/books');
             } catch (error) {

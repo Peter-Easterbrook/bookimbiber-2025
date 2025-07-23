@@ -31,6 +31,9 @@ const Books = () => {
 
   return (
     <ThemedView style={styles.container} safe={true}>
+      <View style={styles.topLogoContainer}>
+        <ThemedLogoMyBooks width={150} height={150} />
+      </View>
       <FlatList
         data={books || []}
         keyExtractor={(item) => item.$id}
@@ -126,7 +129,6 @@ const Books = () => {
           </View>
         }
       />
-      {/* <Spacer height={40} /> */}
     </ThemedView>
   );
 };
@@ -137,9 +139,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'stretch',
-    marginTop: 0,
+    marginTop: -20,
+    paddingTop: 0,
   },
-
+  topLogoContainer: {
+    alignItems: 'center', // <-- Add this style
+    justifyContent: 'flex-start', // <-- Add this style
+    marginBottom: 8, // <-- Reduce from 16 to 8 for less space below logo
+    marginTop: 0, // <-- Add this to ensure no extra space above logo
+    paddingTop: 0,
+  },
   list: {
     marginTop: 0,
     paddingBottom: 60,

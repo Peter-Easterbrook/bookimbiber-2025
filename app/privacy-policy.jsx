@@ -4,6 +4,7 @@ import { useContext } from 'react';
 import {
   ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
   useColorScheme,
   View,
@@ -82,8 +83,8 @@ export default function PrivacyPolicy() {
           </ThemedText>
         </View>
 
+        <ThemedText style={styles.heading}>Questions or concerns? </ThemedText>
         <ThemedText style={styles.paragraph}>
-          <ThemedText style={styles.bold}>Questions or concerns? </ThemedText>
           Reading this Privacy Notice will help you understand your privacy
           rights and choices. We are responsible for making decisions about how
           your personal information is processed. If you do not agree with our
@@ -92,14 +93,14 @@ export default function PrivacyPolicy() {
           peter@onestepweb.dev.
         </ThemedText>
 
-        <Spacer height={10} />
-
         <ThemedText style={styles.heading} title={true}>
           Inactive Account Deletion
         </ThemedText>
 
         <ThemedText style={styles.paragraph}>
-          If your account remains inactive for a period of 12 months, we may delete your account and associated data. We will attempt to notify you by email before any such deletion.
+          If your account remains inactive for a period of 12 months, we may
+          delete your account and associated data. We will attempt to notify you
+          by email before any such deletion.
         </ThemedText>
 
         <ThemedText style={styles.heading} title={true}>
@@ -509,9 +510,10 @@ export default function PrivacyPolicy() {
             If you are located in Switzerland, you may contact the Federal Data
             Protection and Information Commissioner.
           </ThemedText>
-          <TheThemedText style={styles.bold}>
-              Withdrawing your consent:{' '}
-            </ThemedText>
+          <ThemedText style={styles.bold}>
+            Withdrawing your consent:{' '}
+          </ThemedText>
+          <ThemedText style={styles.listItem}>
             If we are relying on your consent to process your personal
             information, which may be express and/or implied consent depending
             on the applicable law, you have the right to withdraw your consent
@@ -617,7 +619,7 @@ export default function PrivacyPolicy() {
                 styles.categoryColumn,
               ]}
             >
-              <ThemedText style={styles.tableHeaderText}>Category</ThemedText>
+              <Text style={styles.tableHeaderText}>Category</Text>
             </View>
             <View
               style={[
@@ -626,108 +628,86 @@ export default function PrivacyPolicy() {
                 styles.examplesColumn,
               ]}
             >
-              <ThemedText style={styles.tableHeaderText}>Examples</ThemedText>
+              <Text style={styles.tableHeaderText}>Examples</Text>
             </View>
           </View>
 
           {/* Table Rows */}
           <View style={styles.tableRow}>
             <View style={[styles.tableCell, styles.categoryColumn]}>
-              <ThemedText style={styles.tableCellText}>Identifiers</ThemedText>
+              <Text style={styles.tableCellText}>Identifiers</Text>
             </View>
             <View style={[styles.tableCell, styles.examplesColumn]}>
-              <ThemedText style={styles.tableCellText}>
-                Email address, username
-              </ThemedText>
+              <Text style={styles.tableCellText}>Email address, username</Text>
             </View>
           </View>
 
           <View style={styles.tableRow}>
             <View style={[styles.tableCell, styles.categoryColumn]}>
-              <ThemedText style={styles.tableCellText}>
-                Authentication data
-              </ThemedText>
+              <Text style={styles.tableCellText}>Authentication data</Text>
             </View>
             <View style={[styles.tableCell, styles.examplesColumn]}>
-              <ThemedText style={styles.tableCellText}>
+              <Text style={styles.tableCellText}>
                 Password, security questions
-              </ThemedText>
+              </Text>
             </View>
           </View>
 
           <View style={styles.tableRow}>
             <View style={[styles.tableCell, styles.categoryColumn]}>
-              <ThemedText style={styles.tableCellText}>Usage data</ThemedText>
+              <Text style={styles.tableCellText}>Usage data</Text>
             </View>
             <View style={[styles.tableCell, styles.examplesColumn]}>
-              <ThemedText style={styles.tableCellText}>
+              <Text style={styles.tableCellText}>
                 Reading history, book collections, search queries
-              </ThemedText>
+              </Text>
             </View>
           </View>
 
           <View style={styles.tableRow}>
             <View style={[styles.tableCell, styles.categoryColumn]}>
-              <ThemedText style={styles.tableCellText}>
-                Device information
-              </ThemedText>
+              <Text style={styles.tableCellText}>Device information</Text>
             </View>
             <View style={[styles.tableCell, styles.examplesColumn]}>
-              <ThemedText style={styles.tableCellText}>
+              <Text style={styles.tableCellText}>
                 Device type, operating system
-              </ThemedText>
+              </Text>
             </View>
           </View>
 
           <View style={styles.tableRow}>
             <View style={[styles.tableCell, styles.categoryColumn]}>
-              <ThemedText style={styles.tableCellText}>
-                Financial information
-              </ThemedText>
+              <Text style={styles.tableCellText}>Financial information</Text>
             </View>
             <View style={[styles.tableCell, styles.examplesColumn]}>
-              <ThemedText style={styles.tableCellText}>
-                Not collected
-              </ThemedText>
+              <Text style={styles.tableCellText}>Not collected</Text>
             </View>
           </View>
 
           <View style={styles.tableRow}>
             <View style={[styles.tableCell, styles.categoryColumn]}>
-              <ThemedText style={styles.tableCellText}>
-                Location data
-              </ThemedText>
+              <Text style={styles.tableCellText}>Location data</Text>
             </View>
             <View style={[styles.tableCell, styles.examplesColumn]}>
-              <ThemedText style={styles.tableCellText}>
-                Not collected
-              </ThemedText>
+              <Text style={styles.tableCellText}>Not collected</Text>
             </View>
           </View>
 
           <View style={styles.tableRow}>
             <View style={[styles.tableCell, styles.categoryColumn]}>
-              <ThemedText style={styles.tableCellText}>
-                Biometric information
-              </ThemedText>
+              <Text style={styles.tableCellText}>Biometric information</Text>
             </View>
             <View style={[styles.tableCell, styles.examplesColumn]}>
-              <ThemedText style={styles.tableCellText}>
-                Not collected
-              </ThemedText>
+              <Text style={styles.tableCellText}>Not collected</Text>
             </View>
           </View>
 
           <View style={styles.tableRow}>
             <View style={[styles.tableCell, styles.categoryColumn]}>
-              <ThemedText style={styles.tableCellText}>
-                Personal Information
-              </ThemedText>
+              <Text style={styles.tableCellText}>Personal Information</Text>
             </View>
             <View style={[styles.tableCell, styles.examplesColumn]}>
-              <ThemedText style={styles.tableCellText}>
-                Not collected
-              </ThemedText>
+              <Text style={styles.tableCellText}>Not collected</Text>
             </View>
           </View>
         </View>
@@ -1079,10 +1059,13 @@ const styles = StyleSheet.create({
     flex: 3,
   },
   tableHeaderText: {
-    fontWeight: 'bold',
+    fontFamily: 'berlin-sans-fb-bold',
     color: '#333',
+    letterSpacing: 1,
   },
   tableCellText: {
+    fontFamily: 'berlin-sans-fb',
     color: '#595959',
+    letterSpacing: 1,
   },
 });
