@@ -21,6 +21,7 @@
 | `npx expo install --fix`                     | Fix incorrect dependencies for your Expo SDK version               |
 | `npx expo install --check`                   | Review and upgrade dependencies for your Expo SDK version          |
 | `npx expo upgrade`                           | 📦 Upgrade all Expo dependencies to the latest compatible versions |
+| `npx expo update`                            | 🔄 Update Expo SDK, packages, and config files to latest version   |
 | `expo publish`                               | Publish a new release to Expo                                      |
 
 ## 📦 **Package Installation**
@@ -72,6 +73,26 @@
 1. Connect device via USB or same WiFi
 2. Run: `npx expo run:android`
 
+## 🔄 **Updating User Installations (Expo Only)**
+
+- To push updates to users **without a new app store release**, use Expo's OTA (Over-the-Air) Updates:
+  - Run: `expo publish`
+  - This will update the JavaScript bundle for all users on the current app version.
+- To ensure OTA updates work, make sure your [`app.json`](app.json) includes:
+  ```json
+  {
+    "expo": {
+      ...
+      "updates": {
+        "enabled": true,
+        "checkAutomatically": "ON_LOAD",
+        "fallbackToCacheTimeout": 0
+      }
+    }
+  }
+  ```
+- **Note:** OTA updates only work for JS/asset changes, not native code or dependency changes requiring a new build.
+
 ## 🔍 **Troubleshooting Tips**
 
 - **Metro bundler stuck?** Run `npx expo start -c` to clear cache
@@ -86,3 +107,15 @@
 - For version-specific builds, use `eas build --profile production --auto-submit`
 - Use the `--non-interactive` flag with EAS commands in CI/CD pipelines
 - Debug network issues with `EXPO_DEBUG=true npx expo start`
+
+## 🆕 **Expo Update vs Expo Upgrade**
+
+- **`npx expo update`**: Updates your project to the latest Expo SDK version, including updating dependencies, config files, and making necessary code changes. This is the recommended way to upgrade your Expo project.
+- **`npx expo upgrade`**: (Legacy) Upgrades Expo dependencies to the latest compatible versions for your current SDK. Use `expo update` for SDK version changes.
+
+**Typical usage:**
+
+- To upgrade to a new Expo SDK version:  
+  `npx expo update`
+- To upgrade dependencies within your current SDK:  
+  `npx expo upgrade`
