@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useContext, useEffect, useState } from 'react';
 import {
@@ -9,8 +10,7 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-// Import the utility function
-import * as Linking from 'expo-linking';
+import { Confetti } from 'react-native-fast-confetti';
 import Logo from '../../../assets/icon.png';
 import Spacer from '../../../components/Spacer';
 import ThemedButton from '../../../components/ThemedButton';
@@ -29,7 +29,7 @@ import { getAmazonSearchUrl } from '../../../lib/amazonLink'; // Add this import
 
 const BookDetails = () => {
   const [book, setBook] = useState(null);
-
+  const [showConfetti, setShowConfetti] = useState(false);
   const { id } = useLocalSearchParams();
   const { fetchBookById, deleteBook, updateBook, markAsRead } = useBooks();
   const router = useRouter();
@@ -85,13 +85,12 @@ const BookDetails = () => {
         read: true,
         readAt: new Date().toISOString(),
       }));
+      setShowConfetti(true);
 
-      // After 2 seconds, remove from books list and navigate back
       setTimeout(() => {
-        // The book will now be in readBooks list automatically
-        // Navigate back to books list (book will be gone from main list)
+        setShowConfetti(false);
         router.replace('/books');
-      }, 2000);
+      }, 5000);
     } catch (error) {
       console.error('Error marking book as read:', error);
     }
@@ -130,6 +129,7 @@ const BookDetails = () => {
   // ✅ 8. Main render
   return (
     <ThemedView safe={true} style={styles.container}>
+      {showConfetti && <Confetti />}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}

@@ -11,6 +11,7 @@
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-navigation/drawer": "^7.3.9",
+    "@shopify/react-native-skia": "^2.1.1",
     "expo": "53.0.20",
     "expo-camera": "~16.1.11",
     "expo-constants": "~17.1.7",
@@ -29,6 +30,7 @@
     "react-native": "0.79.5",
     "react-native-appwrite": "^0.10.1",
     "react-native-dotenv": "^3.4.11",
+    "react-native-fast-confetti": "^1.0.2",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-get-random-values": "^1.11.0",
     "react-native-reanimated": "~3.17.4",
