@@ -78,9 +78,12 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
               ),
             }}
             style={styles.bookCover}
-            resizeMode='cover'
+            resizeMode="cover"
             onError={() => {
-              // Remove console.log, silently handle errors by letting default behavior occur
+              // Fallback to placeholder image if the cover fails to load
+              console.warn('Failed to load book cover image');
+              item.thumbnail = null; // Clear the thumbnail to show placeholder
+              item.coverImage = Logo; // Use the placeholder image
             }}
           />
         ) : (
@@ -93,9 +96,9 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
             <Image
               source={Logo}
               style={{ width: 60, height: 60 }}
-              resizeMode='contain'
-              accessibilityLabel='Placeholder Book Cover'
-              accessibilityRole='image'
+              resizeMode="contain"
+              accessibilityLabel="Placeholder Book Cover"
+              accessibilityRole="image"
             />
           </View>
         )}
@@ -120,7 +123,7 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
         </View>
 
         <Ionicons
-          name='chevron-forward'
+          name="chevron-forward"
           size={20}
           color={theme.iconColor}
           style={styles.chevron}
@@ -139,7 +142,7 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
         </ThemedText>
         <Pressable onPress={onClose} style={styles.closeButton}>
           <Ionicons
-            name='close-circle-outline'
+            name="close-circle-outline"
             size={24}
             color={theme.iconColor}
           />
@@ -151,9 +154,9 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
           style={styles.searchInput}
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholder='Search by title, author, or ISBN...'
+          placeholder="Search by title, author, or ISBN..."
           onSubmitEditing={handleSearch}
-          returnKeyType='search'
+          returnKeyType="search"
         />
         <ThemedButton
           onPress={handleSearch}
@@ -161,9 +164,9 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
           style={styles.searchButton}
         >
           {isSearching ? (
-            <ActivityIndicator color={theme.iconColor} size='large' />
+            <ActivityIndicator color={theme.iconColor} size="large" />
           ) : (
-            <Ionicons name='search' size={24} color={theme.iconColor} />
+            <Ionicons name="search" size={24} color={theme.iconColor} />
           )}
         </ThemedButton>
       </View>
@@ -172,13 +175,13 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
 
       {isSearching ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size='large' color={theme.iconColor} />
+          <ActivityIndicator size="large" color={theme.iconColor} />
           <Spacer />
           <ThemedText>Searching books...</ThemedText>
         </View>
       ) : hasSearched && searchResults.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name='search' size={48} color={theme.iconColor} />
+          <Ionicons name="search" size={48} color={theme.iconColor} />
           <Spacer />
           <ThemedText>No books found</ThemedText>
           <ThemedText style={styles.emptySubtext}>

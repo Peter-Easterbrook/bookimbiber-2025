@@ -81,8 +81,7 @@ const Create = () => {
       });
 
       const result = await createBook(bookData);
-      console.log('Book creation result:', result);
-
+      console.log('📚 Book created successfully:', result);
       // Show success message if book was created with basic fields only
       if (
         selectedBook &&

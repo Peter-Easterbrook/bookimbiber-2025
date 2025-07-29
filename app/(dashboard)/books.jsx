@@ -29,11 +29,15 @@ const Books = () => {
     router.replace('/books');
   };
 
+  const isEmpty = !books || books.length === 0;
+
   return (
     <ThemedView style={styles.container} safe={true}>
-      <View style={styles.topLogoContainer}>
-        <ThemedLogoMyBooks width={150} height={150} />
-      </View>
+      {!isEmpty && (
+        <View style={styles.topLogoContainer}>
+          <ThemedLogoMyBooks width={150} height={150} />
+        </View>
+      )}
       <FlatList
         data={books || []}
         keyExtractor={(item) => item.$id}
@@ -120,7 +124,9 @@ const Books = () => {
         }}
         ListEmptyComponent={
           <View style={styles.emptyListPlaceholder}>
-            <ThemedLogoMyBooks width={250} height={250} />
+            <Pressable onPress={() => router.push('/create')}>
+              <ThemedLogoMyBooks width={250} height={250} />
+            </Pressable>
             <ThemedText
               style={[styles.fallbackText, { color: theme.textColor }]}
             >

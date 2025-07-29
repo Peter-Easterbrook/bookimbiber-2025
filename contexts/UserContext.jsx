@@ -10,8 +10,6 @@ export const UserProvider = ({ children }) => {
   const [isInitializing, setIsInitializing] = useState(false);
   const hasInitialized = useRef(false); // Add this
 
-  console.log('🔄 UserProvider rendered', { user: !!user, authChecked });
-
   async function login(email, password) {
     try {
       await account.createEmailPasswordSession(email, password);
@@ -39,8 +37,6 @@ export const UserProvider = ({ children }) => {
 
   async function register(name, email, password) {
     try {
-      console.log('Registering user:', { name, email }); // Don't log password
-
       // Validate inputs locally first
       if (!name || name.trim().length < 2) {
         throw new Error('Name must be at least 2 characters long');
@@ -143,22 +139,17 @@ export const UserProvider = ({ children }) => {
 
   async function getInitialUserValue() {
     if (isInitializing) {
-      console.log('⚠️ Already initializing, skipping...');
       return;
     }
-
     setIsInitializing(true);
-    console.log('🚀 getInitialUserValue called');
 
     try {
       const session = await account.getSession('current');
 
       if (session) {
         const response = await account.get();
-        console.log('✅ Appwrite session found:', response);
         setUser(response);
       } else {
-        console.log('ℹ️ No active session found');
         setUser(null);
       }
     } catch (error) {
@@ -170,23 +161,18 @@ export const UserProvider = ({ children }) => {
         error.code === 401 ||
         error.message.includes('missing scope')
       ) {
-        console.log('ℹ️ No authenticated user, setting user to null');
         setUser(null);
       } else {
         console.error('❌ Unexpected Appwrite error:', error);
         setUser(null);
       }
     } finally {
-      console.log('🏁 Setting authChecked to true');
       setAuthChecked(true);
       setIsInitializing(false);
     }
   }
 
   useEffect(() => {
-    console.log('🎯 useEffect triggered');
-
-    // Only run once on mount
     if (!hasInitialized.current) {
       hasInitialized.current = true;
       getInitialUserValue();

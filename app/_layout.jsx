@@ -1,7 +1,8 @@
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { ActivityIndicator, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ThemedView from '../components/ThemedView';
@@ -9,6 +10,9 @@ import { Colors } from '../constants/Colors';
 import { BooksProvider } from '../contexts/BooksContext';
 import { ThemeContext, ThemeProvider } from '../contexts/ThemeContext';
 import { UserContext, UserProvider } from '../contexts/UserContext';
+
+// Keep splash screen visible while loading
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   return (
@@ -34,6 +38,12 @@ function RootLayoutContent() {
     'berlin-sans-fb': require('../assets/fonts/Berlinsans.otf'),
     'berlin-sans-fb-bold': require('../assets/fonts/Berlinsans_bold.ttf'),
   });
+
+  useEffect(() => {
+    if (fontsLoaded && authChecked) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, authChecked]);
 
   if (!fontsLoaded || !authChecked) {
     return (

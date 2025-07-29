@@ -27,6 +27,12 @@
         "backgroundColor": "#000000"
       }
     },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/857bd7f6-dcc6-4786-9aed-5e8e74ef8e50"
+    },
     "extra": {
       "router": {
         "origin": false
@@ -34,6 +40,10 @@
       "eas": {
         "projectId": "857bd7f6-dcc6-4786-9aed-5e8e74ef8e50"
       }
-    }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "ios": {}
   }
 }
