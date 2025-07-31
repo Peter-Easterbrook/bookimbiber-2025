@@ -42,7 +42,7 @@
 | `npx eas build --profile development --platform ios`     | 🍎 Build a development client for iOS        |
 | `npx eas build -p android --profile preview`             | Build a preview version for testing          |
 | `eas update --auto`                                      | Update your app using EAS Update             |
-| `eas update --branch main`                               | Publish an update to the main branch         |
+| `eas update --branch main --platform android`            | Publish an update to the main branch         |
 
 ## 🔐 **Environment & Configuration**
 
