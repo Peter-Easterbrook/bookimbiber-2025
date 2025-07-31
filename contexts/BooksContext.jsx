@@ -22,7 +22,10 @@ export function BooksProvider({ children }) {
       const response = await databases.listDocuments(
         DATABASE_ID,
         COLLECTION_ID,
-        [Query.equal('userId', user.$id)]
+        [
+          Query.equal('userId', user.$id),
+          Query.orderDesc('$createdAt'), // Sort by creation date, newest first
+        ]
       );
 
       // Separate books into read and unread

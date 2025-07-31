@@ -9,6 +9,7 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
+import Logo from '../../assets/icon.png';
 import ThemedLogoMyBooks from '../../components/ThemedLogoMyBooks';
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';

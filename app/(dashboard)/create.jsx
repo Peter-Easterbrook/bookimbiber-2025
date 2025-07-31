@@ -4,6 +4,7 @@ import { useContext, useState } from 'react';
 import {
   Image,
   Keyboard,
+  KeyboardAvoidingView,
   Modal,
   Pressable,
   ScrollView,
@@ -168,154 +169,158 @@ const Create = () => {
   };
 
   return (
-    <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
-      <ThemedView style={styles.container}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={{ width: '100%' }} // ← make the scrollview full-width
-          contentContainerStyle={styles.scrollContent}
-        >
-          <View style={styles.headerIconBlock}>
-            <Spacer height={10} />
-            <ThemedLogoText width={200} height={200} />
-            <Spacer height={10} />
-            <ThemedText title={true} style={styles.title}>
-              Add a New Book
-            </ThemedText>
-          </View>
-          <Spacer height={20} />
-
-          {/* Book Search Section */}
-          <View style={styles.searchSection}>
-            <ThemedButton
-              onPress={() => setShowSearchModal(true)}
-              style={styles.iconButton}
-            >
-              <ThemedText>Search books</ThemedText>
-              <Ionicons name="search" size={24} color={theme.iconColor} />
-            </ThemedButton>
-
-            {selectedBook && (
-              <ThemedCard style={styles.selectedBookCard}>
-                <View style={styles.selectedBookContent}>
-                  <View style={styles.selectedBookInfo}>
-                    <ThemedText
-                      style={styles.selectedBookTitle}
-                      numberOfLines={2}
-                    >
-                      {selectedBook.title}
-                    </ThemedText>
-                    <ThemedText style={styles.selectedBookData}>
-                      By {selectedBook.author}
-                    </ThemedText>
-                    <ThemedText style={styles.selectedBookData}>
-                      Published:{' '}
-                      {selectedBook.publishedDate?.substring(0, 4) || 'Unknown'}
-                    </ThemedText>
-                    <ThemedText style={styles.selectedBookData}>
-                      Category: {selectedBook.categories || 'N/A'}
-                    </ThemedText>
-                  </View>
-                  {(selectedBook.thumbnail || selectedBook.coverImage) && (
-                    <Image
-                      source={{
-                        uri: selectedBook.thumbnail || selectedBook.coverImage,
-                      }}
-                      style={styles.selectedBookCover}
-                      resizeMode="cover"
-                    />
-                  )}
-                </View>
-                <Spacer height={16} />
-                <View style={styles.selectedBookHeader}>
-                  <ThemedText style={styles.selectedBookLabel}>
-                    Delete selection:
-                  </ThemedText>
-                  <Pressable
-                    onPress={clearSelectedBook}
-                    style={styles.clearButton}
-                  >
-                    <Ionicons
-                      name="trash-outline"
-                      size={24}
-                      color={theme.iconColor}
-                    />
-                  </Pressable>
-                </View>
-              </ThemedCard>
-            )}
-          </View>
-          <Spacer height={10} />
-          <View style={styles.inputSection}>
-            <ThemedTextInput
-              style={styles.input}
-              placeholder="Add title..."
-              value={title}
-              onChangeText={setTitle}
-              autoCapitalize="words"
-            />
-            <Spacer height={10} />
-            <ThemedTextInput
-              style={styles.input}
-              placeholder="Add author..."
-              value={author}
-              onChangeText={setAuthor}
-              autoCapitalize="words"
-            />
-            <Spacer height={10} />
-            <ThemedTextInput
-              style={styles.multiline}
-              placeholder="Add description..."
-              value={description}
-              onChangeText={handleDescriptionChange}
-              multiline={true}
-              textAlignVertical="top"
-              maxLength={300}
-            />
-            <View style={styles.characterCounter}>
-              <ThemedText style={styles.counterText}>
-                {description.length}/300 characters
+    <KeyboardAvoidingView style={{ flex: 1 }}>
+      <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
+        <ThemedView style={styles.container}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={{ width: '100%' }} // ← make the scrollview full-width
+            contentContainerStyle={styles.scrollContent}
+          >
+            <View style={styles.headerIconBlock}>
+              <Spacer height={10} />
+              <ThemedLogoText width={200} height={200} />
+              <Spacer height={10} />
+              <ThemedText title={true} style={styles.title}>
+                Add a New Book
               </ThemedText>
             </View>
+            <Spacer height={20} />
+
+            {/* Book Search Section */}
+            <View style={styles.searchSection}>
+              <ThemedButton
+                onPress={() => setShowSearchModal(true)}
+                style={styles.iconButton}
+              >
+                <ThemedText>Search books</ThemedText>
+                <Ionicons name="search" size={24} color={theme.iconColor} />
+              </ThemedButton>
+
+              {selectedBook && (
+                <ThemedCard style={styles.selectedBookCard}>
+                  <View style={styles.selectedBookContent}>
+                    <View style={styles.selectedBookInfo}>
+                      <ThemedText
+                        style={styles.selectedBookTitle}
+                        numberOfLines={2}
+                      >
+                        {selectedBook.title}
+                      </ThemedText>
+                      <ThemedText style={styles.selectedBookData}>
+                        By {selectedBook.author}
+                      </ThemedText>
+                      <ThemedText style={styles.selectedBookData}>
+                        Published:{' '}
+                        {selectedBook.publishedDate?.substring(0, 4) ||
+                          'Unknown'}
+                      </ThemedText>
+                      <ThemedText style={styles.selectedBookData}>
+                        Category: {selectedBook.categories || 'N/A'}
+                      </ThemedText>
+                    </View>
+                    {(selectedBook.thumbnail || selectedBook.coverImage) && (
+                      <Image
+                        source={{
+                          uri:
+                            selectedBook.thumbnail || selectedBook.coverImage,
+                        }}
+                        style={styles.selectedBookCover}
+                        resizeMode="cover"
+                      />
+                    )}
+                  </View>
+                  <Spacer height={16} />
+                  <View style={styles.selectedBookHeader}>
+                    <ThemedText style={styles.selectedBookLabel}>
+                      Delete selection:
+                    </ThemedText>
+                    <Pressable
+                      onPress={clearSelectedBook}
+                      style={styles.clearButton}
+                    >
+                      <Ionicons
+                        name="trash-outline"
+                        size={24}
+                        color={theme.iconColor}
+                      />
+                    </Pressable>
+                  </View>
+                </ThemedCard>
+              )}
+            </View>
             <Spacer height={10} />
-            <ThemedButton
-              onPress={handleSubmit}
-              disabled={loading}
-              style={[
-                {
-                  alignSelf: 'flex-end',
-                },
-                styles.iconButton,
-              ]}
-            >
-              <ThemedText>{loading ? 'Saving...' : 'Create book'}</ThemedText>
-              <MaterialCommunityIcons
-                size={24}
-                name="book-edit-outline"
-                color={theme.iconColor}
+            <View style={styles.inputSection}>
+              <ThemedTextInput
+                style={styles.input}
+                placeholder="Add title..."
+                value={title}
+                onChangeText={setTitle}
+                autoCapitalize="words"
               />
-            </ThemedButton>
-          </View>
+              <Spacer height={10} />
+              <ThemedTextInput
+                style={styles.input}
+                placeholder="Add author..."
+                value={author}
+                onChangeText={setAuthor}
+                autoCapitalize="words"
+              />
+              <Spacer height={10} />
+              <ThemedTextInput
+                style={styles.multiline}
+                placeholder="Add description..."
+                value={description}
+                onChangeText={handleDescriptionChange}
+                multiline={true}
+                textAlignVertical="top"
+                maxLength={300}
+              />
+              <View style={styles.characterCounter}>
+                <ThemedText style={styles.counterText}>
+                  {description.length}/300 characters
+                </ThemedText>
+              </View>
+              <Spacer height={10} />
+              <ThemedButton
+                onPress={handleSubmit}
+                disabled={loading}
+                style={[
+                  {
+                    alignSelf: 'flex-end',
+                  },
+                  styles.iconButton,
+                ]}
+              >
+                <ThemedText>{loading ? 'Saving...' : 'Create book'}</ThemedText>
+                <MaterialCommunityIcons
+                  size={24}
+                  name="book-edit-outline"
+                  color={theme.iconColor}
+                />
+              </ThemedButton>
+            </View>
 
-          {error && <ThemedText style={styles.error}>{error}</ThemedText>}
-          <Spacer />
-        </ScrollView>
+            {error && <ThemedText style={styles.error}>{error}</ThemedText>}
+            <Spacer />
+          </ScrollView>
 
-        {/* Book Search Modal */}
-        <Modal
-          visible={showSearchModal}
-          animationType="slide"
-          presentationStyle="pageSheet"
-        >
-          <BookSearchModal
+          {/* Book Search Modal */}
+          <Modal
             visible={showSearchModal}
-            onClose={() => setShowSearchModal(false)}
-            onBookSelect={handleBookSelect}
-            theme={theme}
-          />
-        </Modal>
-      </ThemedView>
-    </Pressable>
+            animationType="slide"
+            presentationStyle="pageSheet"
+          >
+            <BookSearchModal
+              visible={showSearchModal}
+              onClose={() => setShowSearchModal(false)}
+              onBookSelect={handleBookSelect}
+              theme={theme}
+            />
+          </Modal>
+        </ThemedView>
+      </Pressable>
+    </KeyboardAvoidingView>
   );
 };
 
