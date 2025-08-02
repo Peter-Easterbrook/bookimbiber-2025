@@ -25,6 +25,7 @@ function DrawerToggleButton() {
       color={theme.iconColor}
       style={{ marginLeft: 16 }}
       onPress={() => navigation.toggleDrawer()}
+      hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
     />
   );
 }
