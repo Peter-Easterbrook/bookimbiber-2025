@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useContext, useState, useMemo } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -10,12 +10,12 @@ import {
   View,
 } from 'react-native';
 import Logo from '../../assets/icon.png';
+import NewReleasesCard from '../../components/NewReleasesCard';
+import SeriesView from '../../components/SeriesView';
+import ThemedButton from '../../components/ThemedButton';
 import ThemedLogoMyBooks from '../../components/ThemedLogoMyBooks';
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
-import ThemedButton from '../../components/ThemedButton';
-import SeriesView from '../../components/SeriesView';
-import NewReleasesCard from '../../components/NewReleasesCard';
 import { Colors } from '../../constants/Colors';
 import { ThemeContext } from '../../contexts/ThemeContext';
 import { useBooks } from '../../hooks/useBooks';
@@ -36,7 +36,7 @@ const Books = () => {
   };
 
   const isEmpty = !books || books.length === 0;
-  
+
   // Group books by series
   const groupedBooks = useMemo(() => {
     if (!books || books.length === 0) return { series: [], standalone: [] };
@@ -50,50 +50,84 @@ const Books = () => {
           <View style={styles.topLogoContainer}>
             <ThemedLogoMyBooks width={150} height={150} />
           </View>
-          
+
           {/* New Releases Card */}
           <NewReleasesCard style={styles.newReleasesCard} />
-          
+
           {/* View Mode Toggle */}
           <View style={styles.viewToggle}>
             <ThemedButton
               onPress={() => setViewMode('series')}
               style={[
                 styles.toggleButton,
-                viewMode === 'series' && styles.activeToggle,
-                { backgroundColor: viewMode === 'series' ? theme.uiButtonBg : 'transparent' }
+                {
+                  backgroundColor:
+                    viewMode === 'series'
+                      ? theme.buttonBackgroundFocused
+                      : 'transparent',
+                  borderWidth: viewMode === 'series' ? 1 : 0,
+                  borderColor:
+                    viewMode === 'series'
+                      ? theme.uiButtonBorder
+                      : 'transparent',
+                },
               ]}
             >
-              <Ionicons 
-                name="library" 
-                size={16} 
-                color={viewMode === 'series' ? theme.uiButtonText : theme.iconColor} 
+              <MaterialCommunityIcons
+                name="bookshelf"
+                size={20}
+                color={
+                  viewMode === 'series' ? theme.uiButtonText : theme.iconColor
+                }
               />
-              <ThemedText style={[
-                styles.toggleText,
-                { color: viewMode === 'series' ? theme.uiButtonText : theme.iconColor }
-              ]}>
+              <ThemedText
+                style={[
+                  styles.toggleText,
+                  {
+                    color:
+                      viewMode === 'series'
+                        ? theme.uiButtonText
+                        : theme.iconColor,
+                  },
+                ]}
+              >
                 Series
               </ThemedText>
             </ThemedButton>
-            
+
             <ThemedButton
               onPress={() => setViewMode('list')}
               style={[
                 styles.toggleButton,
-                viewMode === 'list' && styles.activeToggle,
-                { backgroundColor: viewMode === 'list' ? theme.uiButtonBg : 'transparent' }
+                {
+                  backgroundColor:
+                    viewMode === 'list'
+                      ? theme.buttonBackgroundFocused
+                      : 'transparent',
+                  borderWidth: viewMode === 'list' ? 1 : 0,
+                  borderColor:
+                    viewMode === 'list' ? theme.uiButtonBorder : 'transparent',
+                },
               ]}
             >
-              <Ionicons 
-                name="list" 
-                size={16} 
-                color={viewMode === 'list' ? theme.uiButtonText : theme.iconColor} 
+              <Ionicons
+                name="list"
+                size={20}
+                color={
+                  viewMode === 'list' ? theme.uiButtonText : theme.iconColor
+                }
               />
-              <ThemedText style={[
-                styles.toggleText,
-                { color: viewMode === 'list' ? theme.uiButtonText : theme.iconColor }
-              ]}>
+              <ThemedText
+                style={[
+                  styles.toggleText,
+                  {
+                    color:
+                      viewMode === 'list'
+                        ? theme.uiButtonText
+                        : theme.iconColor,
+                  },
+                ]}
+              >
                 List
               </ThemedText>
             </ThemedButton>
@@ -106,16 +140,14 @@ const Books = () => {
           <Pressable onPress={() => router.push('/create')}>
             <ThemedLogoMyBooks width={250} height={250} />
           </Pressable>
-          <ThemedText
-            style={[styles.fallbackText, { color: theme.textColor }]}
-          >
+          <ThemedText style={[styles.fallbackText, { color: theme.textColor }]}>
             Nothing on your reading list!
           </ThemedText>
         </View>
       ) : viewMode === 'series' ? (
-        <SeriesView 
-          series={groupedBooks.series} 
-          standalone={groupedBooks.standalone} 
+        <SeriesView
+          series={groupedBooks.series}
+          standalone={groupedBooks.standalone}
         />
       ) : (
         <FlatList
@@ -240,9 +272,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '95%',
     maxWidth: 550,
-    marginVertical: 8,
+    marginVertical: 4,
     padding: 12,
-    paddingLeft: 14,
+    // paddingLeft: 14,
     borderRadius: 5,
     overflow: 'hidden',
     boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.25)',
@@ -322,7 +354,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: 16,
     marginBottom: 8,
-    backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 8,
     padding: 4,
   },
@@ -335,13 +366,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  activeToggle: {
-    // Styling handled dynamically
-  },
+  activeToggle: {},
   toggleText: {
     fontSize: 14,
     fontFamily: 'berlin-sans-fb',
-    marginLeft: 4,
+    marginLeft: 10,
   },
   seriesInfo: {
     fontSize: 12,

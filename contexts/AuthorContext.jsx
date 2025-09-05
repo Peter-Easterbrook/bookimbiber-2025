@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useEffect, useState } from 'react';
 import { ID, Permission, Query, Role } from 'react-native-appwrite';
 import { useUser } from '../hooks/useUser';
@@ -230,14 +231,22 @@ export function AuthorProvider({ children }) {
   // Check for new releases periodically (once per day)
   useEffect(() => {
     if (followedAuthors.length > 0) {
-      const lastCheck = localStorage.getItem('lastReleaseCheck');
-      const now = new Date();
-      const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const checkReleases = async () => {
+        try {
+          const lastCheck = await AsyncStorage.getItem('lastReleaseCheck');
+          const now = new Date();
+          const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-      if (!lastCheck || new Date(lastCheck) < dayAgo) {
-        checkForNewReleases();
-        localStorage.setItem('lastReleaseCheck', now.toISOString());
-      }
+          if (!lastCheck || new Date(lastCheck) < dayAgo) {
+            checkForNewReleases();
+            await AsyncStorage.setItem('lastReleaseCheck', now.toISOString());
+          }
+        } catch (error) {
+          console.error('Error checking release storage:', error);
+        }
+      };
+
+      checkReleases();
     }
   }, [followedAuthors]);
 
