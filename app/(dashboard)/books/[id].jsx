@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Confetti } from 'react-native-fast-confetti';
 import Logo from '../../../assets/icon.png';
+import AuthorFollowButton from '../../../components/AuthorFollowButton';
 import Spacer from '../../../components/Spacer';
 import ThemedButton from '../../../components/ThemedButton';
 import ThemedCard from '../../../components/ThemedCard';
@@ -154,6 +155,27 @@ const BookDetails = () => {
                     ? book.author.slice(0, 28) + '...'
                     : book.author || 'Unknown'}
                 </ThemedText>
+
+                {/* Author Follow Button */}
+                {book.author && book.author !== 'Unknown' && (
+                  <View style={styles.authorActions}>
+                    <AuthorFollowButton 
+                      authorName={book.author}
+                      size="small"
+                      style={styles.followButton}
+                    />
+                  </View>
+                )}
+
+                {/* Series Information */}
+                {book.seriesName && (
+                  <View style={styles.seriesContainer}>
+                    <Ionicons name="library" size={16} color="#4A90E2" />
+                    <ThemedText style={styles.seriesText}>
+                      {book.seriesName} #{book.bookNumber || '?'}
+                    </ThemedText>
+                  </View>
+                )}
 
                 {/* Categories */}
                 {book.publishedDate && book.publishedDate.length > 0 && (
@@ -384,5 +406,24 @@ const styles = StyleSheet.create({
     // Simplified - let the responsive styles handle the layout
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  authorActions: {
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  followButton: {
+    alignSelf: 'flex-start',
+  },
+  seriesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+    marginBottom: 4,
+  },
+  seriesText: {
+    fontSize: 14,
+    marginLeft: 6,
+    fontFamily: 'berlin-sans-fb-bold',
+    color: '#4A90E2',
   },
 });

@@ -7,6 +7,7 @@ import { ActivityIndicator, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ThemedView from '../components/ThemedView';
 import { Colors } from '../constants/Colors';
+import { AuthorProvider } from '../contexts/AuthorContext';
 import { BooksProvider } from '../contexts/BooksContext';
 import { ThemeContext, ThemeProvider } from '../contexts/ThemeContext';
 import { UserContext, UserProvider } from '../contexts/UserContext';
@@ -20,7 +21,9 @@ export default function RootLayout() {
       <ThemeProvider>
         <UserProvider>
           <BooksProvider>
-            <RootLayoutContent />
+            <AuthorProvider>
+              <RootLayoutContent />
+            </AuthorProvider>
           </BooksProvider>
         </UserProvider>
       </ThemeProvider>

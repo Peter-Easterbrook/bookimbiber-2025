@@ -40,7 +40,11 @@ export default function DashboardLayout() {
     <Drawer
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
-        headerStyle: { backgroundColor: theme.navBackground },
+        headerStyle: { 
+          backgroundColor: theme.navBackground,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
         headerTintColor: theme.title,
         headerShadowVisible: false,
         headerTitleAlign: 'center',
