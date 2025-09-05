@@ -2,6 +2,7 @@ import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useContext } from 'react';
 import { StyleSheet, useColorScheme } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { blueShades, cornShades } from '../constants/Colors';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { useUser } from '../hooks/useUser';
@@ -19,6 +20,7 @@ const Home = () => {
   const gradientColors = finalScheme === 'dark' ? blueShades : cornShades;
   const theme = Colors[scheme || fallback] ?? Colors.light;
   const { user, logout } = useUser();
+  const insets = useSafeAreaInsets();
 
   const handleLogout = async () => {
     try {
@@ -34,7 +36,12 @@ const Home = () => {
       colors={gradientColors}
       start={{ x: 0, y: 1 }}
       end={{ x: 0, y: 0 }}
-      style={styles.container}
+      style={[styles.container, {
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+      }]}
     >
       <ThemedLogoText width={250} height={250} />
       <Spacer />
