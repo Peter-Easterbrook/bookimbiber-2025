@@ -78,6 +78,12 @@ export function BooksProvider({ children }) {
         ...(data.ratingsCount !== undefined && {
           ratingsCount: data.ratingsCount,
         }),
+        // Series detection fields
+        ...(data.seriesName && { seriesName: data.seriesName }),
+        ...(data.bookNumber && { bookNumber: data.bookNumber }),
+        ...(data.seriesConfidence && {
+          seriesConfidence: data.seriesConfidence,
+        }),
       };
 
       const result = await databases.createDocument(
