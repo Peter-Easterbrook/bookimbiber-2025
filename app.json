@@ -3,7 +3,7 @@
     "name": "Book Imbiber",
     "slug": "bookimbiber2025",
     "scheme": "bookimbiber2025",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -17,6 +17,7 @@
       "backgroundColor": "#fffbdd"
     },
     "android": {
+      "versionCode": 3,
       "package": "com.petereasterbro1.bookimbiber2025",
       "permissions": [
         "android.permission.INTERNET",
