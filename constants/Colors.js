@@ -37,7 +37,10 @@ export const Colors = {
     rippleColor: '#1488ff',
     activeBackground: '#00274e',
     activeText: '#f8fcff',
+    warning: '#ff6666',
+    warningBackground: '#330000',
   },
+
   light: {
     text: '#00274e',
     title: '#001427',

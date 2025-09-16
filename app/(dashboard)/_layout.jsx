@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Link } from 'expo-router';
 import { Drawer } from 'expo-router/drawer';
 import { useContext } from 'react';
-import { useColorScheme, View } from 'react-native';
+import { Pressable, View, useColorScheme } from 'react-native';
 import CustomDrawerContent from '../../components/CustomDrawerContent';
 import ThemeToggle from '../../components/ThemeToggle';
 import { Colors } from '../../constants/Colors';
@@ -19,14 +19,13 @@ function DrawerToggleButton() {
   const theme = Colors[scheme || fallback] ?? Colors.light;
 
   return (
-    <Ionicons
-      name="menu"
-      size={24}
-      color={theme.iconColor}
-      style={{ marginLeft: 16 }}
+    <Pressable
       onPress={() => navigation.toggleDrawer()}
-      hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-    />
+      style={{ paddingHorizontal: 12, paddingVertical: 6 }}
+      accessibilityLabel="Open drawer"
+    >
+      <Ionicons name="menu" size={24} color={theme.iconColor} />
+    </Pressable>
   );
 }
 
@@ -138,7 +137,6 @@ export default function DashboardLayout() {
           headerRight: () => <ThemeToggle />,
         }}
       />
-      Notifications screen
       <Drawer.Screen
         name="notifications"
         options={{

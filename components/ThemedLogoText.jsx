@@ -13,7 +13,10 @@ const ThemedLogoText = ({ width = 250, height = 250, style, ...props }) => {
   return (
     <Image
       source={logo}
-      style={[{ width, height, resizeMode: 'contain' }, style]}
+      style={[
+        { width, height, resizeMode: 'contain', alignSelf: 'center' },
+        style,
+      ]}
       accessibilityLabel="Logo"
       accessibilityRole="image"
       {...props}

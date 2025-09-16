@@ -5,13 +5,13 @@ import { useRouter } from 'expo-router';
 import { useContext, useState } from 'react';
 import {
   Keyboard,
-  KeyboardAvoidingView,
+  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   useColorScheme,
   View,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Spacer from '../../components/Spacer';
 import ThemedButton from '../../components/ThemedButton';
 import ThemedLogoText from '../../components/ThemedLogoText';
@@ -35,6 +35,11 @@ const Login = () => {
   const fallback = useColorScheme();
   const theme = Colors[scheme || fallback] ?? Colors.light;
 
+  // Theme-aware warning colors with top-level fallbacks
+  const warningColor = (theme && theme.warning) || Colors.warning;
+  const warningBg =
+    (theme && theme.warningBackground) || Colors.warningBackground;
+
   const handleSubmit = async () => {
     setError(null);
     try {
@@ -47,71 +52,85 @@ const Login = () => {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ flexGrow: 1 }}
+    <ThemedView style={styles.container}>
+      <KeyboardAwareScrollView
+        style={{ flex: 1, width: '100%' }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          minHeight: '100%', // ensure ScrollView content fills the screen
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          paddingVertical: 24,
+        }}
+        enableOnAndroid={true}
+        extraScrollHeight={Platform.OS === 'android' ? 100 : 20}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
       >
-        <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
-          <ThemedView style={styles.container}>
-            <ThemedLogoText width={200} height={200} />
-            <Spacer height={30} />
-            <View style={styles.headerIconBlock}>
-              <ThemedText title={true} style={styles.title}>
-                Login to your account
-              </ThemedText>
-              <Ionicons
-                name="person-circle-outline"
-                size={30}
-                color={theme.iconColor}
-              />
+        <Pressable style={{ width: '100%' }} onPress={Keyboard.dismiss}>
+          <ThemedLogoText width={200} height={200} />
+          <Spacer height={30} />
+          <View style={styles.headerIconBlock}>
+            <ThemedText title={true} style={styles.title}>
+              Login to your account
+            </ThemedText>
+            <Ionicons
+              name="person-circle-outline"
+              size={30}
+              color={theme.iconColor}
+            />
+          </View>
+          <Spacer height={20} />
+          <View style={styles.inputBlock}>
+            <ThemedTextInput
+              style={{ marginBottom: 20 }}
+              placeholder="Email..."
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+            />
+            <ThemedPasswordInput
+              style={{ marginBottom: 20 }}
+              placeholder="Password..."
+              value={password}
+              onChangeText={setPassword}
+            />
+            <View style={styles.buttons}>
+              <ThemedButton
+                href="/register"
+                style={[{ opacity: 0.8 }, styles.themedButton]}
+              >
+                <ThemedText>Register</ThemedText>
+                <Entypo name="feather" size={24} color={theme.iconColor} />
+              </ThemedButton>
+              <ThemedButton
+                onPress={handleSubmit}
+                style={[{ opacity: 1.2 }, styles.themedButton]}
+              >
+                <ThemedText>Login</ThemedText>
+                <AntDesign name="login" size={24} color={theme.iconColor} />
+              </ThemedButton>
             </View>
-            <Spacer height={20} />
-            <View style={styles.inputBlock}>
-              <ThemedTextInput
-                style={{ marginBottom: 20 }}
-                placeholder="Email..."
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-              />
-              <ThemedPasswordInput
-                style={{ marginBottom: 20 }}
-                placeholder="Password..."
-                value={password}
-                onChangeText={setPassword}
-              />
-              <View style={styles.buttons}>
-                <ThemedButton
-                  href="/register"
-                  style={[{ opacity: 0.8 }, styles.themedButton]}
-                >
-                  <ThemedText>Register</ThemedText>
-                  <Entypo name="feather" size={24} color={theme.iconColor} />
-                </ThemedButton>
-                <ThemedButton
-                  onPress={handleSubmit}
-                  style={[{ opacity: 1.2 }, styles.themedButton]}
-                >
-                  <ThemedText>Login</ThemedText>
-                  <AntDesign name="login" size={24} color={theme.iconColor} />
-                </ThemedButton>
-              </View>
-              <Spacer />
-              {error && (
-                <ThemedText style={styles.error}>
+            <Spacer />
+            {error && (
+              <View
+                style={[
+                  styles.errorContainer,
+                  { backgroundColor: warningBg, borderColor: warningColor },
+                ]}
+              >
+                <ThemedText style={[styles.errorText, { color: warningColor }]}>
                   {error.includes('Rate limit') || error.includes('Too many')
                     ? '⏱️ '
                     : '❌ '}
                   {error}
                 </ThemedText>
-              )}
-            </View>
-          </ThemedView>
+              </View>
+            )}
+          </View>
         </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </ThemedView>
   );
 };
 
@@ -164,17 +183,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
 
-  error: {
-    color: Colors.warning,
-    fontSize: 16,
-    textAlign: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+  errorContainer: {
     borderWidth: 0.5,
     borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginTop: 12,
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: 'center',
     letterSpacing: 2,
-    borderColor: Colors.warning,
-    backgroundColor: Colors.warningBackground,
-    textShadow: '0px 1px 2px rgba(0, 0, 0, 0.25)',
   },
 });
