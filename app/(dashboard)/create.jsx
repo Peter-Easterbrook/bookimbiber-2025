@@ -57,10 +57,10 @@ const Create = () => {
       const tempBook = {
         title: title.trim(),
         subtitle: selectedBook?.subtitle || '',
-        author: author.trim()
+        author: author.trim(),
       };
       const seriesInfo = detectSeries(tempBook);
-      
+
       const bookData = {
         title: title.trim(),
         author: author.trim(),
