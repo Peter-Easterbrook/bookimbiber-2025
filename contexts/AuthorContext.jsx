@@ -4,6 +4,10 @@ import { ID, Permission, Query, Role } from 'react-native-appwrite';
 import { useUser } from '../hooks/useUser';
 import { client, databases } from '../lib/appwrite';
 import { searchBooks } from '../lib/googleBooks';
+import {
+  incrementNotificationCount,
+  sendLocalNotification,
+} from '../lib/notifications';
 
 const DATABASE_ID = '681e133100381d53f199';
 const AUTHORS_COLLECTION_ID = 'authors'; // New collection for followed authors
@@ -121,10 +125,46 @@ export function AuthorProvider({ children }) {
           });
 
           if (recentBooks.length > 0) {
-            releases.push({
-              author: author.authorName,
-              books: recentBooks.slice(0, 3), // Limit to 3 most recent
+            const top = recentBooks.slice(0, 3);
+            releases.push({ author: author.authorName, books: top });
+
+            // Send immediate local notification for author
+            const titles = top
+              .map((b) => b.title)
+              .slice(0, 3)
+              .join(', ');
+            // await so notification attempt happens before we continue
+            await sendLocalNotification({
+              title: `${author.authorName} has new releases`,
+              body: titles,
             });
+
+            // increment a simple unread count (used for badge)
+            try {
+              await incrementNotificationCount();
+            } catch (e) {
+              // ignore
+            }
+
+            // Persist a simple in-app notification history
+            try {
+              const key = 'bookimbiber_notifications';
+              const raw = await AsyncStorage.getItem(key);
+              const hist = raw ? JSON.parse(raw) : [];
+              hist.unshift({
+                id: `${author.$id || author.authorName}-${Date.now()}`,
+                author: author.authorName,
+                books: top,
+                ts: new Date().toISOString(),
+                read: false,
+              });
+              await AsyncStorage.setItem(
+                key,
+                JSON.stringify(hist.slice(0, 50))
+              );
+            } catch (e) {
+              console.warn('Failed saving notification history', e);
+            }
           }
         } catch (error) {
           console.error(
@@ -164,7 +204,8 @@ export function AuthorProvider({ children }) {
     // Count books by each author in user's library
     userBooks.forEach((book) => {
       const author = book.author;
-      if (author && author !== 'Unknown Author') {
+      // ignore placeholder authors that may appear (support both legacy "Unknown Author" and "Unknown")
+      if (author && author !== 'Unknown' && author !== 'Unknown Author') {
         const count = authorCounts.get(author) || 0;
         authorCounts.set(author, count + 1);
       }

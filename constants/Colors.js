@@ -25,7 +25,7 @@ export const Colors = {
     title: '#f8fcff',
     background: '#001427',
     navBackground: '#000a1d',
-    iconColor: '#1488ff',
+    iconColor: '#63b0ff',
     iconColorFocused: '#f8fcff',
     uiBackground: '#003162',
     buttonBackground: '#00274e',

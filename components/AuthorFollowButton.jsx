@@ -1,16 +1,17 @@
-import { Entypo } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useContext, useState } from 'react';
-import { Alert, StyleSheet, useColorScheme } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+} from 'react-native';
 import { Colors } from '../constants/Colors';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { useAuthors } from '../hooks/useAuthors';
-import ThemedButton from './ThemedButton';
-import ThemedText from './ThemedText';
 
-/**
- * AuthorFollowButton Component
- * Button to follow/unfollow an author
- */
 const AuthorFollowButton = ({
   authorName,
   authorId = null,
@@ -18,7 +19,7 @@ const AuthorFollowButton = ({
   size = 'medium', // small, medium, large
 }) => {
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
+  const fallback = useColorScheme ? useColorScheme() : 'light';
   const theme = Colors[scheme || fallback] ?? Colors.light;
 
   const { followedAuthors, followAuthor, unfollowAuthor, authorsLoading } =
@@ -27,127 +28,82 @@ const AuthorFollowButton = ({
 
   // Check if author is already followed
   const isFollowing = followedAuthors.some(
-    (a) => a.authorName.toLowerCase() === authorName.toLowerCase()
+    (a) => a.authorName.toLowerCase() === (authorName || '').toLowerCase()
   );
 
   const followedAuthor = followedAuthors.find(
-    (a) => a.authorName.toLowerCase() === authorName.toLowerCase()
+    (a) => a.authorName.toLowerCase() === (authorName || '').toLowerCase()
   );
 
   const handlePress = async () => {
-    if (localLoading) return;
-
+    if (localLoading || authorsLoading) return;
     setLocalLoading(true);
-
     try {
       if (isFollowing && followedAuthor) {
-        // Confirm unfollow
-        Alert.alert(
-          'Unfollow Author',
-          `Stop following ${authorName}? You won't get notifications about their new releases.`,
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Unfollow',
-              style: 'destructive',
-              onPress: async () => {
-                try {
-                  await unfollowAuthor(followedAuthor.$id);
-                } catch (error) {
-                  Alert.alert(
-                    'Error',
-                    'Failed to unfollow author. Please try again.'
-                  );
-                }
-              },
-            },
-          ]
-        );
+        await unfollowAuthor(followedAuthor.$id);
       } else {
-        // Follow author
         await followAuthor({
           name: authorName,
           id: authorId,
-          booksCount: 1,
-          genres: [],
         });
-
-        Alert.alert(
-          'Following Author! 📚',
-          `You're now following ${authorName}. We'll notify you when they release new books.`,
-          [{ text: 'Got it!' }]
-        );
       }
-    } catch (error) {
-      const message =
-        error.message === 'Already following this author'
-          ? 'You are already following this author!'
-          : 'Failed to follow author. Please try again.';
-
-      Alert.alert('Error', message);
+    } catch (e) {
+      console.warn('Follow/unfollow failed', e);
     } finally {
       setLocalLoading(false);
     }
   };
 
-  // Size configurations
-  const getButtonConfig = () => {
-    switch (size) {
-      case 'small':
-        return {
-          buttonStyle: { paddingHorizontal: 8, paddingVertical: 4 },
-          textStyle: { fontSize: 12 },
-          iconSize: 16,
-        };
-      case 'large':
-        return {
-          buttonStyle: { paddingHorizontal: 16, paddingVertical: 12 },
-          textStyle: { fontSize: 16 },
-          iconSize: 20,
-        };
-      default: // medium
-        return {
-          buttonStyle: { paddingHorizontal: 12, paddingVertical: 8 },
-          textStyle: { fontSize: 14 },
-          iconSize: 18,
-        };
-    }
+  const sizes = {
+    small: { paddingHorizontal: 8, paddingVertical: 6, fontSize: 12 },
+    medium: { paddingHorizontal: 12, paddingVertical: 8, fontSize: 14 },
+    large: { paddingHorizontal: 14, paddingVertical: 10, fontSize: 16 },
   };
 
-  const config = getButtonConfig();
-  const buttonColor = isFollowing
-    ? theme.warningBackground
-    : theme.uiBackground;
-  const textColor = isFollowing ? theme.warningText : theme.textColor;
-  const iconName = isFollowing ? 'remove-user' : 'add-user';
-  const buttonText = isFollowing ? 'Following' : 'Follow';
+  const s = sizes[size] || sizes.medium;
 
   return (
-    <ThemedButton
+    <Pressable
       onPress={handlePress}
-      disabled={localLoading || authorsLoading}
       style={[
         styles.button,
-        config.buttonStyle,
         {
-          backgroundColor: buttonColor,
-          borderColor: theme.uiBorder,
+          borderColor: theme.uiButtonBorder,
+          backgroundColor: isFollowing
+            ? theme.buttonBackgroundFocused
+            : 'transparent',
+        },
+        {
+          paddingHorizontal: s.paddingHorizontal,
+          paddingVertical: s.paddingVertical,
         },
         style,
       ]}
     >
-      <Entypo
-        name={iconName}
-        size={config.iconSize}
-        color={theme.iconColor}
-        style={styles.icon}
-      />
-      <ThemedText
-        style={[config.textStyle, { color: textColor }, styles.buttonText]}
-      >
-        {localLoading ? 'Loading...' : buttonText}
-      </ThemedText>
-    </ThemedButton>
+      {localLoading ? (
+        <ActivityIndicator size="small" color={theme.uiButtonText} />
+      ) : (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Ionicons
+            name={isFollowing ? 'checkmark' : 'add'}
+            size={14}
+            color={isFollowing ? theme.uiButtonText : theme.iconColor}
+            style={styles.icon}
+          />
+          <Text
+            style={[
+              styles.buttonText,
+              {
+                color: isFollowing ? theme.uiButtonText : theme.iconColor,
+                fontSize: s.fontSize,
+              },
+            ]}
+          >
+            {isFollowing ? 'Following' : 'Follow'}
+          </Text>
+        </View>
+      )}
+    </Pressable>
   );
 };
 
@@ -160,7 +116,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   icon: {
-    marginRight: 10,
+    marginRight: 8,
   },
   buttonText: {
     fontFamily: 'berlin-sans-fb',
