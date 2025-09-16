@@ -11,7 +11,12 @@ export default function ThemeToggle() {
 
   return (
     <TouchableOpacity onPress={toggleScheme} style={styles.button}>
-      <Ionicons name={iconName} size={24} color={theme.iconColor} />
+      <Ionicons
+        name={iconName}
+        size={24}
+        color={theme.iconColor}
+        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+      />
     </TouchableOpacity>
   );
 }
