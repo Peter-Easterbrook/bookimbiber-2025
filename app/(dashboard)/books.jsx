@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useContext, useState, useMemo } from 'react';
+import { useContext, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -10,16 +10,16 @@ import {
   View,
 } from 'react-native';
 import Logo from '../../assets/icon.png';
+import AuthorFollowButton from '../../components/AuthorFollowButton';
+import NewReleasesCard from '../../components/NewReleasesCard';
 import ThemedLogoMyBooks from '../../components/ThemedLogoMyBooks';
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
-import ThemedButton from '../../components/ThemedButton';
-import SeriesView from '../../components/SeriesView';
-import NewReleasesCard from '../../components/NewReleasesCard';
 import { Colors } from '../../constants/Colors';
 import { ThemeContext } from '../../contexts/ThemeContext';
+import { useAuthors } from '../../hooks/useAuthors';
 import { useBooks } from '../../hooks/useBooks';
-import { groupBooksBySeries } from '../../lib/seriesDetection';
+// series grouping removed — feature intentionally disabled
 // import Spacer from '../../components/Spacer';
 
 const Books = () => {
@@ -27,6 +27,7 @@ const Books = () => {
   const fallback = useColorScheme();
   const theme = Colors[scheme || fallback] ?? Colors.light;
   const { books, deleteBook } = useBooks();
+  const { newReleases, followedAuthors } = useAuthors(); // for badge count + extraData to re-render rows
   const router = useRouter();
   const [viewMode, setViewMode] = useState('series'); // 'series' or 'list'
 
@@ -36,12 +37,6 @@ const Books = () => {
   };
 
   const isEmpty = !books || books.length === 0;
-  
-  // Group books by series
-  const groupedBooks = useMemo(() => {
-    if (!books || books.length === 0) return { series: [], standalone: [] };
-    return groupBooksBySeries(books);
-  }, [books]);
 
   return (
     <ThemedView style={styles.container} safe={true}>
@@ -49,55 +44,33 @@ const Books = () => {
         <>
           <View style={styles.topLogoContainer}>
             <ThemedLogoMyBooks width={150} height={150} />
+            {/* Notifications badge top-right */}
+            <Pressable
+              onPress={() => router.push('/notifications')}
+              style={[
+                styles.notificationsButton,
+                { backgroundColor: theme.uiBackground },
+              ]}
+            >
+              <Ionicons
+                name="notifications"
+                size={22}
+                color={theme.iconColor}
+              />
+              {newReleases && newReleases.length > 0 && (
+                <View style={styles.badge}>
+                  <ThemedText style={styles.badgeText}>
+                    {newReleases.length}
+                  </ThemedText>
+                </View>
+              )}
+            </Pressable>
           </View>
-          
+
           {/* New Releases Card */}
           <NewReleasesCard style={styles.newReleasesCard} />
-          
+
           {/* View Mode Toggle */}
-          <View style={styles.viewToggle}>
-            <ThemedButton
-              onPress={() => setViewMode('series')}
-              style={[
-                styles.toggleButton,
-                viewMode === 'series' && styles.activeToggle,
-                { backgroundColor: viewMode === 'series' ? theme.uiButtonBg : 'transparent' }
-              ]}
-            >
-              <Ionicons 
-                name="library" 
-                size={16} 
-                color={viewMode === 'series' ? theme.uiButtonText : theme.iconColor} 
-              />
-              <ThemedText style={[
-                styles.toggleText,
-                { color: viewMode === 'series' ? theme.uiButtonText : theme.iconColor }
-              ]}>
-                Series
-              </ThemedText>
-            </ThemedButton>
-            
-            <ThemedButton
-              onPress={() => setViewMode('list')}
-              style={[
-                styles.toggleButton,
-                viewMode === 'list' && styles.activeToggle,
-                { backgroundColor: viewMode === 'list' ? theme.uiButtonBg : 'transparent' }
-              ]}
-            >
-              <Ionicons 
-                name="list" 
-                size={16} 
-                color={viewMode === 'list' ? theme.uiButtonText : theme.iconColor} 
-              />
-              <ThemedText style={[
-                styles.toggleText,
-                { color: viewMode === 'list' ? theme.uiButtonText : theme.iconColor }
-              ]}>
-                List
-              </ThemedText>
-            </ThemedButton>
-          </View>
         </>
       )}
       {/* Content based on view mode */}
@@ -106,22 +79,16 @@ const Books = () => {
           <Pressable onPress={() => router.push('/create')}>
             <ThemedLogoMyBooks width={250} height={250} />
           </Pressable>
-          <ThemedText
-            style={[styles.fallbackText, { color: theme.textColor }]}
-          >
+          <ThemedText style={[styles.fallbackText, { color: theme.textColor }]}>
             Nothing on your reading list!
           </ThemedText>
         </View>
-      ) : viewMode === 'series' ? (
-        <SeriesView 
-          series={groupedBooks.series} 
-          standalone={groupedBooks.standalone} 
-        />
       ) : (
         <FlatList
           data={books || []}
           keyExtractor={(item) => item.$id}
           contentContainerStyle={styles.list}
+          extraData={followedAuthors} // ensure rows re-render when follow state changes
           renderItem={({ item }) => {
             const bookImageUrl = item.thumbnail || item.coverImage;
 
@@ -197,14 +164,21 @@ const Books = () => {
                       </View>
                     )}
                   </View>
-
-                  {/* Chevron */}
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color={theme.iconColor}
-                    style={styles.chevron}
-                  />
+                  <View style={styles.chevronBlock}>
+                    <AuthorFollowButton
+                      authorName={item.author}
+                      size="small"
+                      style={{
+                        margin: 0,
+                      }}
+                    />
+                    <Ionicons
+                      name="chevron-forward"
+                      size={20}
+                      color={theme.iconColor}
+                      style={styles.chevron}
+                    />
+                  </View>
                 </View>
               </Pressable>
             );
@@ -225,11 +199,14 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   topLogoContainer: {
-    alignItems: 'center', // <-- Add this style
-    justifyContent: 'flex-start', // <-- Add this style
-    marginBottom: 8, // <-- Reduce from 16 to 8 for less space below logo
-    marginTop: 0, // <-- Add this to ensure no extra space above logo
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginBottom: 8,
+    marginTop: 0,
     paddingTop: 0,
+    // keep relative so badge can position
+    position: 'relative',
+    width: '100%',
   },
   list: {
     marginTop: 0,
@@ -240,9 +217,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '95%',
     maxWidth: 550,
-    marginVertical: 8,
-    padding: 12,
-    paddingLeft: 14,
+    marginVertical: 4,
+    padding: 6,
+    paddingRight: 12,
     borderRadius: 5,
     overflow: 'hidden',
     boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.25)',
@@ -300,8 +277,14 @@ const styles = StyleSheet.create({
     gap: 4,
     marginTop: 4,
   },
+  chevronBlock: {
+    height: 75, // match styles.bookCover.height
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   chevron: {
-    marginLeft: 8,
+    marginLeft: 'auto',
   },
   deleteButton: {
     padding: 8,
@@ -322,7 +305,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: 16,
     marginBottom: 8,
-    backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 8,
     padding: 4,
   },
@@ -335,18 +317,42 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  activeToggle: {
-    // Styling handled dynamically
-  },
+  activeToggle: {},
   toggleText: {
     fontSize: 14,
     fontFamily: 'berlin-sans-fb',
-    marginLeft: 4,
+    marginLeft: 10,
   },
   seriesInfo: {
     fontSize: 12,
     opacity: 0.7,
     marginBottom: 2,
+    fontFamily: 'berlin-sans-fb',
+  },
+  notificationsButton: {
+    position: 'absolute',
+    right: 18,
+    top: 8,
+    padding: 8,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    right: 2,
+    top: 2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#E02424',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
     fontFamily: 'berlin-sans-fb',
   },
 });

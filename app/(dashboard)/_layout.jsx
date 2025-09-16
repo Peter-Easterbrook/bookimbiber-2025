@@ -25,7 +25,7 @@ function DrawerToggleButton() {
       color={theme.iconColor}
       style={{ marginLeft: 16 }}
       onPress={() => navigation.toggleDrawer()}
-      hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+      hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
     />
   );
 }
@@ -40,7 +40,7 @@ export default function DashboardLayout() {
     <Drawer
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
-        headerStyle: { 
+        headerStyle: {
           backgroundColor: theme.navBackground,
           elevation: 0,
           shadowOpacity: 0,
@@ -93,7 +93,6 @@ export default function DashboardLayout() {
           drawerItemStyle: { height: 0 }, // Hide from drawer
         }}
       />
-
       {/* Profile screen */}
       <Drawer.Screen
         name="profile"
@@ -106,7 +105,6 @@ export default function DashboardLayout() {
           headerRight: () => <ThemeToggle />,
         }}
       />
-
       {/* Books list */}
       <Drawer.Screen
         name="books"
@@ -138,6 +136,17 @@ export default function DashboardLayout() {
             />
           ),
           headerRight: () => <ThemeToggle />,
+        }}
+      />
+      Notifications screen
+      <Drawer.Screen
+        name="notifications"
+        options={{
+          title: 'Notifications',
+          drawerLabel: 'Notifications',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="notifications-outline" size={size} color={color} />
+          ),
         }}
       />
     </Drawer>
