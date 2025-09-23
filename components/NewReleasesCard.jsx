@@ -1,19 +1,20 @@
-import { useContext } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useContext, useState } from 'react'; // Added useState
 import {
-  View,
+  Image,
+  Pressable,
   ScrollView,
   StyleSheet,
   useColorScheme,
-  Pressable,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import ThemedText from './ThemedText';
-import ThemedCard from './ThemedCard';
-import LazyBookCover from './LazyBookCover';
 import { Colors } from '../constants/Colors';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { useAuthors } from '../hooks/useAuthors';
+import ThemedCard from './ThemedCard';
+import ThemedText from './ThemedText';
+const Logo = require('../assets/icon.png'); // Changed to require for proper asset loading
 
 /**
  * NewReleasesCard Component
@@ -24,7 +25,8 @@ const NewReleasesCard = ({ style }) => {
   const fallback = useColorScheme();
   const theme = Colors[scheme || fallback] ?? Colors.light;
   const router = useRouter();
-  
+  const [failedImages, setFailedImages] = useState(new Set()); // Track failed images
+
   const { newReleases, checkForNewReleases, authorsLoading } = useAuthors();
 
   const handleRefresh = async () => {
@@ -43,25 +45,30 @@ const NewReleasesCard = ({ style }) => {
     <ThemedCard style={[styles.card, style]}>
       <View style={styles.header}>
         <View style={styles.titleContainer}>
-          <Ionicons name="sparkles" size={20} color="#FFD700" style={styles.sparkle} />
+          <Ionicons
+            name="sparkles"
+            size={20}
+            color="#FFD700"
+            style={styles.sparkle}
+          />
           <ThemedText style={styles.title}>New Releases</ThemedText>
         </View>
-        <Pressable 
+        <Pressable
           onPress={handleRefresh}
           disabled={authorsLoading}
           style={styles.refreshButton}
         >
-          <Ionicons 
-            name="refresh" 
-            size={16} 
+          <Ionicons
+            name="refresh"
+            size={16}
             color={theme.iconColor}
             style={authorsLoading ? styles.spinning : null}
           />
         </Pressable>
       </View>
 
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.releasesContainer}
       >
@@ -70,45 +77,91 @@ const NewReleasesCard = ({ style }) => {
             <ThemedText style={styles.authorName} numberOfLines={1}>
               {release.author}
             </ThemedText>
-            
-            <ScrollView 
-              horizontal 
+
+            <ScrollView
+              horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.booksRow}
             >
-              {release.books.map((book, bookIndex) => (
-                <Pressable
-                  key={`${book.googleBooksId || book.title}-${bookIndex}`}
-                  onPress={() => {
-                    // Navigate to book search/add screen with pre-filled data
-                    router.push({
-                      pathname: '/create',
-                      params: { 
-                        preselectedBook: JSON.stringify(book) 
-                      }
-                    });
-                  }}
-                  style={styles.bookContainer}
-                >
-                  <LazyBookCover 
-                    book={book} 
-                    size="small" 
-                    style={styles.bookCover}
-                  />
-                  <ThemedText 
-                    style={styles.bookTitle} 
-                    numberOfLines={2}
+              {release.books.map((book, bookIndex) => {
+                const imageKey = book.googleBooksId || book.title;
+                const imageFailed = failedImages.has(imageKey);
+                const hasImage =
+                  (book.thumbnail || book.coverImage) && !imageFailed;
+
+                return (
+                  <Pressable
+                    key={`${imageKey}-${bookIndex}`}
+                    onPress={() => {
+                      // Filter to only essential serializable fields to avoid JSON issues
+                      const bookToPass = {
+                        title: book.title,
+                        author: book.author,
+                        description: book.description,
+                        thumbnail: book.thumbnail,
+                        coverImage: book.coverImage,
+                        publishedDate: book.publishedDate,
+                        language: book.language,
+                        categories: book.categories,
+                        pageCount: book.pageCount,
+                        googleBooksId: book.googleBooksId,
+                      };
+                      console.log('Book to pass:', bookToPass); // Debug log
+                      router.push({
+                        pathname: '/create',
+                        params: {
+                          preselectedBook: encodeURIComponent(
+                            JSON.stringify(bookToPass)
+                          ),
+                        },
+                      });
+                    }}
+                    style={styles.bookContainer}
                   >
-                    {book.title}
-                  </ThemedText>
-                  <ThemedText 
-                    style={styles.bookYear} 
-                    numberOfLines={1}
-                  >
-                    {book.publishedDate?.substring(0, 4) || 'New'}
-                  </ThemedText>
-                </Pressable>
-              ))}
+                    {hasImage ? (
+                      <Image
+                        source={{
+                          uri: (book.thumbnail || book.coverImage).replace(
+                            'http://',
+                            'https://'
+                          ),
+                        }}
+                        style={styles.bookCover}
+                        resizeMode="cover"
+                        onError={() => {
+                          console.warn('Failed to load book cover image');
+                          setFailedImages((prev) =>
+                            new Set(prev).add(imageKey)
+                          );
+                        }}
+                      />
+                    ) : (
+                      <View
+                        style={[
+                          styles.bookCoverPlaceholder,
+                          {
+                            backgroundColor: theme.cardBackground || '#f0f0f0',
+                          },
+                        ]}
+                      >
+                        <Image
+                          source={Logo}
+                          style={{ width: 60, height: 60 }}
+                          resizeMode="contain"
+                          accessibilityLabel="Placeholder Book Cover"
+                          accessibilityRole="image"
+                        />
+                      </View>
+                    )}
+                    <ThemedText style={styles.bookTitle} numberOfLines={2}>
+                      {book.title}
+                    </ThemedText>
+                    <ThemedText style={styles.bookYear} numberOfLines={1}>
+                      {book.publishedDate?.substring(0, 4) || 'New'}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
             </ScrollView>
           </View>
         ))}
@@ -152,12 +205,14 @@ const styles = StyleSheet.create({
   spinning: {
     // Add animation in future if needed
   },
-  releasesContainer: {
-    paddingRight: 16,
-  },
+  releasesContainer: {},
   authorSection: {
-    marginRight: 24,
-    minWidth: 200,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'flex-start', // Changed from 'center' for better top alignment
+    minWidth: 160,
+    paddingVertical: 8, // Added for better spacing
   },
   authorName: {
     fontSize: 14,
@@ -174,12 +229,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bookCover: {
+    width: 60,
+    height: 60,
+    borderRadius: 4,
     marginBottom: 6,
   },
+  bookCoverPlaceholder: {
+    width: 60,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 4,
+  },
   bookTitle: {
+    width: 80, // Set to match container width, removed minWidth to prevent clipping
     fontSize: 11,
     textAlign: 'center',
-    lineHeight: 14,
+    lineHeight: 13, // Adjusted for better wrapping
     marginBottom: 2,
   },
   bookYear: {

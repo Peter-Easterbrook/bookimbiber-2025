@@ -102,6 +102,29 @@ export function AuthorProvider({ children }) {
     }
   }
 
+  // In the function that saves notifications (e.g., in useAuthors)
+  const saveNotification = async (newNotification) => {
+    try {
+      const raw = await AsyncStorage.getItem('bookimbiber_notifications');
+      const existing = raw ? JSON.parse(raw) : [];
+      // Check if a notification for the same author and books already exists
+      const isDuplicate = existing.some(
+        (n) =>
+          n.author === newNotification.author &&
+          JSON.stringify(n.books) === JSON.stringify(newNotification.books)
+      );
+      if (!isDuplicate) {
+        existing.unshift(newNotification); // Add to front for latest first
+        await AsyncStorage.setItem(
+          'bookimbiber_notifications',
+          JSON.stringify(existing.slice(0, 50)) // Keep only last 50
+        );
+      }
+    } catch (e) {
+      console.warn('Failed to save notification', e);
+    }
+  };
+
   // Check for new releases from followed authors
   async function checkForNewReleases(authors = followedAuthors) {
     if (!authors.length) return;
@@ -146,25 +169,14 @@ export function AuthorProvider({ children }) {
               // ignore
             }
 
-            // Persist a simple in-app notification history
-            try {
-              const key = 'bookimbiber_notifications';
-              const raw = await AsyncStorage.getItem(key);
-              const hist = raw ? JSON.parse(raw) : [];
-              hist.unshift({
-                id: `${author.$id || author.authorName}-${Date.now()}`,
-                author: author.authorName,
-                books: top,
-                ts: new Date().toISOString(),
-                read: false,
-              });
-              await AsyncStorage.setItem(
-                key,
-                JSON.stringify(hist.slice(0, 50))
-              );
-            } catch (e) {
-              console.warn('Failed saving notification history', e);
-            }
+            // Persist a simple in-app notification history using saveNotification
+            await saveNotification({
+              id: `${author.$id || author.authorName}-${Date.now()}`,
+              author: author.authorName,
+              books: top,
+              ts: new Date().toISOString(),
+              read: false,
+            });
           }
         } catch (error) {
           console.error(
@@ -302,6 +314,8 @@ export function AuthorProvider({ children }) {
         checkForNewReleases,
         getAuthorSuggestions,
         fetchFollowedAuthors,
+        // Optionally expose saveNotification if needed elsewhere
+        saveNotification,
       }}
     >
       {children}

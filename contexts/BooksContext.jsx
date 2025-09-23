@@ -78,6 +78,8 @@ export function BooksProvider({ children }) {
         ...(data.ratingsCount !== undefined && {
           ratingsCount: data.ratingsCount,
         }),
+        ...(data.language && { language: data.language }),
+        ...(data.pageCount && { pageCount: data.pageCount }),
         // Series detection fields
         ...(data.seriesName && { seriesName: data.seriesName }),
         ...(data.bookNumber && { bookNumber: data.bookNumber }),

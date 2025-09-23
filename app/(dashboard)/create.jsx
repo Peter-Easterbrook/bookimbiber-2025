@@ -1,6 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useContext, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router'; // Added useLocalSearchParams
+import { useContext, useEffect, useState } from 'react'; // Added useEffect
 import {
   Image,
   Keyboard,
@@ -41,6 +41,21 @@ const Create = () => {
 
   const { createBook } = useBooks();
   const router = useRouter();
+  const params = useLocalSearchParams();
+
+  // Handle preselected book from navigation params
+  useEffect(() => {
+    if (params.preselectedBook) {
+      try {
+        const decodedBook = decodeURIComponent(params.preselectedBook);
+        const book = JSON.parse(decodedBook);
+        handleBookSelect(book);
+      } catch (error) {
+        console.error('Failed to parse preselectedBook param:', error);
+      }
+    }
+  }, [params.preselectedBook]);
+
   async function handleSubmit() {
     setError(null);
     if (!title.trim() || !author.trim() || !description.trim()) {
@@ -73,6 +88,8 @@ const Create = () => {
           averageRating: selectedBook.averageRating,
           ratingsCount: selectedBook.ratingsCount,
           publishedDate: selectedBook.publishedDate?.substring(0, 4) || null,
+          language: selectedBook.language,
+          pageCount: selectedBook.pageCount,
         }),
         // Add series information if detected
         ...(seriesInfo && {
@@ -94,6 +111,8 @@ const Create = () => {
         averageRating: selectedBook?.averageRating,
         ratingsCount: selectedBook?.ratingsCount,
         publishedDate: selectedBook?.publishedDate,
+        language: selectedBook?.language,
+        pageCount: selectedBook?.pageCount,
       });
 
       const result = await createBook(bookData);
@@ -232,6 +251,12 @@ const Create = () => {
                       </ThemedText>
                       <ThemedText style={styles.selectedBookData}>
                         Category: {selectedBook.categories || 'N/A'}
+                      </ThemedText>
+                      <ThemedText style={styles.selectedBookData}>
+                        Language: {selectedBook.language.toUpperCase() || 'N/A'}
+                      </ThemedText>
+                      <ThemedText style={styles.selectedBookData}>
+                        Pages: {selectedBook.pageCount || 'N/A'}
                       </ThemedText>
                     </View>
                     {(selectedBook.thumbnail || selectedBook.coverImage) && (
@@ -430,7 +455,7 @@ const styles = StyleSheet.create({
   },
   selectedBookData: {
     letterSpacing: 1,
-    fontSize: 13,
+    fontSize: 14,
     opacity: 0.9,
     marginBottom: 4,
   },

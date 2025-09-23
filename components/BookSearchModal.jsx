@@ -115,9 +115,10 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
               {new Date(item.publishedDate).getFullYear()}
             </ThemedText>
           )}
-          {item.pageCount > 0 && (
-            <ThemedText style={styles.bookPages}>
-              {item.pageCount} pages
+          {/* Always show language for user preference */}
+          {item.language && (
+            <ThemedText style={styles.bookLanguage}>
+              Language: {item.language.toUpperCase()}
             </ThemedText>
           )}
         </View>
@@ -303,17 +304,22 @@ const styles = StyleSheet.create({
   },
   bookAuthor: {
     fontSize: 14,
-    opacity: 0.8,
+    opacity: 0.9,
     marginBottom: 2,
   },
   bookYear: {
     fontSize: 12,
-    opacity: 0.6,
+    opacity: 0.9,
     marginBottom: 2,
   },
   bookPages: {
     fontSize: 12,
-    opacity: 0.6,
+    opacity: 0.8,
+  },
+  bookLanguage: {
+    fontSize: 12,
+    opacity: 0.8,
+    marginTop: 2,
   },
   chevron: {
     marginLeft: 8,
