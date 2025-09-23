@@ -36,12 +36,15 @@ const Home = () => {
       colors={gradientColors}
       start={{ x: 0, y: 1 }}
       end={{ x: 0, y: 0 }}
-      style={[styles.container, {
-        paddingTop: insets.top,
-        paddingBottom: insets.bottom,
-        paddingLeft: insets.left,
-        paddingRight: insets.right,
-      }]}
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        },
+      ]}
     >
       <ThemedLogoText width={250} height={250} />
       <Spacer />

@@ -1,6 +1,7 @@
+import { Ionicons } from '@expo/vector-icons'; // Added for icons
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useContext, useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native'; // Added View
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
 import { Colors } from '../../constants/Colors';
@@ -35,7 +36,22 @@ const NotificationsScreen = () => {
         'bookimbiber_notifications',
         JSON.stringify(next)
       );
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Failed to mark notification as read', e);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const next = items.filter((i) => i.id !== id);
+      setItems(next);
+      await AsyncStorage.setItem(
+        'bookimbiber_notifications',
+        JSON.stringify(next)
+      );
+    } catch (e) {
+      console.warn('Failed to delete notification', e);
+    }
   };
 
   return (
@@ -51,17 +67,31 @@ const NotificationsScreen = () => {
               styles.card,
               {
                 backgroundColor: item.read
-                  ? theme.uiBackground
+                  ? theme.activeBackground
                   : theme.buttonBackgroundFocused,
               },
             ]}
           >
-            <ThemedText title={true} style={styles.title}>
-              {item.author} — {item.books.map((b) => b.title).join(', ')}
-            </ThemedText>
-            <ThemedText style={styles.fallbackText}>
-              {new Date(item.ts).toLocaleString()}
-            </ThemedText>
+            <View style={styles.cardContent}>
+              <View style={styles.textContainer}>
+                <ThemedText title={true} style={styles.title}>
+                  {item.author} — {item.books.map((b) => b.title).join(', ')}
+                </ThemedText>
+                <ThemedText style={styles.timestamp}>
+                  {new Date(item.ts).toLocaleString()}
+                </ThemedText>
+              </View>
+              <Pressable
+                onPress={() => handleDelete(item.id)}
+                style={styles.deleteButton}
+              >
+                <Ionicons
+                  name="trash-outline"
+                  size={24}
+                  color={Colors.warning}
+                />
+              </Pressable>
+            </View>
           </Pressable>
         )}
         ListEmptyComponent={
@@ -83,9 +113,26 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
   },
+  cardContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  textContainer: {
+    flex: 1,
+  },
   title: {
     fontFamily: 'berlin-sans-fb-bold',
     marginBottom: 6,
+  },
+  timestamp: {
+    fontSize: 12,
+    opacity: 0.7,
+  },
+  deleteButton: {
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   fallbackText: {
     textAlign: 'center',

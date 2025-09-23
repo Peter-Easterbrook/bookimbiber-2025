@@ -159,7 +159,7 @@ const BookDetails = () => {
                 {/* Author Follow Button */}
                 {book.author && book.author !== 'Unknown' && (
                   <View style={styles.authorActions}>
-                    <AuthorFollowButton 
+                    <AuthorFollowButton
                       authorName={book.author}
                       size="small"
                       style={styles.followButton}
@@ -196,6 +196,28 @@ const BookDetails = () => {
                     </ThemedText>
                     <ThemedText style={styles.categories}>
                       {book.categories}
+                    </ThemedText>
+                  </View>
+                )}
+                {/* Language */}
+                {book.language && (
+                  <View style={styles.categoriesContainer}>
+                    <ThemedText style={styles.categoriesLabel} title={true}>
+                      Language:{' '}
+                    </ThemedText>
+                    <ThemedText style={styles.categories}>
+                      {book.language.toUpperCase()}
+                    </ThemedText>
+                  </View>
+                )}
+                {/* Page Count */}
+                {book.pageCount && book.pageCount > 0 && (
+                  <View style={styles.categoriesContainer}>
+                    <ThemedText style={styles.categoriesLabel} title={true}>
+                      Pages:{' '}
+                    </ThemedText>
+                    <ThemedText style={styles.categories}>
+                      {book.pageCount}
                     </ThemedText>
                   </View>
                 )}
