@@ -10,7 +10,7 @@ import {
 } from '../lib/notifications';
 
 const DATABASE_ID = '681e133100381d53f199';
-const AUTHORS_COLLECTION_ID = 'authors'; // New collection for followed authors
+const AUTHORS_COLLECTION_ID = 'authors';
 
 export const AuthorContext = createContext();
 
@@ -18,9 +18,133 @@ export function AuthorProvider({ children }) {
   const [followedAuthors, setFollowedAuthors] = useState([]);
   const [authorsLoading, setAuthorsLoading] = useState(false);
   const [newReleases, setNewReleases] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const { user } = useUser();
 
-  // Fetch followed authors
+  // How frequently to re-check an author (ms). 24 hours by default.
+  const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+  const normalizeForId = (s = '') =>
+    s
+      .toString()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+
+  // ---- Notifications storage helpers ----
+  const NOTIFS_KEY = 'bookimbiber_notifications';
+
+  const loadNotifications = async () => {
+    try {
+      const raw = await AsyncStorage.getItem(NOTIFS_KEY);
+      const existing = raw ? JSON.parse(raw) : [];
+      setNotifications(existing);
+      // derive newReleases from unread notifications so badge/card reflect unread until user acts
+      const unread = existing.filter((n) => !n.read);
+      setNewReleases(
+        unread.map((n) => ({ author: n.author, books: n.books || [] }))
+      );
+    } catch (e) {
+      console.warn('Failed to load notifications', e);
+    }
+  };
+
+  // Save an in-app notification. Returns true if saved, false if duplicate.
+  const saveNotification = async (newNotification) => {
+    try {
+      const raw = await AsyncStorage.getItem(NOTIFS_KEY);
+      const existing = raw ? JSON.parse(raw) : [];
+
+      const bookIdFor = (b) => {
+        if (!b) return '';
+        if (b.googleBooksId) return String(b.googleBooksId);
+        const title = normalizeForId(b.title || '');
+        const year = (b.publishedDate || '').toString().substring(0, 4);
+        const lang = (b.language || '').toString().toLowerCase();
+        return `${title}|${year}|${lang}`;
+      };
+
+      const newKeys = (newNotification.books || []).map(bookIdFor).sort();
+
+      const isDuplicate = existing.some((n) => {
+        if (n.author !== newNotification.author) return false;
+        const existingKeys = (n.books || []).map(bookIdFor).sort();
+        if (existingKeys.length !== newKeys.length) return false;
+        return existingKeys.every((k, i) => k === newKeys[i]);
+      });
+
+      if (isDuplicate) {
+        return false;
+      }
+
+      existing.unshift(newNotification);
+      const toSave = existing.slice(0, 50);
+      await AsyncStorage.setItem(NOTIFS_KEY, JSON.stringify(toSave));
+
+      // update in-memory notifications and derived newReleases (unread)
+      setNotifications(toSave);
+      const unread = toSave.filter((n) => !n.read);
+      setNewReleases(
+        unread.map((n) => ({ author: n.author, books: n.books || [] }))
+      );
+
+      return true;
+    } catch (e) {
+      console.warn('Failed to save notification', e);
+      return false;
+    }
+  };
+
+  // Mark a notification as read (and update newReleases / storage)
+  const markNotificationRead = async (id) => {
+    try {
+      const raw = await AsyncStorage.getItem(NOTIFS_KEY);
+      const existing = raw ? JSON.parse(raw) : [];
+      const next = existing.map((n) =>
+        n.id === id ? { ...n, read: true } : n
+      );
+      await AsyncStorage.setItem(NOTIFS_KEY, JSON.stringify(next));
+      setNotifications(next);
+
+      // recompute unread -> newReleases
+      const unread = next.filter((n) => !n.read);
+      setNewReleases(
+        unread.map((n) => ({ author: n.author, books: n.books || [] }))
+      );
+
+      // optionally decrement badge - if you have a badge counter util expose a decrement function instead
+      try {
+        await incrementNotificationCount(); // if this increments, replace with proper decrement if available
+      } catch (e) {
+        // ignore if not applicable
+      }
+    } catch (e) {
+      console.warn('Failed to mark notification read', e);
+    }
+  };
+
+  // Delete a notification
+  const deleteNotification = async (id) => {
+    try {
+      const raw = await AsyncStorage.getItem(NOTIFS_KEY);
+      const existing = raw ? JSON.parse(raw) : [];
+      const next = existing.filter((n) => n.id !== id);
+      await AsyncStorage.setItem(NOTIFS_KEY, JSON.stringify(next));
+      setNotifications(next);
+      const unread = next.filter((n) => !n.read);
+      setNewReleases(
+        unread.map((n) => ({ author: n.author, books: n.books || [] }))
+      );
+    } catch (e) {
+      console.warn('Failed to delete notification', e);
+    }
+  };
+
+  // ---- Authors / releases ----
+
   async function fetchFollowedAuthors() {
     if (!user || !user.$id) return;
 
@@ -32,10 +156,13 @@ export function AuthorProvider({ children }) {
         [Query.equal('userId', user.$id), Query.orderDesc('$createdAt')]
       );
 
-      setFollowedAuthors(response.documents);
+      setFollowedAuthors(response.documents || []);
 
-      // After loading authors, check for new releases
-      await checkForNewReleases(response.documents);
+      // load in-app notifications and derive newReleases from unread ones
+      await loadNotifications();
+
+      // Also check for fresh releases (this will add new notifications only if they are not duplicates)
+      await checkForNewReleases(response.documents || []);
     } catch (error) {
       console.error('Error fetching followed authors:', error);
     } finally {
@@ -43,12 +170,10 @@ export function AuthorProvider({ children }) {
     }
   }
 
-  // Follow an author
   async function followAuthor(authorData) {
     if (!user || !user.$id) throw new Error('No user ID for following author');
 
     try {
-      // Check if already following
       const existing = followedAuthors.find(
         (a) => a.authorName.toLowerCase() === authorData.name.toLowerCase()
       );
@@ -87,7 +212,6 @@ export function AuthorProvider({ children }) {
     }
   }
 
-  // Unfollow an author
   async function unfollowAuthor(authorId) {
     try {
       await databases.deleteDocument(
@@ -102,81 +226,57 @@ export function AuthorProvider({ children }) {
     }
   }
 
-  // In the function that saves notifications (e.g., in useAuthors)
-  const saveNotification = async (newNotification) => {
-    try {
-      const raw = await AsyncStorage.getItem('bookimbiber_notifications');
-      const existing = raw ? JSON.parse(raw) : [];
-      // Check if a notification for the same author and books already exists
-      const isDuplicate = existing.some(
-        (n) =>
-          n.author === newNotification.author &&
-          JSON.stringify(n.books) === JSON.stringify(newNotification.books)
-      );
-      if (!isDuplicate) {
-        existing.unshift(newNotification); // Add to front for latest first
-        await AsyncStorage.setItem(
-          'bookimbiber_notifications',
-          JSON.stringify(existing.slice(0, 50)) // Keep only last 50
-        );
-      }
-    } catch (e) {
-      console.warn('Failed to save notification', e);
-    }
-  };
-
   // Check for new releases from followed authors
   async function checkForNewReleases(authors = followedAuthors) {
-    if (!authors.length) return;
+    if (!authors || !authors.length) return;
 
     try {
       const releases = [];
       const currentYear = new Date().getFullYear();
 
-      // Check each followed author for new books
       for (const author of authors) {
+        // allow checking regardless of lastChecked — duplicates are handled by saveNotification
         try {
-          // Search for recent books by this author (last 2 years)
           const query = `inauthor:"${author.authorName}" subject:fiction`;
           const books = await searchBooks(query, 10);
 
-          // Filter for recent releases
           const recentBooks = books.filter((book) => {
             if (!book.publishedDate) return false;
-            const publishYear = parseInt(book.publishedDate.substring(0, 4));
-            return publishYear >= currentYear - 1; // Last 2 years
+            const publishYear = parseInt(
+              book.publishedDate.substring(0, 4),
+              10
+            );
+            return publishYear >= currentYear - 1;
           });
 
           if (recentBooks.length > 0) {
             const top = recentBooks.slice(0, 3);
             releases.push({ author: author.authorName, books: top });
 
-            // Send immediate local notification for author
-            const titles = top
-              .map((b) => b.title)
-              .slice(0, 3)
-              .join(', ');
-            // await so notification attempt happens before we continue
-            await sendLocalNotification({
-              title: `${author.authorName} has new releases`,
-              body: titles,
-            });
-
-            // increment a simple unread count (used for badge)
-            try {
-              await incrementNotificationCount();
-            } catch (e) {
-              // ignore
-            }
-
-            // Persist a simple in-app notification history using saveNotification
-            await saveNotification({
+            const notificationData = {
               id: `${author.$id || author.authorName}-${Date.now()}`,
               author: author.authorName,
               books: top,
               ts: new Date().toISOString(),
               read: false,
-            });
+            };
+
+            const saved = await saveNotification(notificationData);
+            if (saved) {
+              const titles = top
+                .map((b) => b.title)
+                .slice(0, 3)
+                .join(', ');
+              await sendLocalNotification({
+                title: `${author.authorName} has new releases`,
+                body: titles,
+              });
+              try {
+                await incrementNotificationCount();
+              } catch (e) {
+                // ignore
+              }
+            }
           }
         } catch (error) {
           console.error(
@@ -186,21 +286,22 @@ export function AuthorProvider({ children }) {
         }
       }
 
-      setNewReleases(releases);
-
-      // Update last checked time for all authors
-      if (releases.length > 0) {
-        const updatePromises = authors.map((author) =>
-          databases.updateDocument(
-            DATABASE_ID,
-            AUTHORS_COLLECTION_ID,
-            author.$id,
-            {
-              lastChecked: new Date().toISOString(),
-            }
-          )
-        );
-        await Promise.allSettled(updatePromises);
+      // Merge with any currently-unread notifications to ensure UI shows unread releases
+      try {
+        const raw = await AsyncStorage.getItem(NOTIFS_KEY);
+        const existing = raw ? JSON.parse(raw) : [];
+        const unread = existing.filter((n) => !n.read);
+        // prefer unread notifications for display (they may include items found earlier)
+        if (unread.length > 0) {
+          setNewReleases(
+            unread.map((n) => ({ author: n.author, books: n.books || [] }))
+          );
+        } else {
+          setNewReleases(releases);
+        }
+      } catch (e) {
+        // fallback
+        setNewReleases(releases);
       }
 
       return releases;
@@ -274,34 +375,31 @@ export function AuthorProvider({ children }) {
     } else {
       setFollowedAuthors([]);
       setNewReleases([]);
+      setNotifications([]);
     }
 
     return () => {
       if (unsubscribe) unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // Check for new releases periodically (once per day)
+  // Periodic checks (kept as fallback)
   useEffect(() => {
-    if (followedAuthors.length > 0) {
-      const checkReleases = async () => {
-        try {
-          const lastCheck = await AsyncStorage.getItem('lastReleaseCheck');
-          const now = new Date();
-          const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-          if (!lastCheck || new Date(lastCheck) < dayAgo) {
-            checkForNewReleases();
-            await AsyncStorage.setItem('lastReleaseCheck', now.toISOString());
-          }
-        } catch (error) {
-          console.error('Error checking release storage:', error);
-        }
-      };
-
-      checkReleases();
+    let interval;
+    if (user && followedAuthors.length > 0) {
+      interval = setInterval(() => {
+        checkForNewReleases(followedAuthors).catch((e) =>
+          console.warn('Periodic checkForNewReleases failed', e)
+        );
+      }, CHECK_INTERVAL_MS);
     }
-  }, [followedAuthors]);
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, followedAuthors]);
 
   return (
     <AuthorContext.Provider
@@ -309,13 +407,16 @@ export function AuthorProvider({ children }) {
         followedAuthors,
         authorsLoading,
         newReleases,
+        notifications,
         followAuthor,
         unfollowAuthor,
         checkForNewReleases,
         getAuthorSuggestions,
         fetchFollowedAuthors,
-        // Optionally expose saveNotification if needed elsewhere
         saveNotification,
+        markNotificationRead,
+        deleteNotification,
+        loadNotifications,
       }}
     >
       {children}

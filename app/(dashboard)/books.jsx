@@ -19,8 +19,6 @@ import { Colors } from '../../constants/Colors';
 import { ThemeContext } from '../../contexts/ThemeContext';
 import { useAuthors } from '../../hooks/useAuthors';
 import { useBooks } from '../../hooks/useBooks';
-// series grouping removed — feature intentionally disabled
-// import Spacer from '../../components/Spacer';
 
 const Books = () => {
   const { scheme } = useContext(ThemeContext);
@@ -49,7 +47,7 @@ const Books = () => {
               onPress={() => router.push('/notifications')}
               style={[
                 styles.notificationsButton,
-                { backgroundColor: theme.uiBackground },
+                { backgroundColor: theme.buttonBackgroundFocused },
               ]}
             >
               <Ionicons
@@ -352,6 +350,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#fff',
+    fontWeight: 'bold',
     fontSize: 10,
     fontFamily: 'berlin-sans-fb',
   },
