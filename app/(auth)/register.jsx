@@ -70,7 +70,10 @@ const Register = () => {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
       >
-        <Pressable style={{ width: '100%' }} onPress={Keyboard.dismiss}>
+        <Pressable
+          style={{ width: '100%', alignItems: 'center', paddingHorizontal: 0 }}
+          onPress={Keyboard.dismiss}
+        >
           <ThemedLogoText width={200} height={200} />
           <Spacer height={30} />
           <View style={styles.headerIconBlock}>
@@ -150,6 +153,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
+    alignSelf: 'stretch',
     width: '100%',
     paddingTop: 100,
   },
