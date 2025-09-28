@@ -1,68 +1,28 @@
 import { Ionicons } from '@expo/vector-icons'; // Added for icons
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useContext, useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native'; // Added View
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
 import { Colors } from '../../constants/Colors';
 import { ThemeContext } from '../../contexts/ThemeContext';
+import { useAuthors } from '../../hooks/useAuthors';
 
 const NotificationsScreen = () => {
   const { scheme } = useContext(ThemeContext);
   const fallback = 'light';
   const theme = Colors[scheme || fallback] ?? Colors.light;
 
-  const [items, setItems] = useState([]);
-
-  const load = async () => {
-    try {
-      const raw = await AsyncStorage.getItem('bookimbiber_notifications');
-      const hist = raw ? JSON.parse(raw) : [];
-      setItems(hist);
-    } catch (e) {
-      console.warn('Failed loading notifications', e);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
-
-  const markRead = async (id) => {
-    try {
-      const next = items.map((i) => (i.id === id ? { ...i, read: true } : i));
-      setItems(next);
-      await AsyncStorage.setItem(
-        'bookimbiber_notifications',
-        JSON.stringify(next)
-      );
-    } catch (e) {
-      console.warn('Failed to mark notification as read', e);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      const next = items.filter((i) => i.id !== id);
-      setItems(next);
-      await AsyncStorage.setItem(
-        'bookimbiber_notifications',
-        JSON.stringify(next)
-      );
-    } catch (e) {
-      console.warn('Failed to delete notification', e);
-    }
-  };
+  const { notifications, markNotificationRead, deleteNotification } = useAuthors();
 
   return (
     <ThemedView style={styles.container}>
       <FlatList
-        data={items}
+        data={notifications}
         keyExtractor={(i) => i.id}
         contentContainerStyle={{ padding: 16 }}
         renderItem={({ item }) => (
           <Pressable
-            onPress={() => markRead(item.id)}
+            onPress={() => markNotificationRead(item.id)}
             style={[
               styles.card,
               {
@@ -82,7 +42,7 @@ const NotificationsScreen = () => {
                 </ThemedText>
               </View>
               <Pressable
-                onPress={() => handleDelete(item.id)}
+                onPress={() => deleteNotification(item.id)}
                 style={styles.deleteButton}
               >
                 <Ionicons
