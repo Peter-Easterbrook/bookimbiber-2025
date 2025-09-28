@@ -166,6 +166,7 @@ The app stores user books in Appwrite databases. Key collections and fields incl
 
 - **Follow Authors**: Track favorite authors with metadata storage
 - **New Release Detection**: Automatically check for new books from followed authors
+- **Smart Filtering**: Books already in user's collection are automatically excluded from new release notifications and cards
 - **Rich Notifications**: Android 14 enhanced notifications with book covers
 - **Author Suggestions**: AI-powered suggestions based on user's reading history
 
