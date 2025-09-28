@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useContext, useState } from 'react'; // Added useState
+import { useContext, useRef, useEffect, useState } from 'react'; // Added useState
 import {
+  Animated,
   Image,
   Pressable,
   ScrollView,
@@ -28,12 +29,36 @@ const NewReleasesCard = ({ style }) => {
   const [failedImages, setFailedImages] = useState(new Set()); // Track failed images
 
   const { newReleases, checkForNewReleases, authorsLoading } = useAuthors();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  // Animate refresh icon when loading
+  useEffect(() => {
+    if (isRefreshing || authorsLoading) {
+      const rotateAnimation = Animated.loop(
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        })
+      );
+      rotateAnimation.start();
+      return () => rotateAnimation.stop();
+    } else {
+      rotateAnim.setValue(0);
+    }
+  }, [isRefreshing, authorsLoading, rotateAnim]);
 
   const handleRefresh = async () => {
+    if (isRefreshing || authorsLoading) return;
+
+    setIsRefreshing(true);
     try {
       await checkForNewReleases();
     } catch (error) {
       console.error('Failed to refresh new releases:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -55,15 +80,30 @@ const NewReleasesCard = ({ style }) => {
         </View>
         <Pressable
           onPress={handleRefresh}
-          disabled={authorsLoading}
-          style={styles.refreshButton}
+          disabled={isRefreshing || authorsLoading}
+          style={[
+            styles.refreshButton,
+            (isRefreshing || authorsLoading) && styles.refreshButtonDisabled
+          ]}
         >
-          <Ionicons
-            name="refresh"
-            size={16}
-            color={theme.iconColor}
-            style={authorsLoading ? styles.spinning : null}
-          />
+          <Animated.View
+            style={[
+              (isRefreshing || authorsLoading) && {
+                transform: [{
+                  rotate: rotateAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0deg', '360deg'],
+                  }),
+                }],
+              },
+            ]}
+          >
+            <Ionicons
+              name="refresh"
+              size={16}
+              color={(isRefreshing || authorsLoading) ? theme.iconColor + '80' : theme.iconColor}
+            />
+          </Animated.View>
         </Pressable>
       </View>
 
@@ -202,8 +242,8 @@ const styles = StyleSheet.create({
   refreshButton: {
     padding: 4,
   },
-  spinning: {
-    // Add animation in future if needed
+  refreshButtonDisabled: {
+    opacity: 0.5,
   },
   releasesContainer: {},
   authorSection: {

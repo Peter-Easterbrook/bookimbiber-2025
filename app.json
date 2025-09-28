@@ -7,8 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "platforms": ["android"],
+    "platforms": ["android", "web"],
     "plugins": ["expo-router", "expo-font", "expo-localization"],
     "description": "Book Imbiber is an app for book lovers to track their reading habits and share recommendations.",
     "splash": {

@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { ID, Permission, Query, Role } from 'react-native-appwrite';
 import { useUser } from '../hooks/useUser';
 import { client, databases } from '../lib/appwrite';
@@ -8,6 +8,7 @@ import {
   incrementNotificationCount,
   sendLocalNotification,
 } from '../lib/notifications';
+import { BooksContext } from './BooksContext';
 
 const DATABASE_ID = '681e133100381d53f199';
 const AUTHORS_COLLECTION_ID = 'authors';
@@ -20,6 +21,7 @@ export function AuthorProvider({ children }) {
   const [newReleases, setNewReleases] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const { user } = useUser();
+  const { books, readBooks } = useContext(BooksContext) || { books: [], readBooks: [] };
 
   // How frequently to re-check an author (ms). 24 hours by default.
   const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
@@ -34,6 +36,82 @@ export function AuthorProvider({ children }) {
       .trim()
       .toLowerCase();
 
+  // Generate unique ID for book comparison
+  const bookIdFor = (b) => {
+    if (!b) return '';
+
+    // Primary ID based on Google Books ID if available
+    if (b.googleBooksId) {
+      return `gbid:${String(b.googleBooksId)}`;
+    }
+
+    // Fallback ID based on normalized title, author, and publication year
+    const title = normalizeForId(b.title || '');
+    const author = normalizeForId(b.author || '');
+    const year = (b.publishedDate || '').toString().substring(0, 4);
+
+    // Include author in ID for better matching accuracy
+    return `title:${title}|author:${author}|year:${year}`;
+  };
+
+  // Check if a book is already in user's collection
+  const isBookOwned = (book) => {
+    const bookId = bookIdFor(book);
+    const allUserBooks = [...(books || []), ...(readBooks || [])];
+
+    // Try multiple matching strategies for better accuracy
+    const isOwned = allUserBooks.some(ownedBook => {
+      const ownedBookId = bookIdFor(ownedBook);
+
+      // Direct ID match
+      if (ownedBookId === bookId) return true;
+
+      // If the new release book has a googleBooksId, also try matching by title/author/year
+      if (book.googleBooksId && !ownedBook.googleBooksId) {
+        const fallbackNewId = `title:${normalizeForId(book.title || '')}|author:${normalizeForId(book.author || '')}|year:${(book.publishedDate || '').toString().substring(0, 4)}`;
+        if (ownedBookId === fallbackNewId) return true;
+      }
+
+      // If the owned book has a googleBooksId, also try matching by title/author/year
+      if (!book.googleBooksId && ownedBook.googleBooksId) {
+        const fallbackOwnedId = `title:${normalizeForId(ownedBook.title || '')}|author:${normalizeForId(ownedBook.author || '')}|year:${(ownedBook.publishedDate || '').toString().substring(0, 4)}`;
+        if (bookId === fallbackOwnedId) return true;
+      }
+
+      return false;
+    });
+
+    // Debug logging (can be removed in production)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Checking if book is owned:', {
+        title: book.title,
+        author: book.author,
+        hasGoogleBooksId: !!book.googleBooksId,
+        bookId,
+        totalUserBooks: allUserBooks.length,
+        isOwned
+      });
+    }
+
+    return isOwned;
+  };
+
+  // Filter out owned books from a list
+  const filterUnownedBooks = (bookList) => {
+    const filtered = bookList.filter(book => !isBookOwned(book));
+
+    // Debug logging (can be removed in production)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Filtering book list:', {
+        originalCount: bookList.length,
+        filteredCount: filtered.length,
+        removedCount: bookList.length - filtered.length
+      });
+    }
+
+    return filtered;
+  };
+
   // ---- Notifications storage helpers ----
   const NOTIFS_KEY = 'bookimbiber_notifications';
 
@@ -45,7 +123,10 @@ export function AuthorProvider({ children }) {
       // derive newReleases from unread notifications so badge/card reflect unread until user acts
       const unread = existing.filter((n) => !n.read);
       setNewReleases(
-        unread.map((n) => ({ author: n.author, books: n.books || [] }))
+        unread.map((n) => ({
+          author: n.author,
+          books: filterUnownedBooks(n.books || [])
+        })).filter((n) => n.books.length > 0) // Remove releases with no unowned books
       );
     } catch (e) {
       console.warn('Failed to load notifications', e);
@@ -57,15 +138,6 @@ export function AuthorProvider({ children }) {
     try {
       const raw = await AsyncStorage.getItem(NOTIFS_KEY);
       const existing = raw ? JSON.parse(raw) : [];
-
-      const bookIdFor = (b) => {
-        if (!b) return '';
-        if (b.googleBooksId) return String(b.googleBooksId);
-        const title = normalizeForId(b.title || '');
-        const year = (b.publishedDate || '').toString().substring(0, 4);
-        const lang = (b.language || '').toString().toLowerCase();
-        return `${title}|${year}|${lang}`;
-      };
 
       const newKeys = (newNotification.books || []).map(bookIdFor).sort();
 
@@ -88,7 +160,10 @@ export function AuthorProvider({ children }) {
       setNotifications(toSave);
       const unread = toSave.filter((n) => !n.read);
       setNewReleases(
-        unread.map((n) => ({ author: n.author, books: n.books || [] }))
+        unread.map((n) => ({
+          author: n.author,
+          books: filterUnownedBooks(n.books || [])
+        })).filter((n) => n.books.length > 0) // Remove releases with no unowned books
       );
 
       return true;
@@ -112,7 +187,10 @@ export function AuthorProvider({ children }) {
       // recompute unread -> newReleases
       const unread = next.filter((n) => !n.read);
       setNewReleases(
-        unread.map((n) => ({ author: n.author, books: n.books || [] }))
+        unread.map((n) => ({
+          author: n.author,
+          books: filterUnownedBooks(n.books || [])
+        })).filter((n) => n.books.length > 0) // Remove releases with no unowned books
       );
 
       // optionally decrement badge - if you have a badge counter util expose a decrement function instead
@@ -136,7 +214,10 @@ export function AuthorProvider({ children }) {
       setNotifications(next);
       const unread = next.filter((n) => !n.read);
       setNewReleases(
-        unread.map((n) => ({ author: n.author, books: n.books || [] }))
+        unread.map((n) => ({
+          author: n.author,
+          books: filterUnownedBooks(n.books || [])
+        })).filter((n) => n.books.length > 0) // Remove releases with no unowned books
       );
     } catch (e) {
       console.warn('Failed to delete notification', e);
@@ -249,8 +330,11 @@ export function AuthorProvider({ children }) {
             return publishYear >= currentYear - 1;
           });
 
-          if (recentBooks.length > 0) {
-            const top = recentBooks.slice(0, 3);
+          // Filter out books that user already owns
+          const unownedRecentBooks = filterUnownedBooks(recentBooks);
+
+          if (unownedRecentBooks.length > 0) {
+            const top = unownedRecentBooks.slice(0, 3);
             releases.push({ author: author.authorName, books: top });
 
             const notificationData = {
@@ -294,10 +378,13 @@ export function AuthorProvider({ children }) {
         // prefer unread notifications for display (they may include items found earlier)
         if (unread.length > 0) {
           setNewReleases(
-            unread.map((n) => ({ author: n.author, books: n.books || [] }))
+            unread.map((n) => ({
+              author: n.author,
+              books: filterUnownedBooks(n.books || [])
+            })).filter((n) => n.books.length > 0) // Remove releases with no unowned books
           );
         } else {
-          setNewReleases(releases);
+          setNewReleases(releases); // releases already filtered above
         }
       } catch (e) {
         // fallback
@@ -400,6 +487,29 @@ export function AuthorProvider({ children }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, followedAuthors]);
+
+  // Update newReleases when user's book collection changes
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Books/readBooks/notifications changed, refreshing newReleases:', {
+        booksCount: books?.length || 0,
+        readBooksCount: readBooks?.length || 0,
+        notificationsCount: notifications?.length || 0
+      });
+    }
+
+    if (user && notifications.length > 0) {
+      const unread = notifications.filter((n) => !n.read);
+
+      const filteredReleases = unread.map((n) => ({
+        author: n.author,
+        books: filterUnownedBooks(n.books || [])
+      })).filter((n) => n.books.length > 0); // Remove releases with no unowned books
+
+      setNewReleases(filteredReleases);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [books, readBooks, notifications]); // Re-run when user's book collection or notifications change
 
   return (
     <AuthorContext.Provider

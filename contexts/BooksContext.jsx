@@ -71,6 +71,7 @@ export function BooksProvider({ children }) {
         userId: user.$id,
         read: data.read || false,
         // Optional Google Books fields (only if they exist in the database)
+        ...(data.googleBooksId && { googleBooksId: data.googleBooksId }),
         ...(data.categories && { categories: data.categories }),
         ...(data.publishedDate && { publishedDate: data.publishedDate }),
         ...(data.thumbnail && { thumbnail: data.thumbnail }),
