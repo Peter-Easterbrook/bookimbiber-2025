@@ -83,6 +83,7 @@ const Create = () => {
         read: false,
         // Include only the supported Google Books fields
         ...(selectedBook && {
+          googleBooksId: selectedBook.googleBooksId,
           categories: selectedBook.categories,
           thumbnail: selectedBook.thumbnail,
           averageRating: selectedBook.averageRating,
