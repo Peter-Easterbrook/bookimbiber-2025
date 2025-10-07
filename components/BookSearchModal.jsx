@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as Localization from 'expo-localization';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -33,21 +34,31 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
     setHasSearched(true);
 
     try {
-      const results = await searchBooks(searchQuery.trim(), 20);
-      setSearchResults(results);
+      // Get user's language with fallback to 'en' if undefined
+      const locale =
+        Localization.locale ||
+        Localization.getLocales()[0]?.languageCode ||
+        'en';
+      const userLang = locale.split('-')[0];
+      console.log('🌍 User locale:', userLang);
 
-      if (results.length === 0) {
+      // Search with user's locale to get mixed language results
+      const results = await searchBooks(searchQuery.trim(), 20, userLang);
+      setSearchResults(results || []);
+
+      if (!results || results.length === 0) {
         Alert.alert(
           'No Results',
           'No books found for your search. Try different keywords.'
         );
       }
     } catch (error) {
-      // Replace console.error with a proper error alert
+      console.error('Search error:', error);
       Alert.alert(
         'Search Error',
         'Failed to search for books. Please check your internet connection and try again.'
       );
+      setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
