@@ -24,7 +24,6 @@ import ThemedTextInput from '../../components/ThemedTextInput';
 import ThemedView from '../../components/ThemedView';
 import { Colors } from '../../constants/Colors';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { detectSeries } from '../../lib/seriesDetection';
 
 const Create = () => {
   const { scheme } = useContext(ThemeContext);
@@ -66,16 +65,9 @@ const Create = () => {
       setError('Max input 500 characters.');
       return;
     }
-    setLoading(true); // create the book with additional metadata if available
-    try {
-      // Detect series information
-      const tempBook = {
-        title: title.trim(),
-        subtitle: selectedBook?.subtitle || '',
-        author: author.trim(),
-      };
-      const seriesInfo = detectSeries(tempBook);
+    setLoading(true);
 
+    try {
       const bookData = {
         title: title.trim(),
         author: author.trim(),
@@ -91,12 +83,6 @@ const Create = () => {
           publishedDate: selectedBook.publishedDate?.substring(0, 4) || null,
           language: selectedBook.language,
           pageCount: selectedBook.pageCount,
-        }),
-        // Add series information if detected
-        ...(seriesInfo && {
-          seriesName: seriesInfo.seriesName,
-          bookNumber: seriesInfo.bookNumber,
-          seriesConfidence: seriesInfo.confidence,
         }),
       };
 
