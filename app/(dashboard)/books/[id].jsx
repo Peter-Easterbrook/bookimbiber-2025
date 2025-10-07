@@ -167,16 +167,6 @@ const BookDetails = () => {
                   </View>
                 )}
 
-                {/* Series Information */}
-                {book.seriesName && (
-                  <View style={styles.seriesContainer}>
-                    <Ionicons name="library" size={16} color="#4A90E2" />
-                    <ThemedText style={styles.seriesText}>
-                      {book.seriesName} #{book.bookNumber || '?'}
-                    </ThemedText>
-                  </View>
-                )}
-
                 {/* Categories */}
                 {book.publishedDate && book.publishedDate.length > 0 && (
                   <View style={styles.categoriesContainer}>
@@ -435,17 +425,5 @@ const styles = StyleSheet.create({
   },
   followButton: {
     alignSelf: 'flex-start',
-  },
-  seriesContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-    marginBottom: 4,
-  },
-  seriesText: {
-    fontSize: 14,
-    marginLeft: 6,
-    fontFamily: 'berlin-sans-fb-bold',
-    color: '#4A90E2',
   },
 });

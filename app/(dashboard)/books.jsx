@@ -143,21 +143,13 @@ const Books = () => {
                       Written by {item.author}
                     </ThemedText>
 
-                    {/* Series Info */}
-                    {item.seriesName && (
-                      <ThemedText style={styles.seriesInfo} numberOfLines={1}>
-                        📚 {item.seriesName} #{item.bookNumber || '?'}
-                      </ThemedText>
-                    )}
-
                     {/* Rating */}
                     {item.averageRating > 0 && (
                       <View style={styles.ratingContainer}>
                         <Ionicons name="star" size={14} color="#FFD700" />
                         <ThemedText style={styles.metadata}>
                           {item.averageRating.toFixed(1)} (
-                          {item.ratingsCount || 0}
-                          reviews)
+                          {item.ratingsCount || 0} reviews)
                         </ThemedText>
                       </View>
                     )}
@@ -320,12 +312,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'berlin-sans-fb',
     marginLeft: 10,
-  },
-  seriesInfo: {
-    fontSize: 12,
-    opacity: 0.7,
-    marginBottom: 2,
-    fontFamily: 'berlin-sans-fb',
   },
   notificationsButton: {
     position: 'absolute',
