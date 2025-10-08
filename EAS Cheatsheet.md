@@ -34,16 +34,17 @@
 
 ## 🏗️ **EAS Build Commands**
 
-| Command                                                  | Description                                  |
-| -------------------------------------------------------- | -------------------------------------------- |
-| `eas login`                                              | Log in to your Expo/EAS account              |
-| `eas build:configure`                                    | Configure EAS build without starting a build |
-| `npx eas build --profile development --platform android` | 🤖 Build a development client for Android    |
-| `npx eas build --profile development --platform ios`     | 🍎 Build a development client for iOS        |
-| `npx eas build -p android --profile preview`             | Build a preview version for testing          |
-| `npx eas build --platform android --profile production`  | 📦 Build a production AAB for Google Play    |
-| `eas update --auto`                                      | Update your app using EAS Update             |
-| `eas update --branch main --platform android`            | Publish an update to the main branch         |
+| Command                                                           | Description                                                  |
+| ----------------------------------------------------------------- | ------------------------------------------------------------ |
+| `eas login`                                                       | Log in to your Expo/EAS account                              |
+| `eas build:configure`                                             | Configure EAS build without starting a build                 |
+| `npx eas build --profile development --platform android`          | 🤖 Build a development client for Android                    |
+| `npx eas build --profile development --platform ios`              | 🍎 Build a development client for iOS                        |
+| `npx eas build -p android --profile preview`                      | Build a preview version for testing                          |
+| `npx eas build --platform android --profile production`           | 📦 Build a production AAB for Google Play                    |
+| `eas build --platform android --profile production --auto-submit` | 🚀 Build production AAB and auto-submit to Google Play Store |
+| `eas update --auto`                                               | Update your app using EAS Update                             |
+| `eas update --branch main --platform android`                     | Publish an update to the main branch                         |
 
 ## 🔐 **Environment & Configuration**
 
