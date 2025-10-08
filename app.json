@@ -13,7 +13,7 @@
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#fffbdd"
+      "backgroundColor": "#001427"
     },
     "android": {
       "versionCode": 4,
