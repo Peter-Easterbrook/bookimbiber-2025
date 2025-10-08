@@ -146,13 +146,13 @@ const BookDetails = () => {
                   title={true}
                 >
                   {book.title && book.title.length > 20
-                    ? book.title.slice(0, 42) + '...'
+                    ? book.title.slice(0, 46) + '...'
                     : book.title}
                 </ThemedText>
                 <ThemedText style={styles.author} numberOfLines={2}>
                   Written by{' '}
                   {book.author && book.author.length > 20
-                    ? book.author.slice(0, 28) + '...'
+                    ? book.author.slice(0, 24) + '...'
                     : book.author || 'Unknown'}
                 </ThemedText>
 
@@ -350,15 +350,15 @@ const styles = StyleSheet.create({
   },
   title: {
     letterSpacing: 1,
-    fontSize: 20,
+    fontSize: 16,
     paddingRight: 0,
-    maxWidth: 22 * 12, // Approximate: 20 chars * 12px per char (adjust as needed)
+    maxWidth: 20 * 12, // Approximate: 20 chars * 12px per char (adjust as needed)
     flexShrink: 1,
     flexWrap: 'wrap',
   },
   author: {
     letterSpacing: 1,
-    fontSize: 16,
+    fontSize: 14,
     marginBottom: 8,
     maxWidth: 30 * 10, // Approximate: 20 chars * 10px per char (adjust as needed)
     flexShrink: 1,
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   },
   description: {
     letterSpacing: 1,
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 22,
     opacity: 0.9,
     textAlign: 'left',

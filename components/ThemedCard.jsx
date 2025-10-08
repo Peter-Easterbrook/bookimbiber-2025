@@ -29,7 +29,7 @@ export default ThemedCard;
 const styles = StyleSheet.create({
   card: {
     borderRadius: 5,
-    padding: 20,
+    padding: 10,
     // boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.25)',
   },
 });
