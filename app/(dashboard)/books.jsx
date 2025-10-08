@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   topLogoContainer: {
     alignItems: 'center',
     justifyContent: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 14,
     marginTop: 0,
     paddingTop: 0,
     // keep relative so badge can position

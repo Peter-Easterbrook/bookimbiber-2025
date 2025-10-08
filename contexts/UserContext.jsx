@@ -1,6 +1,8 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useEffect, useRef, useState } from 'react';
 import { ID } from 'react-native-appwrite';
 import { account } from '../lib/appwrite';
+import { clearNotificationCount } from '../lib/notifications';
 
 export const UserContext = createContext();
 
@@ -96,6 +98,11 @@ export const UserProvider = ({ children }) => {
           }
         }
       }
+
+      // Clear user-specific data from AsyncStorage
+      const NOTIFS_KEY = 'bookimbiber_notifications';
+      await AsyncStorage.removeItem(NOTIFS_KEY);
+      await clearNotificationCount();
 
       // Always set user to null regardless of whether logout succeeded
       setUser(null);

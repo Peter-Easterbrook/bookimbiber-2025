@@ -21,7 +21,10 @@ export function AuthorProvider({ children }) {
   const [newReleases, setNewReleases] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const { user } = useUser();
-  const { books, readBooks } = useContext(BooksContext) || { books: [], readBooks: [] };
+  const { books, readBooks } = useContext(BooksContext) || {
+    books: [],
+    readBooks: [],
+  };
 
   // How frequently to re-check an author (ms). 24 hours by default.
   const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
@@ -60,7 +63,7 @@ export function AuthorProvider({ children }) {
     const allUserBooks = [...(books || []), ...(readBooks || [])];
 
     // Try multiple matching strategies for better accuracy
-    const isOwned = allUserBooks.some(ownedBook => {
+    const isOwned = allUserBooks.some((ownedBook) => {
       const ownedBookId = bookIdFor(ownedBook);
 
       // Direct ID match
@@ -89,7 +92,7 @@ export function AuthorProvider({ children }) {
         hasGoogleBooksId: !!book.googleBooksId,
         bookId,
         totalUserBooks: allUserBooks.length,
-        isOwned
+        isOwned,
       });
     }
 
@@ -98,14 +101,14 @@ export function AuthorProvider({ children }) {
 
   // Filter out owned books from a list
   const filterUnownedBooks = (bookList) => {
-    const filtered = bookList.filter(book => !isBookOwned(book));
+    const filtered = bookList.filter((book) => !isBookOwned(book));
 
     // Debug logging (can be removed in production)
     if (process.env.NODE_ENV === 'development') {
       console.log('Filtering book list:', {
         originalCount: bookList.length,
         filteredCount: filtered.length,
-        removedCount: bookList.length - filtered.length
+        removedCount: bookList.length - filtered.length,
       });
     }
 
@@ -113,20 +116,28 @@ export function AuthorProvider({ children }) {
   };
 
   // ---- Notifications storage helpers ----
-  const NOTIFS_KEY = 'bookimbiber_notifications';
+  const NOTIFS_KEY = (userId) => `bookimbiber_notifications_${userId}`; // User-scoped key
 
   const loadNotifications = async () => {
+    if (!user || !user.$id) {
+      setNotifications([]);
+      setNewReleases([]);
+      return;
+    }
+
     try {
-      const raw = await AsyncStorage.getItem(NOTIFS_KEY);
+      const raw = await AsyncStorage.getItem(NOTIFS_KEY(user.$id));
       const existing = raw ? JSON.parse(raw) : [];
       setNotifications(existing);
       // derive newReleases from unread notifications so badge/card reflect unread until user acts
       const unread = existing.filter((n) => !n.read);
       setNewReleases(
-        unread.map((n) => ({
-          author: n.author,
-          books: filterUnownedBooks(n.books || [])
-        })).filter((n) => n.books.length > 0) // Remove releases with no unowned books
+        unread
+          .map((n) => ({
+            author: n.author,
+            books: filterUnownedBooks(n.books || []),
+          }))
+          .filter((n) => n.books.length > 0) // Remove releases with no unowned books
       );
     } catch (e) {
       console.warn('Failed to load notifications', e);
@@ -135,8 +146,10 @@ export function AuthorProvider({ children }) {
 
   // Save an in-app notification. Returns true if saved, false if duplicate.
   const saveNotification = async (newNotification) => {
+    if (!user || !user.$id) return false;
+
     try {
-      const raw = await AsyncStorage.getItem(NOTIFS_KEY);
+      const raw = await AsyncStorage.getItem(NOTIFS_KEY(user.$id));
       const existing = raw ? JSON.parse(raw) : [];
 
       const newKeys = (newNotification.books || []).map(bookIdFor).sort();
@@ -154,16 +167,18 @@ export function AuthorProvider({ children }) {
 
       existing.unshift(newNotification);
       const toSave = existing.slice(0, 50);
-      await AsyncStorage.setItem(NOTIFS_KEY, JSON.stringify(toSave));
+      await AsyncStorage.setItem(NOTIFS_KEY(user.$id), JSON.stringify(toSave));
 
       // update in-memory notifications and derived newReleases (unread)
       setNotifications(toSave);
       const unread = toSave.filter((n) => !n.read);
       setNewReleases(
-        unread.map((n) => ({
-          author: n.author,
-          books: filterUnownedBooks(n.books || [])
-        })).filter((n) => n.books.length > 0) // Remove releases with no unowned books
+        unread
+          .map((n) => ({
+            author: n.author,
+            books: filterUnownedBooks(n.books || []),
+          }))
+          .filter((n) => n.books.length > 0) // Remove releases with no unowned books
       );
 
       return true;
@@ -175,22 +190,26 @@ export function AuthorProvider({ children }) {
 
   // Mark a notification as read (and update newReleases / storage)
   const markNotificationRead = async (id) => {
+    if (!user || !user.$id) return;
+
     try {
-      const raw = await AsyncStorage.getItem(NOTIFS_KEY);
+      const raw = await AsyncStorage.getItem(NOTIFS_KEY(user.$id));
       const existing = raw ? JSON.parse(raw) : [];
       const next = existing.map((n) =>
         n.id === id ? { ...n, read: true } : n
       );
-      await AsyncStorage.setItem(NOTIFS_KEY, JSON.stringify(next));
+      await AsyncStorage.setItem(NOTIFS_KEY(user.$id), JSON.stringify(next));
       setNotifications(next);
 
       // recompute unread -> newReleases
       const unread = next.filter((n) => !n.read);
       setNewReleases(
-        unread.map((n) => ({
-          author: n.author,
-          books: filterUnownedBooks(n.books || [])
-        })).filter((n) => n.books.length > 0) // Remove releases with no unowned books
+        unread
+          .map((n) => ({
+            author: n.author,
+            books: filterUnownedBooks(n.books || []),
+          }))
+          .filter((n) => n.books.length > 0) // Remove releases with no unowned books
       );
 
       // optionally decrement badge - if you have a badge counter util expose a decrement function instead
@@ -206,18 +225,22 @@ export function AuthorProvider({ children }) {
 
   // Delete a notification
   const deleteNotification = async (id) => {
+    if (!user || !user.$id) return;
+
     try {
-      const raw = await AsyncStorage.getItem(NOTIFS_KEY);
+      const raw = await AsyncStorage.getItem(NOTIFS_KEY(user.$id));
       const existing = raw ? JSON.parse(raw) : [];
       const next = existing.filter((n) => n.id !== id);
-      await AsyncStorage.setItem(NOTIFS_KEY, JSON.stringify(next));
+      await AsyncStorage.setItem(NOTIFS_KEY(user.$id), JSON.stringify(next));
       setNotifications(next);
       const unread = next.filter((n) => !n.read);
       setNewReleases(
-        unread.map((n) => ({
-          author: n.author,
-          books: filterUnownedBooks(n.books || [])
-        })).filter((n) => n.books.length > 0) // Remove releases with no unowned books
+        unread
+          .map((n) => ({
+            author: n.author,
+            books: filterUnownedBooks(n.books || []),
+          }))
+          .filter((n) => n.books.length > 0) // Remove releases with no unowned books
       );
     } catch (e) {
       console.warn('Failed to delete notification', e);
@@ -309,7 +332,7 @@ export function AuthorProvider({ children }) {
 
   // Check for new releases from followed authors
   async function checkForNewReleases(authors = followedAuthors) {
-    if (!authors || !authors.length) return;
+    if (!authors || !authors.length || !user || !user.$id) return;
 
     try {
       const releases = [];
@@ -372,16 +395,18 @@ export function AuthorProvider({ children }) {
 
       // Merge with any currently-unread notifications to ensure UI shows unread releases
       try {
-        const raw = await AsyncStorage.getItem(NOTIFS_KEY);
+        const raw = await AsyncStorage.getItem(NOTIFS_KEY(user.$id));
         const existing = raw ? JSON.parse(raw) : [];
         const unread = existing.filter((n) => !n.read);
         // prefer unread notifications for display (they may include items found earlier)
         if (unread.length > 0) {
           setNewReleases(
-            unread.map((n) => ({
-              author: n.author,
-              books: filterUnownedBooks(n.books || [])
-            })).filter((n) => n.books.length > 0) // Remove releases with no unowned books
+            unread
+              .map((n) => ({
+                author: n.author,
+                books: filterUnownedBooks(n.books || []),
+              }))
+              .filter((n) => n.books.length > 0) // Remove releases with no unowned books
           );
         } else {
           setNewReleases(releases); // releases already filtered above
@@ -436,6 +461,7 @@ export function AuthorProvider({ children }) {
     const channel = `databases.${DATABASE_ID}.collections.${AUTHORS_COLLECTION_ID}.documents`;
 
     if (user) {
+      console.log('User changed, fetching followed authors for:', user.$id);
       fetchFollowedAuthors();
 
       unsubscribe = client.subscribe(channel, (response) => {
@@ -460,6 +486,7 @@ export function AuthorProvider({ children }) {
         }
       });
     } else {
+      console.log('No user, clearing all author data');
       setFollowedAuthors([]);
       setNewReleases([]);
       setNotifications([]);
@@ -469,7 +496,7 @@ export function AuthorProvider({ children }) {
       if (unsubscribe) unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, user?.$id]); // Add user.$id to ensure it re-runs when user changes
 
   // Periodic checks (kept as fallback)
   useEffect(() => {
@@ -491,25 +518,43 @@ export function AuthorProvider({ children }) {
   // Update newReleases when user's book collection changes
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('Books/readBooks/notifications changed, refreshing newReleases:', {
-        booksCount: books?.length || 0,
-        readBooksCount: readBooks?.length || 0,
-        notificationsCount: notifications?.length || 0
-      });
+      console.log(
+        'Books/readBooks/notifications changed, refreshing newReleases:',
+        {
+          booksCount: books?.length || 0,
+          readBooksCount: readBooks?.length || 0,
+          notificationsCount: notifications?.length || 0,
+          userId: user?.$id,
+        }
+      );
     }
 
     if (user && notifications.length > 0) {
       const unread = notifications.filter((n) => !n.read);
 
-      const filteredReleases = unread.map((n) => ({
-        author: n.author,
-        books: filterUnownedBooks(n.books || [])
-      })).filter((n) => n.books.length > 0); // Remove releases with no unowned books
+      const filteredReleases = unread
+        .map((n) => ({
+          author: n.author,
+          books: filterUnownedBooks(n.books || []),
+        }))
+        .filter((n) => n.books.length > 0); // Remove releases with no unowned books
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Filtered newReleases:', {
+          originalUnreadCount: unread.length,
+          filteredCount: filteredReleases.length,
+          userId: user.$id,
+        });
+      }
 
       setNewReleases(filteredReleases);
+    } else if (!user) {
+      // Clear new releases if no user
+      console.log('No user, clearing newReleases');
+      setNewReleases([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [books, readBooks, notifications]); // Re-run when user's book collection or notifications change
+  }, [books, readBooks, notifications, user]); // Add user to dependencies
 
   return (
     <AuthorContext.Provider

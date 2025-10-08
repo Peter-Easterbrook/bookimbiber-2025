@@ -183,7 +183,7 @@ const Profile = () => {
         </ScrollView>
       ) : (
         <ThemedText style={styles.readBookStatement}>
-          No books read yet
+          No books read yet.
         </ThemedText>
       )}
       <Spacer height={30} />

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useContext, useRef, useEffect, useState } from 'react'; // Added useState
+import { useContext, useEffect, useRef, useState } from 'react'; // Added useState
 import {
   Animated,
   Image,
@@ -13,6 +13,7 @@ import {
 import { Colors } from '../constants/Colors';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { useAuthors } from '../hooks/useAuthors';
+import { useUser } from '../hooks/useUser';
 import ThemedCard from './ThemedCard';
 import ThemedText from './ThemedText';
 const Logo = require('../assets/icon.png'); // Changed to require for proper asset loading
@@ -26,11 +27,24 @@ const NewReleasesCard = ({ style }) => {
   const fallback = useColorScheme();
   const theme = Colors[scheme || fallback] ?? Colors.light;
   const router = useRouter();
-  const [failedImages, setFailedImages] = useState(new Set()); // Track failed images
+  const [failedImages, setFailedImages] = useState(new Set());
+  const { user } = useUser();
 
   const { newReleases, checkForNewReleases, authorsLoading } = useAuthors();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  // Debug logging
+  useEffect(() => {
+    console.log('NewReleasesCard - newReleases updated:', {
+      userId: user?.$id,
+      count: newReleases?.length || 0,
+      releases: newReleases?.map((r) => ({
+        author: r.author,
+        booksCount: r.books?.length || 0,
+      })),
+    });
+  }, [newReleases, user]);
 
   // Animate refresh icon when loading
   useEffect(() => {
@@ -62,9 +76,25 @@ const NewReleasesCard = ({ style }) => {
     }
   };
 
-  if (newReleases.length === 0) {
-    return null; // Don't show card if no new releases
+  if (!user) {
+    console.log('NewReleasesCard - No user, not showing card');
+    return null;
   }
+
+  if (!newReleases || newReleases.length === 0) {
+    console.log(
+      'NewReleasesCard - Not showing card, no releases for user:',
+      user.$id
+    );
+    return null;
+  }
+
+  console.log(
+    'NewReleasesCard - Showing card with releases:',
+    newReleases.length,
+    'for user:',
+    user.$id
+  );
 
   return (
     <ThemedCard style={[styles.card, style]}>
@@ -83,25 +113,31 @@ const NewReleasesCard = ({ style }) => {
           disabled={isRefreshing || authorsLoading}
           style={[
             styles.refreshButton,
-            (isRefreshing || authorsLoading) && styles.refreshButtonDisabled
+            (isRefreshing || authorsLoading) && styles.refreshButtonDisabled,
           ]}
         >
           <Animated.View
             style={[
               (isRefreshing || authorsLoading) && {
-                transform: [{
-                  rotate: rotateAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0deg', '360deg'],
-                  }),
-                }],
+                transform: [
+                  {
+                    rotate: rotateAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', '360deg'],
+                    }),
+                  },
+                ],
               },
             ]}
           >
             <Ionicons
               name="refresh"
               size={16}
-              color={(isRefreshing || authorsLoading) ? theme.iconColor + '80' : theme.iconColor}
+              color={
+                isRefreshing || authorsLoading
+                  ? theme.iconColor + '80'
+                  : theme.iconColor
+              }
             />
           </Animated.View>
         </Pressable>
@@ -252,7 +288,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start', // Changed from 'center' for better top alignment
     minWidth: 160,
-    paddingVertical: 8, // Added for better spacing
+    // paddingVertical: 2, // Added for better spacing
   },
   authorName: {
     fontSize: 14,

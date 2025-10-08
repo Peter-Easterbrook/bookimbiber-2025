@@ -16,12 +16,12 @@ export default function ThemedTextInput({
     <TextInput
       // use 50% opacity placeholder by default
       placeholderTextColor={placeholderTextColor || `${theme.text}B3`}
-      autoCapitalize='none'
+      autoCapitalize="none"
       style={[
         {
           backgroundColor: theme.uiBackground,
           color: theme.text, // entered text stays fully opaque
-          paddingVertical: 20,
+          paddingVertical: 16,
           paddingLeft: 10,
           borderRadius: 5,
           alignSelf: 'center',
@@ -32,7 +32,7 @@ export default function ThemedTextInput({
           fontFamily: 'berlin-sans-fb',
           opacity: 1,
           letterSpacing: 1,
-          fontSize: 16,
+          fontSize: 18,
         },
         style,
       ]}

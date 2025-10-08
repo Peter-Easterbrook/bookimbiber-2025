@@ -147,7 +147,7 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
   if (!visible) return null;
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView safe={true} style={styles.container}>
       <View style={styles.header}>
         <ThemedText title style={styles.headerTitle}>
           Search Books
@@ -216,17 +216,17 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    paddingHorizontal: 10,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+    paddingHorizontal: 16,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '300',
   },
   closeButton: {
     padding: 8,
