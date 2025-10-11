@@ -86,7 +86,7 @@ const Books = () => {
           data={books || []}
           keyExtractor={(item) => item.$id}
           contentContainerStyle={styles.list}
-          extraData={followedAuthors} // ensure rows re-render when follow state changes
+          extraData={[followedAuthors, scheme, theme]} // Add scheme and theme to force re-render
           renderItem={({ item }) => {
             const bookImageUrl = item.thumbnail || item.coverImage;
 

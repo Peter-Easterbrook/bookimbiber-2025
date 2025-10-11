@@ -256,6 +256,9 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: 16,
     padding: 16,
+    alignSelf: 'center',
+    width: '95%',
+    maxWidth: 550,
   },
   header: {
     flexDirection: 'row',
