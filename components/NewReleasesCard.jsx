@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useContext, useEffect, useRef, useState } from 'react'; // Added useState
+import { useContext, useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Animated,
   Image,
   Pressable,
@@ -14,9 +15,13 @@ import { Colors } from '../constants/Colors';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { useAuthors } from '../hooks/useAuthors';
 import { useUser } from '../hooks/useUser';
+import { Debouncer } from '../utils/api-cache';
 import ThemedCard from './ThemedCard';
 import ThemedText from './ThemedText';
-const Logo = require('../assets/icon.png'); // Changed to require for proper asset loading
+const Logo = require('../assets/icon.png');
+
+// Create debouncer instance for UI (1 hour cooldown)
+const uiDebouncer = new Debouncer(60 * 60 * 1000);
 
 /**
  * NewReleasesCard Component
@@ -33,18 +38,6 @@ const NewReleasesCard = ({ style }) => {
   const { newReleases, checkForNewReleases, authorsLoading } = useAuthors();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const rotateAnim = useRef(new Animated.Value(0)).current;
-
-  // Debug logging
-  useEffect(() => {
-    console.log('NewReleasesCard - newReleases updated:', {
-      userId: user?.$id,
-      count: newReleases?.length || 0,
-      releases: newReleases?.map((r) => ({
-        author: r.author,
-        booksCount: r.books?.length || 0,
-      })),
-    });
-  }, [newReleases, user]);
 
   // Animate refresh icon when loading
   useEffect(() => {
@@ -66,35 +59,46 @@ const NewReleasesCard = ({ style }) => {
   const handleRefresh = async () => {
     if (isRefreshing || authorsLoading) return;
 
+    const debounceKey = `new-releases-refresh-${user?.$id}`;
+
+    // Check if we're still in cooldown
+    if (!uiDebouncer.canProceed(debounceKey)) {
+      const remainingMs = uiDebouncer.getRemainingTime(debounceKey);
+      const remainingMinutes = Math.ceil(remainingMs / 60000);
+
+      Alert.alert(
+        'Please Wait',
+        `You can refresh again in ${remainingMinutes} minute${
+          remainingMinutes !== 1 ? 's' : ''
+        }.\n\nThis helps reduce API usage and stay within quota limits.`,
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     setIsRefreshing(true);
     try {
-      await checkForNewReleases();
+      await checkForNewReleases(undefined, true); // Pass true to force refresh
+      uiDebouncer.markCalled(debounceKey);
     } catch (error) {
       console.error('Failed to refresh new releases:', error);
+      Alert.alert(
+        'Refresh Failed',
+        'Could not check for new releases. Please try again later.',
+        [{ text: 'OK' }]
+      );
     } finally {
       setIsRefreshing(false);
     }
   };
 
   if (!user) {
-    console.log('NewReleasesCard - No user, not showing card');
     return null;
   }
 
   if (!newReleases || newReleases.length === 0) {
-    console.log(
-      'NewReleasesCard - Not showing card, no releases for user:',
-      user.$id
-    );
     return null;
   }
-
-  console.log(
-    'NewReleasesCard - Showing card with releases:',
-    newReleases.length,
-    'for user:',
-    user.$id
-  );
 
   return (
     <ThemedCard style={[styles.card, style]}>
@@ -169,7 +173,6 @@ const NewReleasesCard = ({ style }) => {
                   <Pressable
                     key={`${imageKey}-${bookIndex}`}
                     onPress={() => {
-                      // Filter to only essential serializable fields to avoid JSON issues
                       const bookToPass = {
                         title: book.title,
                         author: book.author,
@@ -182,7 +185,6 @@ const NewReleasesCard = ({ style }) => {
                         pageCount: book.pageCount,
                         googleBooksId: book.googleBooksId,
                       };
-                      console.log('Book to pass:', bookToPass); // Debug log
                       router.push({
                         pathname: '/create',
                         params: {
@@ -205,7 +207,6 @@ const NewReleasesCard = ({ style }) => {
                         style={styles.bookCover}
                         resizeMode="cover"
                         onError={() => {
-                          console.warn('Failed to load book cover image');
                           setFailedImages((prev) =>
                             new Set(prev).add(imageKey)
                           );
