@@ -3,17 +3,21 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { ID, Permission, Query, Role } from 'react-native-appwrite';
 import { useUser } from '../hooks/useUser';
 import { client, databases } from '../lib/appwrite';
-import { searchBooks } from '../lib/googleBooks';
+import { searchBooksByAuthor } from '../lib/googleBooks';
 import {
   incrementNotificationCount,
   sendLocalNotification,
 } from '../lib/notifications';
+import { Debouncer } from '../utils/api-cache';
 import { BooksContext } from './BooksContext';
 
 const DATABASE_ID = '681e133100381d53f199';
 const AUTHORS_COLLECTION_ID = 'authors';
 
 export const AuthorContext = createContext();
+
+// Create debouncer for refresh functionality (1 hour cooldown)
+const refreshDebouncer = new Debouncer(60 * 60 * 1000);
 
 export function AuthorProvider({ children }) {
   const [followedAuthors, setFollowedAuthors] = useState([]);
@@ -26,9 +30,6 @@ export function AuthorProvider({ children }) {
     readBooks: [],
   };
 
-  // How frequently to re-check an author (ms). 24 hours by default.
-  const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
-
   const normalizeForId = (s = '') =>
     s
       .toString()
@@ -39,43 +40,34 @@ export function AuthorProvider({ children }) {
       .trim()
       .toLowerCase();
 
-  // Generate unique ID for book comparison
   const bookIdFor = (b) => {
     if (!b) return '';
 
-    // Primary ID based on Google Books ID if available
     if (b.googleBooksId) {
       return `gbid:${String(b.googleBooksId)}`;
     }
 
-    // Fallback ID based on normalized title, author, and publication year
     const title = normalizeForId(b.title || '');
     const author = normalizeForId(b.author || '');
     const year = (b.publishedDate || '').toString().substring(0, 4);
 
-    // Include author in ID for better matching accuracy
     return `title:${title}|author:${author}|year:${year}`;
   };
 
-  // Check if a book is already in user's collection
   const isBookOwned = (book) => {
     const bookId = bookIdFor(book);
     const allUserBooks = [...(books || []), ...(readBooks || [])];
 
-    // Try multiple matching strategies for better accuracy
     const isOwned = allUserBooks.some((ownedBook) => {
       const ownedBookId = bookIdFor(ownedBook);
 
-      // Direct ID match
       if (ownedBookId === bookId) return true;
 
-      // If the new release book has a googleBooksId, also try matching by title/author/year
       if (book.googleBooksId && !ownedBook.googleBooksId) {
         const fallbackNewId = `title:${normalizeForId(book.title || '')}|author:${normalizeForId(book.author || '')}|year:${(book.publishedDate || '').toString().substring(0, 4)}`;
         if (ownedBookId === fallbackNewId) return true;
       }
 
-      // If the owned book has a googleBooksId, also try matching by title/author/year
       if (!book.googleBooksId && ownedBook.googleBooksId) {
         const fallbackOwnedId = `title:${normalizeForId(ownedBook.title || '')}|author:${normalizeForId(ownedBook.author || '')}|year:${(ownedBook.publishedDate || '').toString().substring(0, 4)}`;
         if (bookId === fallbackOwnedId) return true;
@@ -84,39 +76,16 @@ export function AuthorProvider({ children }) {
       return false;
     });
 
-    // Debug logging (can be removed in production)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Checking if book is owned:', {
-        title: book.title,
-        author: book.author,
-        hasGoogleBooksId: !!book.googleBooksId,
-        bookId,
-        totalUserBooks: allUserBooks.length,
-        isOwned,
-      });
-    }
-
     return isOwned;
   };
 
-  // Filter out owned books from a list
   const filterUnownedBooks = (bookList) => {
     const filtered = bookList.filter((book) => !isBookOwned(book));
-
-    // Debug logging (can be removed in production)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Filtering book list:', {
-        originalCount: bookList.length,
-        filteredCount: filtered.length,
-        removedCount: bookList.length - filtered.length,
-      });
-    }
-
     return filtered;
   };
 
   // ---- Notifications storage helpers ----
-  const NOTIFS_KEY = (userId) => `bookimbiber_notifications_${userId}`; // User-scoped key
+  const NOTIFS_KEY = (userId) => `bookimbiber_notifications_${userId}`;
 
   const loadNotifications = async () => {
     if (!user || !user.$id) {
@@ -129,7 +98,6 @@ export function AuthorProvider({ children }) {
       const raw = await AsyncStorage.getItem(NOTIFS_KEY(user.$id));
       const existing = raw ? JSON.parse(raw) : [];
       setNotifications(existing);
-      // derive newReleases from unread notifications so badge/card reflect unread until user acts
       const unread = existing.filter((n) => !n.read);
       setNewReleases(
         unread
@@ -137,14 +105,13 @@ export function AuthorProvider({ children }) {
             author: n.author,
             books: filterUnownedBooks(n.books || []),
           }))
-          .filter((n) => n.books.length > 0) // Remove releases with no unowned books
+          .filter((n) => n.books.length > 0)
       );
     } catch (e) {
       console.warn('Failed to load notifications', e);
     }
   };
 
-  // Save an in-app notification. Returns true if saved, false if duplicate.
   const saveNotification = async (newNotification) => {
     if (!user || !user.$id) return false;
 
@@ -169,7 +136,6 @@ export function AuthorProvider({ children }) {
       const toSave = existing.slice(0, 50);
       await AsyncStorage.setItem(NOTIFS_KEY(user.$id), JSON.stringify(toSave));
 
-      // update in-memory notifications and derived newReleases (unread)
       setNotifications(toSave);
       const unread = toSave.filter((n) => !n.read);
       setNewReleases(
@@ -178,7 +144,7 @@ export function AuthorProvider({ children }) {
             author: n.author,
             books: filterUnownedBooks(n.books || []),
           }))
-          .filter((n) => n.books.length > 0) // Remove releases with no unowned books
+          .filter((n) => n.books.length > 0)
       );
 
       return true;
@@ -188,7 +154,6 @@ export function AuthorProvider({ children }) {
     }
   };
 
-  // Mark a notification as read (and update newReleases / storage)
   const markNotificationRead = async (id) => {
     if (!user || !user.$id) return;
 
@@ -201,7 +166,6 @@ export function AuthorProvider({ children }) {
       await AsyncStorage.setItem(NOTIFS_KEY(user.$id), JSON.stringify(next));
       setNotifications(next);
 
-      // recompute unread -> newReleases
       const unread = next.filter((n) => !n.read);
       setNewReleases(
         unread
@@ -209,21 +173,13 @@ export function AuthorProvider({ children }) {
             author: n.author,
             books: filterUnownedBooks(n.books || []),
           }))
-          .filter((n) => n.books.length > 0) // Remove releases with no unowned books
+          .filter((n) => n.books.length > 0)
       );
-
-      // optionally decrement badge - if you have a badge counter util expose a decrement function instead
-      try {
-        await incrementNotificationCount(); // if this increments, replace with proper decrement if available
-      } catch (e) {
-        // ignore if not applicable
-      }
     } catch (e) {
       console.warn('Failed to mark notification read', e);
     }
   };
 
-  // Delete a notification
   const deleteNotification = async (id) => {
     if (!user || !user.$id) return;
 
@@ -240,7 +196,7 @@ export function AuthorProvider({ children }) {
             author: n.author,
             books: filterUnownedBooks(n.books || []),
           }))
-          .filter((n) => n.books.length > 0) // Remove releases with no unowned books
+          .filter((n) => n.books.length > 0)
       );
     } catch (e) {
       console.warn('Failed to delete notification', e);
@@ -261,12 +217,10 @@ export function AuthorProvider({ children }) {
       );
 
       setFollowedAuthors(response.documents || []);
-
-      // load in-app notifications and derive newReleases from unread ones
       await loadNotifications();
 
-      // Also check for fresh releases (this will add new notifications only if they are not duplicates)
-      await checkForNewReleases(response.documents || []);
+      // Don't automatically check on load - let user trigger it
+      // This reduces API calls on app startup
     } catch (error) {
       console.error('Error fetching followed authors:', error);
     } finally {
@@ -330,75 +284,105 @@ export function AuthorProvider({ children }) {
     }
   }
 
-  // Check for new releases from followed authors
-  async function checkForNewReleases(authors = followedAuthors) {
+  /**
+   * Check for new releases - NOW WITH DEBOUNCING
+   * Can be called manually or automatically
+   */
+  async function checkForNewReleases(
+    authors = followedAuthors,
+    forceRefresh = false
+  ) {
     if (!authors || !authors.length || !user || !user.$id) return;
+
+    // Check debouncer unless force refresh
+    if (!forceRefresh) {
+      const debounceKey = `check-releases-${user.$id}`;
+      if (!refreshDebouncer.canProceed(debounceKey)) {
+        const remainingMs = refreshDebouncer.getRemainingTime(debounceKey);
+        console.log(
+          `⏰ Skipping check - ${Math.ceil(remainingMs / 60000)} minutes until next allowed check`
+        );
+        return;
+      }
+      refreshDebouncer.markCalled(debounceKey);
+    }
+
+    console.log('🔍 Checking for new releases from', authors.length, 'authors');
 
     try {
       const releases = [];
       const currentYear = new Date().getFullYear();
 
-      for (const author of authors) {
-        // allow checking regardless of lastChecked — duplicates are handled by saveNotification
-        try {
-          const query = `inauthor:"${author.authorName}" subject:fiction`;
-          const books = await searchBooks(query, 10);
+      // Process authors in batches to avoid overwhelming the API
+      const BATCH_SIZE = 3;
+      for (let i = 0; i < authors.length; i += BATCH_SIZE) {
+        const batch = authors.slice(i, i + BATCH_SIZE);
 
-          const recentBooks = books.filter((book) => {
-            if (!book.publishedDate) return false;
-            const publishYear = parseInt(
-              book.publishedDate.substring(0, 4),
-              10
-            );
-            return publishYear >= currentYear - 1;
-          });
+        await Promise.all(
+          batch.map(async (author) => {
+            try {
+              // Use the new cached searchBooksByAuthor function
+              const books = await searchBooksByAuthor(author.authorName, 10);
 
-          // Filter out books that user already owns
-          const unownedRecentBooks = filterUnownedBooks(recentBooks);
-
-          if (unownedRecentBooks.length > 0) {
-            const top = unownedRecentBooks.slice(0, 3);
-            releases.push({ author: author.authorName, books: top });
-
-            const notificationData = {
-              id: `${author.$id || author.authorName}-${Date.now()}`,
-              author: author.authorName,
-              books: top,
-              ts: new Date().toISOString(),
-              read: false,
-            };
-
-            const saved = await saveNotification(notificationData);
-            if (saved) {
-              const titles = top
-                .map((b) => b.title)
-                .slice(0, 3)
-                .join(', ');
-              await sendLocalNotification({
-                title: `${author.authorName} has new releases`,
-                body: titles,
+              const recentBooks = books.filter((book) => {
+                if (!book.publishedDate) return false;
+                const publishYear = parseInt(
+                  book.publishedDate.substring(0, 4),
+                  10
+                );
+                return publishYear >= currentYear - 1;
               });
-              try {
-                await incrementNotificationCount();
-              } catch (e) {
-                // ignore
+
+              const unownedRecentBooks = filterUnownedBooks(recentBooks);
+
+              if (unownedRecentBooks.length > 0) {
+                const top = unownedRecentBooks.slice(0, 3);
+                releases.push({ author: author.authorName, books: top });
+
+                const notificationData = {
+                  id: `${author.$id || author.authorName}-${Date.now()}`,
+                  author: author.authorName,
+                  books: top,
+                  ts: new Date().toISOString(),
+                  read: false,
+                };
+
+                const saved = await saveNotification(notificationData);
+                if (saved) {
+                  const titles = top
+                    .map((b) => b.title)
+                    .slice(0, 3)
+                    .join(', ');
+                  await sendLocalNotification({
+                    title: `${author.authorName} has new releases`,
+                    body: titles,
+                  });
+                  try {
+                    await incrementNotificationCount();
+                  } catch (e) {
+                    // ignore
+                  }
+                }
               }
+            } catch (error) {
+              console.error(
+                `Error checking releases for ${author.authorName}:`,
+                error
+              );
             }
-          }
-        } catch (error) {
-          console.error(
-            `Error checking releases for ${author.authorName}:`,
-            error
-          );
+          })
+        );
+
+        // Add a small delay between batches to be nice to the API
+        if (i + BATCH_SIZE < authors.length) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
 
-      // Merge with any currently-unread notifications to ensure UI shows unread releases
       try {
         const raw = await AsyncStorage.getItem(NOTIFS_KEY(user.$id));
         const existing = raw ? JSON.parse(raw) : [];
         const unread = existing.filter((n) => !n.read);
-        // prefer unread notifications for display (they may include items found earlier)
         if (unread.length > 0) {
           setNewReleases(
             unread
@@ -406,37 +390,36 @@ export function AuthorProvider({ children }) {
                 author: n.author,
                 books: filterUnownedBooks(n.books || []),
               }))
-              .filter((n) => n.books.length > 0) // Remove releases with no unowned books
+              .filter((n) => n.books.length > 0)
           );
         } else {
-          setNewReleases(releases); // releases already filtered above
+          setNewReleases(releases);
         }
       } catch (e) {
-        // fallback
         setNewReleases(releases);
       }
 
+      console.log(
+        '✅ Finished checking for new releases. Found:',
+        releases.length
+      );
       return releases;
     } catch (error) {
       console.error('Error checking for new releases:', error);
     }
   }
 
-  // Get author suggestions based on user's books
   async function getAuthorSuggestions(userBooks) {
     const authorCounts = new Map();
 
-    // Count books by each author in user's library
     userBooks.forEach((book) => {
       const author = book.author;
-      // ignore placeholder authors that may appear (support both legacy "Unknown Author" and "Unknown")
       if (author && author !== 'Unknown' && author !== 'Unknown Author') {
         const count = authorCounts.get(author) || 0;
         authorCounts.set(author, count + 1);
       }
     });
 
-    // Filter out already followed authors
     const followedNames = new Set(
       followedAuthors.map((a) => a.authorName.toLowerCase())
     );
@@ -495,40 +478,14 @@ export function AuthorProvider({ children }) {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, user?.$id]); // Add user.$id to ensure it re-runs when user changes
+  }, [user, user?.$id]);
 
-  // Periodic checks (kept as fallback)
-  useEffect(() => {
-    let interval;
-    if (user && followedAuthors.length > 0) {
-      interval = setInterval(() => {
-        checkForNewReleases(followedAuthors).catch((e) =>
-          console.warn('Periodic checkForNewReleases failed', e)
-        );
-      }, CHECK_INTERVAL_MS);
-    }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, followedAuthors]);
+  // REMOVED: Automatic periodic checks
+  // Users will trigger checks manually via the refresh button
+  // This dramatically reduces API usage
 
   // Update newReleases when user's book collection changes
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(
-        'Books/readBooks/notifications changed, refreshing newReleases:',
-        {
-          booksCount: books?.length || 0,
-          readBooksCount: readBooks?.length || 0,
-          notificationsCount: notifications?.length || 0,
-          userId: user?.$id,
-        }
-      );
-    }
-
     if (user && notifications.length > 0) {
       const unread = notifications.filter((n) => !n.read);
 
@@ -537,24 +494,13 @@ export function AuthorProvider({ children }) {
           author: n.author,
           books: filterUnownedBooks(n.books || []),
         }))
-        .filter((n) => n.books.length > 0); // Remove releases with no unowned books
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Filtered newReleases:', {
-          originalUnreadCount: unread.length,
-          filteredCount: filteredReleases.length,
-          userId: user.$id,
-        });
-      }
+        .filter((n) => n.books.length > 0);
 
       setNewReleases(filteredReleases);
     } else if (!user) {
-      // Clear new releases if no user
-      console.log('No user, clearing newReleases');
       setNewReleases([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [books, readBooks, notifications, user]); // Add user to dependencies
+  }, [books, readBooks, notifications, user]);
 
   return (
     <AuthorContext.Provider
