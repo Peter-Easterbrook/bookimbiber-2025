@@ -114,6 +114,61 @@ export const UserProvider = ({ children }) => {
     }
   }
 
+  async function updateName(newName) {
+    if (!user) {
+      throw new Error('No user is currently logged in');
+    }
+    try {
+      // Validate name
+      if (!newName || newName.trim().length < 2) {
+        throw new Error('Name must be at least 2 characters long');
+      }
+
+      // Update name in Appwrite
+      const updatedAccount = await account.updateName(newName.trim());
+
+      // Update local user state
+      setUser(updatedAccount);
+
+      return updatedAccount;
+    } catch (error) {
+      console.error('Error updating name:', error);
+      if (error.code === 429 || error.message.includes('Rate limit')) {
+        throw new Error('Too many requests. Please wait a moment and try again.');
+      }
+      throw new Error(error.message || 'Failed to update name. Please try again.');
+    }
+  }
+
+  async function updatePassword(currentPassword, newPassword) {
+    if (!user) {
+      throw new Error('No user is currently logged in');
+    }
+    try {
+      // Validate new password
+      if (!newPassword || newPassword.length < 8) {
+        throw new Error('New password must be at least 8 characters long');
+      }
+
+      if (!currentPassword) {
+        throw new Error('Current password is required');
+      }
+
+      // Update password in Appwrite
+      await account.updatePassword(newPassword, currentPassword);
+
+      return true;
+    } catch (error) {
+      console.error('Error updating password:', error);
+      if (error.code === 429 || error.message.includes('Rate limit')) {
+        throw new Error('Too many requests. Please wait a moment and try again.');
+      } else if (error.code === 401) {
+        throw new Error('Current password is incorrect');
+      }
+      throw new Error(error.message || 'Failed to update password. Please try again.');
+    }
+  }
+
   async function deleteBooks() {
     if (!user) {
       throw new Error('No user is currently logged in');
@@ -188,7 +243,16 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider
-      value={{ user, login, register, logout, authChecked, deleteBooks }}
+      value={{
+        user,
+        login,
+        register,
+        logout,
+        authChecked,
+        deleteBooks,
+        updateName,
+        updatePassword
+      }}
     >
       {children}
     </UserContext.Provider>

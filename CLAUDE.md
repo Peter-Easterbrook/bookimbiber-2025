@@ -43,6 +43,8 @@ Book Imbiber is a React Native app built with Expo that helps users track their 
 The app uses React Context for global state management:
 
 - **UserContext** (`contexts/UserContext.jsx`) - Authentication state and user data
+  - Provides: `user`, `login`, `register`, `logout`, `updateName`, `updatePassword`, `deleteBooks`
+  - Handles user profile updates with validation and error handling
 - **ThemeContext** (`contexts/ThemeContext.jsx`) - Dark/light theme switching
 - **BooksContext** (`contexts/BooksContext.jsx`) - Book data and reading state with series detection
 - **AuthorContext** (`contexts/AuthorContext.jsx`) - Author following and new release tracking with API caching
@@ -101,6 +103,7 @@ The app uses React Context for global state management:
 
 - Appwrite-powered login/registration
 - Persistent session management
+- **Editable User Profile** - Users can update their name and password from the profile page
 - User profile with avatar support
 - Privacy-focused data handling
 
@@ -129,6 +132,9 @@ The app uses React Context for global state management:
 - Uses `SafeAreaProvider` and `useSafeAreaInsets` throughout
 - Custom `useEdgeToEdge` hook provides consistent inset handling
 - All main screens properly handle system UI insets
+- **Android Navigation Bar Configuration** - Transparent navigation bar with proper system UI integration
+  - Configured in `app.json` for compatibility with 3-button and gesture navigation
+  - Ensures content is not hidden and touch input works correctly on all Android devices
 - Compatible with Android 14 and earlier versions
 
 ### Database Schema (Appwrite)
@@ -244,6 +250,20 @@ The app stores user books in Appwrite databases. Key collections and fields incl
 - **Performance Monitoring**: Tracks cache hit rates and load times
 - **Batch Preloading**: Preloads images for upcoming content
 
+### Profile Management System
+
+- **Editable Profile Page** (`app/(dashboard)/profile.jsx`)
+  - Toggle between view and edit modes
+  - Update user name with validation (min 2 characters)
+  - Change password with current password verification
+  - Password strength requirement (min 8 characters)
+  - Confirmation field for new password
+  - Success/error feedback with user-friendly alerts
+- **UserContext Methods**:
+  - `updateName(newName)` - Updates user's display name
+  - `updatePassword(currentPassword, newPassword)` - Updates password with verification
+  - Includes rate limiting protection and error handling
+
 ### Implementation Status
 
 - ✅ **Series Detection**: Ready - Auto-detects on book creation
@@ -252,6 +272,8 @@ The app stores user books in Appwrite databases. Key collections and fields incl
 - ✅ **Debouncing**: Implemented - 1-hour refresh cooldown
 - ✅ **Android 14 Features**: Ready - Requires expo-notifications setup
 - ✅ **Image Optimization**: Ready - Replace existing Image components
+- ✅ **Profile Editing**: Implemented - Users can update name and password
+- ✅ **Android Navigation Bar**: Configured - Compatible with all navigation types
 
 ### Required Dependencies
 
