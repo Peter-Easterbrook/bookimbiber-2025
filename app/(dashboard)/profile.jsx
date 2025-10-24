@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import Logo from '../../assets/icon.png';
 import Spacer from '../../components/Spacer';
+import ThemedButton from '../../components/ThemedButton';
 import ThemedText from '../../components/ThemedText';
+import ThemedTextInput from '../../components/ThemedTextInput';
 import ThemedView from '../../components/ThemedView';
 import { Colors } from '../../constants/Colors';
 import { ThemeContext } from '../../contexts/ThemeContext';
@@ -24,17 +26,90 @@ const Profile = () => {
   const { scheme } = useContext(ThemeContext);
   const fallback = useColorScheme();
   const theme = Colors[scheme || fallback] ?? Colors.light;
-  const { user, deleteBooks } = useUser();
+  const { user, deleteBooks, updateName, updatePassword } = useUser();
   const { books, readBooks, booksLoading } = useBooks();
   const navigation = useRouter();
   const responsiveHeading = useResponsiveHeadingStyle();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Form states
+  const [newName, setNewName] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const getInitial = (user) => {
     if (!user) return '';
     if (user.name && user.name.length > 0) return user.name[0].toUpperCase();
     if (user.email && user.email.length > 0) return user.email[0].toUpperCase();
     return '';
+  };
+
+  const handleEditToggle = () => {
+    if (isEditing) {
+      // Cancel editing - reset form
+      setNewName('');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } else {
+      // Start editing - prefill with current name
+      setNewName(user?.name || '');
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleSaveChanges = async () => {
+    setIsSaving(true);
+    let nameUpdated = false;
+    let passwordUpdated = false;
+
+    try {
+      // Update name if changed
+      if (newName && newName.trim() !== user.name) {
+        await updateName(newName);
+        nameUpdated = true;
+      }
+
+      // Update password if provided
+      if (newPassword || currentPassword) {
+        if (!currentPassword) {
+          throw new Error('Current password is required to change password');
+        }
+        if (!newPassword) {
+          throw new Error('New password is required');
+        }
+        if (newPassword !== confirmPassword) {
+          throw new Error('New passwords do not match');
+        }
+        await updatePassword(currentPassword, newPassword);
+        passwordUpdated = true;
+      }
+
+      // Show success message
+      if (nameUpdated && passwordUpdated) {
+        Alert.alert('Success', 'Your name and password have been updated');
+      } else if (nameUpdated) {
+        Alert.alert('Success', 'Your name has been updated');
+      } else if (passwordUpdated) {
+        Alert.alert('Success', 'Your password has been updated');
+      } else {
+        Alert.alert('No Changes', 'No changes were made to your profile');
+      }
+
+      // Reset form and exit edit mode
+      setNewName('');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setIsEditing(false);
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to update profile');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (!user) {
@@ -83,110 +158,195 @@ const Profile = () => {
 
   return (
     <ThemedView style={styles.container}>
-      <View
-        style={[
-          styles.initialCircle,
-          {
-            backgroundColor: theme.buttonBackgroundFocused + '33',
-            borderColor: theme.uiBorder,
-          },
-        ]}
+      <ScrollView
+        style={{ width: '100%' }}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        <ThemedText style={[styles.initialText, { color: theme.iconColor }]}>
-          {getInitial(user)}
-        </ThemedText>
-      </View>
-      <Spacer height={20} />
-      <ThemedText title={true} style={styles.heading}>
-        Hello, {user.name}
-      </ThemedText>
-      <Spacer height={30} />
-      {readBooks.length > 0 && (
-        <ThemedText title={true} style={responsiveHeading}>
-          Reading History:
-        </ThemedText>
-      )}
-
-      {booksLoading ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color={theme.text} />
-        </View>
-      ) : readBooks.length > 0 ? (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={{ width: '100%' }}
-          contentContainerStyle={styles.readBooksSection}
+        <View
+          style={[
+            styles.initialCircle,
+            {
+              backgroundColor: theme.buttonBackgroundFocused + '33',
+              borderColor: theme.uiBorder,
+            },
+          ]}
         >
-          {[...readBooks].map((book) => (
-            <View
-              key={book.$id || book.id}
-              style={[
-                styles.readBookItem,
-                {
-                  backgroundColor: theme.uiBackground,
-                  borderLeftColor: theme.uiButtonBorder,
-                },
-              ]}
-            >
-              <View style={styles.readBookItemContent}>
-                <View style={styles.bookInfo}>
-                  <ThemedText
-                    style={styles.readBookTitle}
-                    numberOfLines={2}
-                    title={true}
-                  >
-                    {book.title}
-                  </ThemedText>
-                  <ThemedText style={styles.readBookAuthor}>
-                    by {book.author}
-                  </ThemedText>
-                  {book.readAt && (
-                    <ThemedText style={styles.readBookDate}>
-                      Finished on {new Date(book.readAt).toLocaleDateString()}
-                    </ThemedText>
-                  )}
-                </View>
-                {/* Book Cover */}
-                <>
-                  {book.thumbnail || book.coverImage ? (
-                    <Image
-                      source={{
-                        uri: (book.thumbnail || book.coverImage).replace(
-                          'http://',
-                          'https://'
-                        ),
-                      }}
-                      style={styles.bookCover}
-                      resizeMode="cover"
-                      onError={(error) => {
-                        console.log(
-                          'Profile image error:',
-                          error.nativeEvent.error
-                        );
-                      }}
-                    />
-                  ) : (
-                    <View style={styles.bookCoverPlaceholder}>
-                      <Image
-                        source={Logo}
-                        style={{ width: 60, height: 60 }}
-                        resizeMode="contain"
-                        accessibilityLabel="Placeholder Book Cover"
-                        accessibilityRole="image"
-                      />
-                    </View>
-                  )}
-                </>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-      ) : (
-        <ThemedText style={styles.readBookStatement}>
-          No books read yet.
+          <ThemedText style={[styles.initialText, { color: theme.iconColor }]}>
+            {getInitial(user)}
+          </ThemedText>
+        </View>
+        <Spacer height={20} />
+        <ThemedText title={true} style={styles.heading}>
+          Hello, {user.name}
         </ThemedText>
-      )}
-      <Spacer height={30} />
+        <Spacer height={10} />
+        <ThemedText style={styles.emailText}>{user.email}</ThemedText>
+        <Spacer height={20} />
+
+        {/* Edit Profile Section */}
+        {!isEditing ? (
+          <ThemedButton onPress={handleEditToggle} style={styles.editButton}>
+            <ThemedText style={styles.editButtonText}>Edit Profile</ThemedText>
+          </ThemedButton>
+        ) : (
+          <View style={styles.editForm}>
+            <ThemedText title={true} style={styles.sectionTitle}>
+              Edit Profile
+            </ThemedText>
+            <Spacer height={15} />
+
+            {/* Name Field */}
+            <ThemedText style={styles.label}>Name</ThemedText>
+            <ThemedTextInput
+              value={newName}
+              onChangeText={setNewName}
+              placeholder="Enter your name"
+              style={styles.input}
+            />
+            <Spacer height={20} />
+
+            {/* Password Section */}
+            <ThemedText style={styles.label}>Change Password (Optional)</ThemedText>
+            <Spacer height={10} />
+            <ThemedTextInput
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+              placeholder="Current password"
+              secureTextEntry
+              style={styles.input}
+            />
+            <Spacer height={10} />
+            <ThemedTextInput
+              value={newPassword}
+              onChangeText={setNewPassword}
+              placeholder="New password (min 8 characters)"
+              secureTextEntry
+              style={styles.input}
+            />
+            <Spacer height={10} />
+            <ThemedTextInput
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Confirm new password"
+              secureTextEntry
+              style={styles.input}
+            />
+            <Spacer height={25} />
+
+            {/* Action Buttons */}
+            <View style={styles.buttonRow}>
+              <ThemedButton
+                onPress={handleSaveChanges}
+                style={[styles.actionButton, { opacity: isSaving ? 0.5 : 1 }]}
+                disabled={isSaving}
+              >
+                <ThemedText style={styles.buttonText}>
+                  {isSaving ? 'Saving...' : 'Save Changes'}
+                </ThemedText>
+              </ThemedButton>
+              <ThemedButton
+                onPress={handleEditToggle}
+                style={[
+                  styles.actionButton,
+                  {
+                    backgroundColor: theme.uiBackground,
+                    borderColor: theme.uiBorder,
+                  },
+                ]}
+                disabled={isSaving}
+              >
+                <ThemedText style={styles.buttonText}>Cancel</ThemedText>
+              </ThemedButton>
+            </View>
+          </View>
+        )}
+
+        <Spacer height={30} />
+        {readBooks.length > 0 && (
+          <ThemedText title={true} style={responsiveHeading}>
+            Reading History:
+          </ThemedText>
+        )}
+        <Spacer height={10} />
+
+        {booksLoading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color={theme.text} />
+          </View>
+        ) : readBooks.length > 0 ? (
+          <>
+            {[...readBooks].map((book) => (
+              <View
+                key={book.$id || book.id}
+                style={[
+                  styles.readBookItem,
+                  {
+                    backgroundColor: theme.uiBackground,
+                    borderLeftColor: theme.uiButtonBorder,
+                  },
+                ]}
+              >
+                <View style={styles.readBookItemContent}>
+                  <View style={styles.bookInfo}>
+                    <ThemedText
+                      style={styles.readBookTitle}
+                      numberOfLines={2}
+                      title={true}
+                    >
+                      {book.title}
+                    </ThemedText>
+                    <ThemedText style={styles.readBookAuthor}>
+                      by {book.author}
+                    </ThemedText>
+                    {book.readAt && (
+                      <ThemedText style={styles.readBookDate}>
+                        Finished on {new Date(book.readAt).toLocaleDateString()}
+                      </ThemedText>
+                    )}
+                  </View>
+                  {/* Book Cover */}
+                  <>
+                    {book.thumbnail || book.coverImage ? (
+                      <Image
+                        source={{
+                          uri: (book.thumbnail || book.coverImage).replace(
+                            'http://',
+                            'https://'
+                          ),
+                        }}
+                        style={styles.bookCover}
+                        resizeMode="cover"
+                        onError={(error) => {
+                          console.log(
+                            'Profile image error:',
+                            error.nativeEvent.error
+                          );
+                        }}
+                      />
+                    ) : (
+                      <View style={styles.bookCoverPlaceholder}>
+                        <Image
+                          source={Logo}
+                          style={{ width: 60, height: 60 }}
+                          resizeMode="contain"
+                          accessibilityLabel="Placeholder Book Cover"
+                          accessibilityRole="image"
+                        />
+                      </View>
+                    )}
+                  </>
+                </View>
+              </View>
+            ))}
+          </>
+        ) : (
+          <ThemedText style={styles.readBookStatement}>
+            No books read yet.
+          </ThemedText>
+        )}
+        <Spacer height={30} />
+      </ScrollView>
     </ThemedView>
   );
 };
@@ -196,8 +356,12 @@ export default Profile;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+  },
+  scrollContent: {
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 30,
+    paddingBottom: 40,
   },
   heading: {
     fontFamily: 'berlin-sans-fb-bold',
@@ -206,6 +370,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     paddingVertical: 0,
+  },
+  emailText: {
+    fontSize: 14,
+    textAlign: 'center',
+    opacity: 0.7,
   },
   avatar: {
     marginBottom: 20,
@@ -216,22 +385,58 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
     borderWidth: 2,
-    overflow: 'hidden', // Ensures the circle is clipped
+    overflow: 'hidden',
   },
   initialText: {
     fontSize: 48,
     fontWeight: 'bold',
   },
+  editButton: {
+    maxWidth: 200,
+    width: '100%',
+  },
+  editButtonText: {
+    fontFamily: 'berlin-sans-fb',
+    fontSize: 16,
+    letterSpacing: 1,
+  },
+  editForm: {
+    width: '100%',
+    maxWidth: 500,
+    paddingHorizontal: 10,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    textAlign: 'center',
+    letterSpacing: 1,
+  },
+  label: {
+    fontSize: 14,
+    marginBottom: 8,
+    letterSpacing: 1,
+  },
+  input: {
+    width: '100%',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+    width: '100%',
+  },
+  actionButton: {
+    flex: 1,
+    maxWidth: '48%',
+  },
+  buttonText: {
+    fontFamily: 'berlin-sans-fb',
+    fontSize: 14,
+    letterSpacing: 1,
+  },
   readBookStatement: {
     fontSize: 16,
     textAlign: 'center',
-  },
-  readBooksSection: {
-    width: '100%',
-    paddingHorizontal: 4,
-    paddingBottom: 20,
   },
   readBookItem: {
     alignSelf: 'center',
