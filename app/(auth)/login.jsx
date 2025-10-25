@@ -8,7 +8,6 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  useColorScheme,
   View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -32,8 +31,7 @@ const Login = () => {
   const { login, user, logout } = useUser();
 
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
 
   // Theme-aware warning colors with top-level fallbacks
   const warningColor = (theme && theme.warning) || Colors.warning;

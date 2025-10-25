@@ -9,8 +9,7 @@ import { useAuthors } from '../../hooks/useAuthors';
 
 const NotificationsScreen = () => {
   const { scheme } = useContext(ThemeContext);
-  const fallback = 'light';
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
 
   const { notifications, markNotificationRead, deleteNotification } = useAuthors();
 

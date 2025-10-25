@@ -6,7 +6,7 @@ import {
 } from '@react-navigation/drawer';
 import { useRouter } from 'expo-router';
 import { useContext } from 'react';
-import { Alert, StyleSheet, useColorScheme, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { useBooks } from '../hooks/useBooks';
@@ -16,8 +16,7 @@ import ThemedText from './ThemedText';
 
 export default function CustomDrawerContent(props) {
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
   const { user, logout } = useUser();
   const router = useRouter();
   const { deleteBooks } = useBooks();

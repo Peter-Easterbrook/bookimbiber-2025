@@ -5,7 +5,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
 } from 'react-native';
 import { Colors } from '../constants/Colors';
@@ -19,8 +18,7 @@ const AuthorFollowButton = ({
   size = 'medium', // small, medium, large
 }) => {
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme ? useColorScheme() : 'light';
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
 
   const { followedAuthors, followAuthor, unfollowAuthor, authorsLoading } =
     useAuthors();

@@ -1,22 +1,16 @@
-import { Camera } from 'expo-camera';
-import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { useState } from 'react';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { searchByISBN } from '../lib/googleBooks';
 
 const ISBNScanner = ({ onBookFound, onClose }) => {
-  const [hasPermission, setHasPermission] = useState(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
-  const cameraRef = useRef(null);
 
-  useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  }, []);
-
-  const handleBarCodeScanned = async ({ data }) => {
+  const handleBarcodeScanned = async ({ data }) => {
     setScanned(true);
+    console.log('Barcode scanned:', data);
+
     // Validate ISBN (EAN-13 barcodes for books start with 978 or 979)
     if (/^97[89]\d{10}$/.test(data)) {
       try {
@@ -24,52 +18,137 @@ const ISBNScanner = ({ onBookFound, onClose }) => {
         if (book) {
           onBookFound(book);
         } else {
-          alert('No book found for this ISBN.');
+          Alert.alert('Not Found', 'No book found for this ISBN.');
         }
       } catch (e) {
-        alert('Error fetching book data.');
+        console.error('Error fetching book data:', e);
+        Alert.alert('Error', 'Error fetching book data. Please try again.');
       }
     } else {
-      alert('Scanned code is not a valid ISBN.');
+      Alert.alert('Invalid ISBN', 'Scanned code is not a valid ISBN.');
     }
     onClose();
   };
 
-  if (hasPermission === null) {
-    return <Text>Requesting camera permission...</Text>;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
+  // Handle permission request
+  if (!permission) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>Requesting camera permission...</Text>
+      </View>
+    );
   }
 
-  console.log('Camera.Constants:', Camera.Constants);
+  if (!permission.granted) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>Camera permission is required to scan barcodes</Text>
+        <TouchableOpacity
+          style={styles.permissionButton}
+          onPress={requestPermission}
+        >
+          <Text style={styles.permissionButtonText}>Grant Permission</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={onClose}
+        >
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
-    <View style={{ flex: 1 }}>
-      <Camera
-        ref={cameraRef}
+    <View style={styles.container}>
+      <CameraView
         style={StyleSheet.absoluteFillObject}
-        type='back'
-        barCodeScannerSettings={{
-          barCodeTypes: ['ean13'], // EAN-13 for ISBN
+        facing="back"
+        barcodeScannerSettings={{
+          barcodeTypes: ['ean13'], // EAN-13 for ISBN
         }}
-        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+        onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
       />
+      <View style={styles.overlay}>
+        <Text style={styles.instructions}>
+          Point your camera at a book barcode
+        </Text>
+      </View>
       <TouchableOpacity
-        style={{
-          position: 'absolute',
-          bottom: 40,
-          alignSelf: 'center',
-          backgroundColor: 'rgba(0,0,0,0.6)',
-          padding: 12,
-          borderRadius: 8,
-        }}
+        style={styles.closeButton}
         onPress={onClose}
       >
-        <Text style={{ color: '#fff', fontSize: 16 }}>Cancel</Text>
+        <Text style={styles.closeButtonText}>Cancel</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  message: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  permissionButton: {
+    backgroundColor: '#f6a800',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  permissionButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  cancelButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  overlay: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  instructions: {
+    color: '#fff',
+    fontSize: 18,
+    textAlign: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  closeButton: {
+    position: 'absolute',
+    bottom: 40,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+});
 
 export default ISBNScanner;

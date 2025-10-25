@@ -6,12 +6,14 @@ import {
   Alert,
   FlatList,
   Image,
+  Modal,
   Pressable,
   StyleSheet,
   View,
 } from 'react-native';
 import Logo from '../assets/icon.png'; // Placeholder image for book cover
-import { searchBooks } from '../lib/googleBooks';
+import { searchBooks, searchByISBN } from '../lib/googleBooks';
+import ISBNScanner from './ISBNScanner';
 import Spacer from './Spacer';
 import ThemedButton from './ThemedButton';
 import ThemedText from './ThemedText';
@@ -23,6 +25,7 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -34,23 +37,42 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
     setHasSearched(true);
 
     try {
-      // Get user's language with fallback to 'en' if undefined
-      const locale =
-        Localization.locale ||
-        Localization.getLocales()[0]?.languageCode ||
-        'en';
-      const userLang = locale.split('-')[0];
-      console.log('🌍 User locale:', userLang);
+      // Check if the query is an ISBN
+      const isISBN = /^(?:ISBN(?:-1[03])?:?\s*)?(?=[0-9X]{10}$|(?=(?:[0-9]+[-\s]){3})[-\s0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[-\s]){4})[-\s0-9]{17}$)(?:97[89][-\s]?)?[0-9]{1,5}[-\s]?[0-9]+[-\s]?[0-9]+[-\s]?[0-9X]$/i.test(
+        searchQuery.trim().replace(/[-\s]/g, '')
+      );
 
-      // Search with user's locale to get mixed language results
-      const results = await searchBooks(searchQuery.trim(), 20, userLang);
-      setSearchResults(results || []);
+      if (isISBN) {
+        console.log('🔍 Detected ISBN search:', searchQuery.trim());
+        const result = await searchByISBN(searchQuery.trim());
+        if (result) {
+          setSearchResults([result]);
+        } else {
+          Alert.alert(
+            'No Results',
+            'No book found for this ISBN. Try searching by title or author.'
+          );
+          setSearchResults([]);
+        }
+      } else {
+        // Get user's language with fallback to 'en' if undefined
+        const locale =
+          Localization.locale ||
+          Localization.getLocales()[0]?.languageCode ||
+          'en';
+        const userLang = locale.split('-')[0];
+        console.log('🌍 User locale:', userLang);
 
-      if (!results || results.length === 0) {
-        Alert.alert(
-          'No Results',
-          'No books found for your search. Try different keywords.'
-        );
+        // Search with user's locale to get mixed language results
+        const results = await searchBooks(searchQuery.trim(), 20, userLang);
+        setSearchResults(results || []);
+
+        if (!results || results.length === 0) {
+          Alert.alert(
+            'No Results',
+            'No books found for your search. Try different keywords.'
+          );
+        }
       }
     } catch (error) {
       console.error('Search error:', error);
@@ -61,6 +83,14 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
       setSearchResults([]);
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  const handleISBNScan = async (book) => {
+    if (book) {
+      setSearchResults([book]);
+      setHasSearched(true);
+      setShowScanner(false);
     }
   };
 
@@ -163,7 +193,15 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
 
       <View style={styles.searchContainer}>
         <ThemedTextInput
-          style={styles.searchInput}
+          style={[
+            styles.searchInput,
+            {
+              backgroundColor: theme.uiBackground,
+              color: theme.text,
+              borderColor: theme.uiBorder,
+            },
+          ]}
+          placeholderTextColor={`${theme.text}B3`}
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholder="Search by title, author, or ISBN..."
@@ -180,6 +218,13 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
           ) : (
             <Ionicons name="search" size={24} color={theme.iconColor} />
           )}
+        </ThemedButton>
+        <ThemedButton
+          onPress={() => setShowScanner(true)}
+          disabled={isSearching}
+          style={styles.scanButton}
+        >
+          <Ionicons name="barcode-outline" size={24} color={theme.iconColor} />
         </ThemedButton>
       </View>
 
@@ -209,6 +254,18 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
           showsVerticalScrollIndicator={false}
         />
       )}
+
+      {/* ISBN Scanner Modal */}
+      <Modal
+        visible={showScanner}
+        animationType="slide"
+        presentationStyle="fullScreen"
+      >
+        <ISBNScanner
+          onBookFound={handleISBNScan}
+          onClose={() => setShowScanner(false)}
+        />
+      </Modal>
     </ThemedView>
   );
 };

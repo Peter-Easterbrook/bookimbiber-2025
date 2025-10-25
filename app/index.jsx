@@ -1,7 +1,7 @@
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useContext } from 'react';
-import { StyleSheet, useColorScheme } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { blueShades, cornShades } from '../constants/Colors';
 import { ThemeContext } from '../contexts/ThemeContext';
@@ -15,10 +15,9 @@ import { Colors } from '../constants/Colors';
 
 const Home = () => {
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
-  const finalScheme = scheme || fallback;
+  const finalScheme = scheme ?? 'dark';
   const gradientColors = finalScheme === 'dark' ? blueShades : cornShades;
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
   const { user, logout } = useUser();
   const insets = useSafeAreaInsets();
 

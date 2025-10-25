@@ -1,5 +1,4 @@
 import { createContext, useState } from 'react';
-import { useColorScheme as RNUseColorScheme } from 'react-native';
 
 export const ThemeContext = createContext({
   scheme: 'dark',
@@ -7,13 +6,12 @@ export const ThemeContext = createContext({
 });
 
 export function ThemeProvider({ children }) {
-  const systemScheme = RNUseColorScheme();
-  const [overrideScheme, setOverrideScheme] = useState('dark');
-  const scheme = overrideScheme;
+  const [scheme, setScheme] = useState('dark');
 
   // Simple toggle between light and dark
   const toggleScheme = () => {
-    setOverrideScheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    setScheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    console.log('Theme toggled to:', scheme === 'light' ? 'dark' : 'light');
   };
 
   return (

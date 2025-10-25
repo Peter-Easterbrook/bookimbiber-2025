@@ -3,11 +3,11 @@ import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useContext, useEffect, useState } from 'react';
 import {
+  Alert,
   Dimensions,
   Image,
   ScrollView,
   StyleSheet,
-  useColorScheme,
   View,
 } from 'react-native';
 import { Confetti } from 'react-native-fast-confetti';
@@ -35,7 +35,6 @@ const BookDetails = () => {
   const { fetchBookById, deleteBook, updateBook, markAsRead } = useBooks();
   const router = useRouter();
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
   const { showButtonText } = useResponsiveButtonText();
   const { buttonStyle, containerStyle } = useResponsiveButtonStyle();
 
@@ -57,7 +56,7 @@ const BookDetails = () => {
   }, [id]);
 
   // ✅ 4. Derived values that DON'T depend on book state
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
   // const showImage = Dimensions.get('window').width > 450;
   const screenWidth = Dimensions.get('window').width;
   const imageSize =
@@ -111,16 +110,17 @@ const BookDetails = () => {
     try {
       // Use the imported utility function
       const amazonUrl = getAmazonSearchUrl(book.title, book.author);
+      console.log('🔗 Opening Amazon URL:', amazonUrl);
 
-      // Use Linking to open in browser instead of router.push
-      const canOpen = await Linking.canOpenURL(amazonUrl);
-      if (canOpen) {
-        await Linking.openURL(amazonUrl);
-      } else {
-        console.error('Cannot open Amazon URL');
-      }
+      // Direct open without canOpenURL check (more reliable on Android)
+      await Linking.openURL(amazonUrl);
     } catch (error) {
       console.error('Error opening Amazon URL:', error);
+      // Show user-friendly error message
+      Alert.alert(
+        'Cannot Open Link',
+        'Unable to open the Amazon link. Please make sure you have a web browser installed on your device.'
+      );
     }
   };
 

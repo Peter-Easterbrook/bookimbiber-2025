@@ -9,7 +9,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  useColorScheme,
   View,
 } from 'react-native';
 import { useBooks } from '../../hooks/useBooks';
@@ -27,8 +26,7 @@ import { ThemeContext } from '../../contexts/ThemeContext';
 
 const Create = () => {
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
 
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
@@ -328,7 +326,20 @@ const Create = () => {
               </ThemedButton>
             </View>
 
-            {error && <ThemedText style={styles.error}>{error}</ThemedText>}
+            {error && (
+              <ThemedText
+                style={[
+                  styles.error,
+                  {
+                    color: theme.warning,
+                    borderColor: theme.warning,
+                    backgroundColor: theme.warningBackground,
+                  },
+                ]}
+              >
+                {error}
+              </ThemedText>
+            )}
             <Spacer />
           </ScrollView>
 
@@ -474,7 +485,6 @@ const styles = StyleSheet.create({
   },
   error: {
     maxWidth: 400,
-    color: Colors.warning,
     fontSize: 16,
     textAlign: 'center',
     paddingVertical: 10,
@@ -484,8 +494,6 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderRadius: 5,
     letterSpacing: 2,
-    borderColor: Colors.warning,
-    backgroundColor: Colors.warningBackground,
     textShadow: '0px 1px 2px rgba(0, 0, 0, 0.25)',
   },
 });

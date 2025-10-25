@@ -58,6 +58,8 @@ export const Colors = {
     rippleColor: '#ffc445',
     activeBackground: '#fff9c9',
     activeText: '#001427',
+    warning: '#900000',
+    warningBackground: '#fffbdd',
   },
 };
 export const cornShades = [

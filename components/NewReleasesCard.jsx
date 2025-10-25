@@ -8,7 +8,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  useColorScheme,
   View,
 } from 'react-native';
 import { Colors } from '../constants/Colors';
@@ -29,8 +28,7 @@ const uiDebouncer = new Debouncer(60 * 60 * 1000);
  */
 const NewReleasesCard = ({ style }) => {
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
   const router = useRouter();
   const [failedImages, setFailedImages] = useState(new Set());
   const { user } = useUser();
