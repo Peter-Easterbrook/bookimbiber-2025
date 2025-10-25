@@ -1,10 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Drawer } from 'expo-router/drawer';
 import { useContext } from 'react';
-import { Pressable, View, useColorScheme } from 'react-native';
+import { Pressable, View } from 'react-native';
 import CustomDrawerContent from '../../components/CustomDrawerContent';
 import ThemeToggle from '../../components/ThemeToggle';
 import { Colors } from '../../constants/Colors';
@@ -15,8 +15,7 @@ import { UserContext } from '../../contexts/UserContext';
 function DrawerToggleButton() {
   const navigation = useNavigation();
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
 
   return (
     <Pressable
@@ -29,10 +28,39 @@ function DrawerToggleButton() {
   );
 }
 
+// Back button component for book details
+function BackButton() {
+  const router = useRouter();
+  const { scheme } = useContext(ThemeContext);
+  const theme = Colors[scheme] ?? Colors.dark;
+
+  return (
+    <Pressable
+      onPress={() => router.push('/books')}
+      style={{
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+      }}
+      android_ripple={{
+        color: theme.rippleColor,
+        borderless: true,
+        radius: 20,
+      }}
+      accessibilityLabel="Go back to books"
+      accessibilityRole="button"
+    >
+      <Ionicons
+        name="arrow-back-circle-outline"
+        size={24}
+        color={theme.iconColor}
+      />
+    </Pressable>
+  );
+}
+
 export default function DashboardLayout() {
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
   const { user } = useContext(UserContext);
 
   return (
@@ -80,15 +108,7 @@ export default function DashboardLayout() {
         name="books/[id]"
         options={{
           title: 'Book Details',
-          headerLeft: () => (
-            <Link href="/books" style={{ marginLeft: 16 }}>
-              <Ionicons
-                name="arrow-back-circle-outline"
-                size={24}
-                color={theme.iconColor}
-              />
-            </Link>
-          ),
+          headerLeft: () => <BackButton />,
           drawerItemStyle: { height: 0 }, // Hide from drawer
         }}
       />

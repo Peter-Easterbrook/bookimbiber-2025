@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   Platform,
   StatusBar as RNStatusBar,
-  useColorScheme,
   View,
 } from 'react-native';
 import {
@@ -42,8 +41,7 @@ export default function RootLayout() {
 
 function RootLayoutContent() {
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
   const insets = useSafeAreaInsets();
   const { authChecked } = useContext(UserContext);
 

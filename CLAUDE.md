@@ -74,30 +74,42 @@ The app uses React Context for global state management:
 - **Themed Components** - All UI components support dark/light themes
   - Naming convention: `Themed*` (e.g., `ThemedView`, `ThemedText`, `ThemedButton`)
   - Located in `components/` directory
+  - **ThemedButton** - Supports Android ripple effect with theme-aware colors
 - **Optimized Images** - Performance-focused image components
   - `OptimizedImage.jsx` - Core optimized image with caching and lazy loading
   - `LazyBookCover.jsx` - Book cover specific component with quality selection
 - **Authentication Guards** - `components/auth/UserOnly.jsx` and `GuestOnly.jsx`
 - **Specialized Components** - ISBN scanner, book search modal, drawer navigation
+  - **BookSearchModal** - Enhanced with ISBN scanning and automatic ISBN detection in search queries
+  - **ISBNScanner** - Camera-based barcode scanner integrated into book search workflow
 - **NewReleasesCard** - Displays new releases with debounced refresh (1-hour cooldown)
 
 ### Styling & Theming
 
 - **Colors** defined in `constants/Colors.js` with light/dark variants
+  - Includes `rippleColor` for Android ripple effects on interactive elements
 - **Custom fonts**: Berlin Sans FB (regular and bold) loaded in root layout
 - **Responsive design** using React Native's responsive patterns
+- **Android Ripple Effects** - Native Material Design ripple effects on all buttons and interactive cards
+  - Applied to ThemedButton, FlatList cards, and navigation elements
+  - Theme-aware colors for consistent visual feedback
 
 ## Key Features
 
 ### Book Management
 
 - Search books via Google Books API (title, author, ISBN)
-- ISBN barcode scanning with camera
+  - **Automatic ISBN Detection** - Search automatically detects ISBN format and uses optimized lookup
+- **ISBN Barcode Scanning** - Camera-based barcode scanner integrated into search modal
+  - Validates EAN-13 barcodes for books (starting with 978 or 979)
+  - Direct integration with Google Books API via ISBN lookup
 - Mark books as read/unread with completion dates
 - **Series Detection** - Automatically detect and group book series
 - **Author Following** - Track favorite authors and get new release notifications
 - Personal bookshelf organization
-- Amazon purchase link generation
+- **Amazon Purchase Links** - Locale-aware Amazon links with improved reliability
+  - Removed unreliable `canOpenURL` check for better Android compatibility
+  - User-friendly error handling for devices without web browsers
 
 ### Authentication Flow
 
@@ -110,8 +122,13 @@ The app uses React Context for global state management:
 ### UI/UX Features
 
 - Dark/light theme toggle with system preference detection
+- **Android Material Design** - Native ripple effects on all interactive elements
+  - Buttons with theme-aware ripple colors
+  - FlatList cards with smooth touch feedback
+  - Navigation elements with borderless ripple effects
 - **Android 14 Enhancements** - Material You theming, rich notifications, themed app icons
 - **Image Optimization** - Lazy loading, smart caching, quality selection for smooth performance
+- **Responsive Navigation** - Improved back button with Pressable for better touch responsiveness
 - Drawer navigation for main app sections
 - Confetti animations for reading achievements
 - Loading states and error handling throughout
@@ -274,6 +291,44 @@ The app stores user books in Appwrite databases. Key collections and fields incl
 - ✅ **Image Optimization**: Ready - Replace existing Image components
 - ✅ **Profile Editing**: Implemented - Users can update name and password
 - ✅ **Android Navigation Bar**: Configured - Compatible with all navigation types
+- ✅ **Android Ripple Effects**: Implemented - Material Design ripple on all interactive elements
+- ✅ **ISBN Scanning**: Integrated - Camera barcode scanner in search modal with auto-detection
+- ✅ **Amazon Link Reliability**: Improved - Better error handling for all Android devices
+
+## Recent Improvements (Version 1.0.7)
+
+### Android Material Design Enhancements
+
+1. **Native Ripple Effects**
+   - Added Android ripple effect to ThemedButton component
+   - Ripple effects now work on all buttons across the app (login, register, create, profile)
+   - Theme-aware ripple colors that match light/dark mode
+   - Fixed FlatList card ripple by restructuring Pressable/View hierarchy
+
+2. **ISBN Scanner Integration**
+   - Integrated ISBNScanner component into BookSearchModal
+   - Added barcode button next to search button
+   - Automatic ISBN detection in search queries (no need to use scanner for typed ISBNs)
+   - Improved ISBN validation and error handling
+
+3. **Amazon Link Reliability**
+   - Removed unreliable `Linking.canOpenURL` check that caused failures on some devices
+   - Direct URL opening with better error handling
+   - User-friendly error messages when browser is not available
+   - Consistent behavior across all Android versions
+
+4. **Navigation Improvements**
+   - Replaced Link component with Pressable for back button in book details
+   - Added borderless ripple effect to back button
+   - Improved touch responsiveness with proper padding
+   - Better accessibility labels and roles
+
+### Technical Details
+
+- **Ripple Implementation**: Uses `android_ripple` prop on Pressable with theme colors
+- **ISBN Detection**: Regex pattern matching for ISBN-10 and ISBN-13 formats
+- **Error Handling**: User-facing alerts for common issues (network, browser, etc.)
+- **Performance**: Ripple effects use native Android rendering for smooth animations
 
 ### Required Dependencies
 

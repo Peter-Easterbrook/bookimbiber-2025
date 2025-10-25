@@ -1,12 +1,11 @@
 import { useContext } from 'react';
-import { Text, useColorScheme } from 'react-native';
+import { Text } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { ThemeContext } from '../contexts/ThemeContext';
 
 const ThemedText = ({ style, title = false, ...props }) => {
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
 
   const textColor = title ? theme.title : theme.text;
 

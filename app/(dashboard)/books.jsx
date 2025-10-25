@@ -6,7 +6,6 @@ import {
   Image,
   Pressable,
   StyleSheet,
-  useColorScheme,
   View,
 } from 'react-native';
 import Logo from '../../assets/icon.png';
@@ -22,8 +21,7 @@ import { useBooks } from '../../hooks/useBooks';
 
 const Books = () => {
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
   const { books, deleteBook } = useBooks();
   const { newReleases, followedAuthors } = useAuthors(); // for badge count + extraData to re-render rows
   const router = useRouter();
@@ -91,9 +89,7 @@ const Books = () => {
             const bookImageUrl = item.thumbnail || item.coverImage;
 
             return (
-              <Pressable
-                onPress={() => router.push(`/books/${item.$id}`)}
-                android_ripple={{ color: theme.rippleColor, borderless: false }}
+              <View
                 style={[
                   styles.card,
                   {
@@ -102,7 +98,12 @@ const Books = () => {
                   },
                 ]}
               >
-                <View style={styles.cardContent}>
+                <Pressable
+                  onPress={() => router.push(`/books/${item.$id}`)}
+                  android_ripple={{ color: theme.rippleColor, borderless: false }}
+                  style={styles.cardPressable}
+                >
+                  <View style={styles.cardContent}>
                   {/* Book Cover */}
                   {bookImageUrl ? (
                     <Image
@@ -170,7 +171,8 @@ const Books = () => {
                     />
                   </View>
                 </View>
-              </Pressable>
+                </Pressable>
+              </View>
             );
           }}
         />
@@ -208,12 +210,14 @@ const styles = StyleSheet.create({
     width: '95%',
     maxWidth: 550,
     marginVertical: 4,
-    padding: 6,
-    paddingRight: 12,
     borderRadius: 5,
     overflow: 'hidden',
     boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.25)',
     borderLeftWidth: 4,
+  },
+  cardPressable: {
+    padding: 6,
+    paddingRight: 12,
   },
   cardContent: {
     flexDirection: 'row',

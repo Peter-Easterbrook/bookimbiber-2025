@@ -7,7 +7,6 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  useColorScheme,
   View,
 } from 'react-native';
 import Logo from '../../assets/icon.png';
@@ -24,8 +23,7 @@ import { useUser } from '../../hooks/useUser';
 
 const Profile = () => {
   const { scheme } = useContext(ThemeContext);
-  const fallback = useColorScheme();
-  const theme = Colors[scheme || fallback] ?? Colors.light;
+  const theme = Colors[scheme] ?? Colors.dark;
   const { user, deleteBooks, updateName, updatePassword } = useUser();
   const { books, readBooks, booksLoading } = useBooks();
   const navigation = useRouter();
@@ -207,7 +205,9 @@ const Profile = () => {
             <Spacer height={20} />
 
             {/* Password Section */}
-            <ThemedText style={styles.label}>Change Password (Optional)</ThemedText>
+            <ThemedText style={styles.label}>
+              Change Password (Optional)
+            </ThemedText>
             <Spacer height={10} />
             <ThemedTextInput
               value={currentPassword}
@@ -237,15 +237,6 @@ const Profile = () => {
             {/* Action Buttons */}
             <View style={styles.buttonRow}>
               <ThemedButton
-                onPress={handleSaveChanges}
-                style={[styles.actionButton, { opacity: isSaving ? 0.5 : 1 }]}
-                disabled={isSaving}
-              >
-                <ThemedText style={styles.buttonText}>
-                  {isSaving ? 'Saving...' : 'Save Changes'}
-                </ThemedText>
-              </ThemedButton>
-              <ThemedButton
                 onPress={handleEditToggle}
                 style={[
                   styles.actionButton,
@@ -257,6 +248,15 @@ const Profile = () => {
                 disabled={isSaving}
               >
                 <ThemedText style={styles.buttonText}>Cancel</ThemedText>
+              </ThemedButton>
+              <ThemedButton
+                onPress={handleSaveChanges}
+                style={[styles.actionButton, { opacity: isSaving ? 0.5 : 1 }]}
+                disabled={isSaving}
+              >
+                <ThemedText style={styles.buttonText}>
+                  {isSaving ? 'Saving...' : 'Save Changes'}
+                </ThemedText>
               </ThemedButton>
             </View>
           </View>
@@ -372,9 +372,9 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   emailText: {
-    fontSize: 14,
+    fontSize: 18,
     textAlign: 'center',
-    opacity: 0.7,
+    opacity: 0.8,
   },
   avatar: {
     marginBottom: 20,
@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
   },
   readBookItem: {
     alignSelf: 'center',
-    width: '95%',
+    width: '100%',
     maxWidth: 550,
     marginVertical: 8,
     padding: 12,
