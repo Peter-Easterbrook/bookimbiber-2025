@@ -22,6 +22,10 @@ function DrawerToggleButton() {
       onPress={() => navigation.toggleDrawer()}
       style={{ paddingHorizontal: 12, paddingVertical: 6 }}
       accessibilityLabel="Open drawer"
+      android_ripple={{
+        color: 'rgba(255, 255, 240, 0.4)',
+        foreground: true,
+      }}
     >
       <Ionicons name="menu" size={24} color={theme.iconColor} />
     </Pressable>
@@ -42,8 +46,8 @@ function BackButton() {
         paddingVertical: 8,
       }}
       android_ripple={{
-        color: theme.rippleColor,
-        borderless: true,
+        color: 'rgba(255, 255, 240, 0.4)',
+        foreground: true,
         radius: 20,
       }}
       accessibilityLabel="Go back to books"

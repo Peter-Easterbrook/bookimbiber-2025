@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontFamily: 'berlin-sans-fb',
     letterSpacing: 0.5,
+    textTransform: 'capitalize',
   },
 });
 

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons'; // Added for icons
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native'; // Added View
 import ThemedText from '../../components/ThemedText';
 import ThemedView from '../../components/ThemedView';
@@ -11,7 +11,8 @@ const NotificationsScreen = () => {
   const { scheme } = useContext(ThemeContext);
   const theme = Colors[scheme] ?? Colors.dark;
 
-  const { notifications, markNotificationRead, deleteNotification } = useAuthors();
+  const { notifications, markNotificationRead, deleteNotification } =
+    useAuthors();
 
   return (
     <ThemedView style={styles.container}>
@@ -30,6 +31,10 @@ const NotificationsScreen = () => {
                   : theme.buttonBackgroundFocused,
               },
             ]}
+            android_ripple={{
+              color: 'rgba(255, 255, 240, 0.4)',
+              foreground: true,
+            }}
           >
             <View style={styles.cardContent}>
               <View style={styles.textContainer}>
@@ -43,6 +48,10 @@ const NotificationsScreen = () => {
               <Pressable
                 onPress={() => deleteNotification(item.id)}
                 style={styles.deleteButton}
+                android_ripple={{
+                  color: 'rgba(255, 255, 240, 0.4)',
+                  foreground: true,
+                }}
               >
                 <Ionicons
                   name="trash-outline"

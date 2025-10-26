@@ -263,6 +263,10 @@ const Create = () => {
                     <Pressable
                       onPress={clearSelectedBook}
                       style={styles.clearButton}
+                      android_ripple={{
+                        color: 'rgba(255, 255, 240, 0.4)',
+                        foreground: true,
+                      }}
                     >
                       <Ionicons
                         name="trash-outline"

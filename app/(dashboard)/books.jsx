@@ -1,13 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useContext, useState } from 'react';
-import {
-  FlatList,
-  Image,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { FlatList, Image, Pressable, StyleSheet, View } from 'react-native';
 import Logo from '../../assets/icon.png';
 import AuthorFollowButton from '../../components/AuthorFollowButton';
 import NewReleasesCard from '../../components/NewReleasesCard';
@@ -47,6 +41,10 @@ const Books = () => {
                 styles.notificationsButton,
                 { backgroundColor: theme.buttonBackgroundFocused },
               ]}
+              android_ripple={{
+                color: 'rgba(255, 255, 240, 0.4)',
+                foreground: true,
+              }}
             >
               <Ionicons
                 name="notifications"
@@ -100,77 +98,80 @@ const Books = () => {
               >
                 <Pressable
                   onPress={() => router.push(`/books/${item.$id}`)}
-                  android_ripple={{ color: theme.rippleColor, borderless: false }}
+                  android_ripple={{
+                    color: 'rgba(255, 255, 240, 0.4)',
+                    foreground: true,
+                  }}
                   style={styles.cardPressable}
                 >
                   <View style={styles.cardContent}>
-                  {/* Book Cover */}
-                  {bookImageUrl ? (
-                    <Image
-                      source={{
-                        uri: bookImageUrl.replace('http://', 'https://'),
-                      }}
-                      style={styles.bookCover}
-                      resizeMode="cover"
-                      onError={(error) => {
-                        console.log(
-                          'Books list image error:',
-                          error.nativeEvent.error
-                        );
-                      }}
-                    />
-                  ) : (
-                    <View style={styles.bookCoverPlaceholder}>
+                    {/* Book Cover */}
+                    {bookImageUrl ? (
                       <Image
-                        source={Logo}
-                        style={{ width: 60, height: 60 }}
-                        resizeMode="contain"
-                        accessibilityLabel="Placeholder Book Cover"
-                        accessibilityRole="image"
+                        source={{
+                          uri: bookImageUrl.replace('http://', 'https://'),
+                        }}
+                        style={styles.bookCover}
+                        resizeMode="cover"
+                        onError={(error) => {
+                          console.log(
+                            'Books list image error:',
+                            error.nativeEvent.error
+                          );
+                        }}
                       />
-                    </View>
-                  )}
-
-                  {/* Book Info */}
-                  <View style={styles.bookInfo}>
-                    <ThemedText
-                      style={styles.title}
-                      numberOfLines={2}
-                      title={true}
-                    >
-                      {item.title}
-                    </ThemedText>
-                    <ThemedText style={styles.author} numberOfLines={1}>
-                      Written by {item.author}
-                    </ThemedText>
-
-                    {/* Rating */}
-                    {item.averageRating > 0 && (
-                      <View style={styles.ratingContainer}>
-                        <Ionicons name="star" size={14} color="#FFD700" />
-                        <ThemedText style={styles.metadata}>
-                          {item.averageRating.toFixed(1)} (
-                          {item.ratingsCount || 0} reviews)
-                        </ThemedText>
+                    ) : (
+                      <View style={styles.bookCoverPlaceholder}>
+                        <Image
+                          source={Logo}
+                          style={{ width: 60, height: 60 }}
+                          resizeMode="contain"
+                          accessibilityLabel="Placeholder Book Cover"
+                          accessibilityRole="image"
+                        />
                       </View>
                     )}
+
+                    {/* Book Info */}
+                    <View style={styles.bookInfo}>
+                      <ThemedText
+                        style={styles.title}
+                        numberOfLines={2}
+                        title={true}
+                      >
+                        {item.title}
+                      </ThemedText>
+                      <ThemedText style={styles.author} numberOfLines={1}>
+                        Written by {item.author}
+                      </ThemedText>
+
+                      {/* Rating */}
+                      {item.averageRating > 0 && (
+                        <View style={styles.ratingContainer}>
+                          <Ionicons name="star" size={14} color="#FFD700" />
+                          <ThemedText style={styles.metadata}>
+                            {item.averageRating.toFixed(1)} (
+                            {item.ratingsCount || 0} reviews)
+                          </ThemedText>
+                        </View>
+                      )}
+                    </View>
+                    <View style={styles.chevronBlock}>
+                      <AuthorFollowButton
+                        authorName={item.author}
+                        size="small"
+                        style={{
+                          margin: 0,
+                        }}
+                      />
+                      <Ionicons
+                        name="chevron-forward"
+                        size={20}
+                        color={theme.iconColor}
+                        style={styles.chevron}
+                      />
+                    </View>
                   </View>
-                  <View style={styles.chevronBlock}>
-                    <AuthorFollowButton
-                      authorName={item.author}
-                      size="small"
-                      style={{
-                        margin: 0,
-                      }}
-                    />
-                    <Ionicons
-                      name="chevron-forward"
-                      size={20}
-                      color={theme.iconColor}
-                      style={styles.chevron}
-                    />
-                  </View>
-                </View>
                 </Pressable>
               </View>
             );

@@ -30,7 +30,7 @@ export const Colors = {
     uiBackground: '#003162',
     buttonBackground: '#00274e',
     buttonBackgroundFocused: '#0b5096',
-    uiBorder: '#1488ff',
+    uiBorder: '#63b0ff',
     uiButtonBorder: '#1488ff',
     buttonText: '#f8fcff',
     uiButtonText: '#f8fcff',

@@ -325,7 +325,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 10,
     paddingHorizontal: 10,
   },
   card: {
@@ -333,7 +332,8 @@ const styles = StyleSheet.create({
     maxWidth: 550,
     alignSelf: 'center',
     margin: 10,
-    paddingBottom: 5,
+    paddingHorizontal: 15,
+    paddingTop: 20,
   },
   bookInfoSection: {
     flex: 1,
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '100%',
     maxWidth: 500,
-    gap: 5, // Add small gap between buttons
+    gap: 3, // Add small gap between buttons
   },
   bookButton: {
     // Simplified - let the responsive styles handle the layout
