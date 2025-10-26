@@ -27,12 +27,7 @@
         "backgroundColor": "#000000"
       },
       "softwareKeyboardLayoutMode": "pan",
-      "userInterfaceStyle": "automatic",
-      "navigationBar": {
-        "visible": true,
-        "barStyle": "dark-content",
-        "backgroundColor": "#00000000"
-      }
+      "userInterfaceStyle": "automatic"
     },
     "updates": {
       "enabled": true,
