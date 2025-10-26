@@ -1,12 +1,13 @@
 import { useRouter } from 'expo-router';
 import { useContext } from 'react';
-import { Platform, Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { ThemeContext } from '../contexts/ThemeContext';
 
 function ThemedButton({ style, href, onPress, children, ...props }) {
   const { scheme } = useContext(ThemeContext);
-  const theme = Colors[scheme] ?? Colors.dark;
+  const fallback = useColorScheme();
+  const theme = Colors[scheme || fallback] ?? Colors.light;
   const router = useRouter();
   const handlePress = () => {
     if (onPress) onPress();
@@ -15,6 +16,10 @@ function ThemedButton({ style, href, onPress, children, ...props }) {
   return (
     <Pressable
       onPress={handlePress}
+      android_ripple={{
+        color: 'rgba(255, 255, 240, 0.4)',
+        foreground: true,
+      }}
       style={({ pressed }) => [
         styles.btn,
         {
@@ -22,13 +27,9 @@ function ThemedButton({ style, href, onPress, children, ...props }) {
           borderColor: theme.uiBorder,
           borderWidth: 0.5,
         },
-        pressed && Platform.OS !== 'android' && styles.pressed,
+        pressed && styles.pressed,
         style,
       ]}
-      android_ripple={{
-        color: theme.rippleColor,
-        borderless: false,
-      }}
       {...props}
     >
       {children}

@@ -3,13 +3,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useContext, useState } from 'react';
-import {
-  Keyboard,
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Keyboard, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Spacer from '../../components/Spacer';
 import ThemedButton from '../../components/ThemedButton';
@@ -71,6 +65,10 @@ const Register = () => {
         <Pressable
           style={{ width: '100%', alignItems: 'center', paddingHorizontal: 0 }}
           onPress={Keyboard.dismiss}
+          android_ripple={{
+            color: 'rgba(255, 255, 240, 0.4)',
+            foreground: true,
+          }}
         >
           <ThemedLogoText width={200} height={200} />
           <Spacer height={30} />

@@ -38,9 +38,10 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
 
     try {
       // Check if the query is an ISBN
-      const isISBN = /^(?:ISBN(?:-1[03])?:?\s*)?(?=[0-9X]{10}$|(?=(?:[0-9]+[-\s]){3})[-\s0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[-\s]){4})[-\s0-9]{17}$)(?:97[89][-\s]?)?[0-9]{1,5}[-\s]?[0-9]+[-\s]?[0-9]+[-\s]?[0-9X]$/i.test(
-        searchQuery.trim().replace(/[-\s]/g, '')
-      );
+      const isISBN =
+        /^(?:ISBN(?:-1[03])?:?\s*)?(?=[0-9X]{10}$|(?=(?:[0-9]+[-\s]){3})[-\s0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[-\s]){4})[-\s0-9]{17}$)(?:97[89][-\s]?)?[0-9]{1,5}[-\s]?[0-9]+[-\s]?[0-9]+[-\s]?[0-9X]$/i.test(
+          searchQuery.trim().replace(/[-\s]/g, '')
+        );
 
       if (isISBN) {
         console.log('🔍 Detected ISBN search:', searchQuery.trim());
@@ -108,6 +109,10 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
     <Pressable
       style={[styles.bookItem, { borderBottomColor: theme.uiBorder }]}
       onPress={() => handleBookSelect(item)}
+      android_ripple={{
+        color: 'rgba(255, 255, 240, 0.4)',
+        foreground: true,
+      }}
     >
       <View style={styles.bookItemContent}>
         {item.thumbnail || item.coverImage ? (
