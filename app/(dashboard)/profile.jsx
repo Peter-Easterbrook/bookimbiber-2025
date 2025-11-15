@@ -1,5 +1,8 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -31,12 +34,111 @@ const Profile = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [avatarUri, setAvatarUri] = useState(null);
 
   // Form states
   const [newName, setNewName] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Load avatar from AsyncStorage on mount
+  useEffect(() => {
+    const loadAvatar = async () => {
+      if (user) {
+        try {
+          const savedAvatar = await AsyncStorage.getItem(`avatar_${user.$id}`);
+          if (savedAvatar) {
+            setAvatarUri(savedAvatar);
+          }
+        } catch (error) {
+          console.error('Error loading avatar:', error);
+        }
+      }
+    };
+    loadAvatar();
+  }, [user]);
+
+  // Handle avatar photo selection
+  const handleAvatarPress = async () => {
+    Alert.alert('Update Profile Photo', 'Choose an option', [
+      {
+        text: 'Take Photo',
+        onPress: () => pickImage('camera'),
+      },
+      {
+        text: 'Choose from Library',
+        onPress: () => pickImage('library'),
+      },
+      {
+        text: 'Remove Photo',
+        onPress: removeAvatar,
+        style: 'destructive',
+      },
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+    ]);
+  };
+
+  const pickImage = async (source) => {
+    try {
+      let result;
+
+      if (source === 'camera') {
+        const permission = await ImagePicker.requestCameraPermissionsAsync();
+        if (permission.status !== 'granted') {
+          Alert.alert('Permission needed', 'Please grant camera permission');
+          return;
+        }
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+        });
+      } else {
+        const permission =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (permission.status !== 'granted') {
+          Alert.alert(
+            'Permission needed',
+            'Please grant photo library permission'
+          );
+          return;
+        }
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+        });
+      }
+
+      if (!result.canceled && result.assets[0]) {
+        const uri = result.assets[0].uri;
+        setAvatarUri(uri);
+        // Save to AsyncStorage
+        await AsyncStorage.setItem(`avatar_${user.$id}`, uri);
+        Alert.alert('Success', 'Profile photo updated!');
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to update profile photo');
+    }
+  };
+
+  const removeAvatar = async () => {
+    try {
+      setAvatarUri(null);
+      await AsyncStorage.removeItem(`avatar_${user.$id}`);
+      Alert.alert('Success', 'Profile photo removed');
+    } catch (error) {
+      console.error('Error removing avatar:', error);
+      Alert.alert('Error', 'Failed to remove profile photo');
+    }
+  };
 
   const getInitial = (user) => {
     if (!user) return '';
@@ -161,19 +263,47 @@ const Profile = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View
-          style={[
-            styles.initialCircle,
-            {
-              backgroundColor: theme.buttonBackgroundFocused + '33',
-              borderColor: theme.uiBorder,
-            },
-          ]}
+        <TouchableOpacity
+          onPress={handleAvatarPress}
+          activeOpacity={0.7}
+          style={styles.avatarTouchable}
         >
-          <ThemedText style={[styles.initialText, { color: theme.iconColor }]}>
-            {getInitial(user)}
-          </ThemedText>
-        </View>
+          <View
+            style={[
+              styles.initialCircle,
+              {
+                backgroundColor: theme.buttonBackgroundFocused + '33',
+                borderColor: theme.uiBorder,
+              },
+            ]}
+          >
+            {avatarUri ? (
+              <Image
+                source={{ uri: avatarUri }}
+                style={styles.avatarImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <ThemedText
+                style={[styles.initialText, { color: theme.iconColor }]}
+              >
+                {getInitial(user)}
+              </ThemedText>
+            )}
+          </View>
+          {/* Camera icon overlay */}
+          <View
+            style={[
+              styles.cameraIconContainer,
+              {
+                backgroundColor: theme.uiBackground,
+                borderColor: theme.uiBorder,
+              },
+            ]}
+          >
+            <Ionicons name="camera" size={20} color={theme.iconColor} />
+          </View>
+        </TouchableOpacity>
         <Spacer height={20} />
         <ThemedText title={true} style={styles.heading}>
           Hello, {user.name}
@@ -379,6 +509,9 @@ const styles = StyleSheet.create({
   avatar: {
     marginBottom: 20,
   },
+  avatarTouchable: {
+    position: 'relative',
+  },
   initialCircle: {
     width: 100,
     height: 100,
@@ -391,6 +524,22 @@ const styles = StyleSheet.create({
   initialText: {
     fontSize: 48,
     fontWeight: 'bold',
+  },
+  avatarImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  cameraIconContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
   },
   editButton: {
     maxWidth: 200,
