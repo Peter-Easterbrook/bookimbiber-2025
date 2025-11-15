@@ -1,11 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useContext, useState } from 'react';
-import {
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { ThemeContext } from '../contexts/ThemeContext';
 
@@ -24,7 +19,7 @@ export default function ThemedPasswordInput({
         {...props}
         secureTextEntry={!showPassword}
         placeholderTextColor={placeholderTextColor || `${theme.text}B3`}
-        autoCapitalize='none'
+        autoCapitalize="none"
         style={[
           {
             backgroundColor: theme.uiBackground,
@@ -50,7 +45,7 @@ export default function ThemedPasswordInput({
         <Ionicons
           name={showPassword ? 'eye-off' : 'eye'}
           size={24}
-          color='#aaa'
+          color={theme.iconColor}
         />
       </TouchableOpacity>
     </View>

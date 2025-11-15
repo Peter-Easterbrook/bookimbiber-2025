@@ -199,6 +199,54 @@ export const UserProvider = ({ children }) => {
     }
   }
 
+  async function sendPasswordRecovery(email) {
+    try {
+      if (!email || !email.includes('@')) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      // Use app's deep link URL - when user clicks email link, it opens the app
+      const recoveryUrl = 'bookimbiber2025://reset-password';
+
+      await account.createRecovery(email, recoveryUrl);
+
+      return true;
+    } catch (error) {
+      console.error('Error sending password recovery:', error);
+      if (error.code === 429 || error.message.includes('Rate limit')) {
+        throw new Error('Too many requests. Please wait a moment and try again.');
+      } else if (error.code === 404) {
+        // For security, don't reveal if email doesn't exist
+        throw new Error('If this email exists, you will receive a recovery link.');
+      }
+      throw new Error(error.message || 'Failed to send recovery email. Please try again.');
+    }
+  }
+
+  async function resetPassword(userId, secret, newPassword, confirmPassword) {
+    try {
+      if (!newPassword || newPassword.length < 8) {
+        throw new Error('Password must be at least 8 characters long');
+      }
+
+      if (newPassword !== confirmPassword) {
+        throw new Error('Passwords do not match');
+      }
+
+      await account.updateRecovery(userId, secret, newPassword, confirmPassword);
+
+      return true;
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      if (error.code === 429 || error.message.includes('Rate limit')) {
+        throw new Error('Too many requests. Please wait a moment and try again.');
+      } else if (error.code === 401) {
+        throw new Error('Invalid or expired recovery link');
+      }
+      throw new Error(error.message || 'Failed to reset password. Please try again.');
+    }
+  }
+
   async function getInitialUserValue() {
     if (isInitializing) {
       return;
@@ -241,6 +289,31 @@ export const UserProvider = ({ children }) => {
     }
   }, []);
 
+  // Automatic logout at midnight
+  useEffect(() => {
+    if (!user) return; // Don't set up timer if user is not logged in
+
+    const checkMidnight = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+
+      // Check if it's midnight (00:00)
+      if (hours === 0 && minutes === 0) {
+        console.log('Midnight reached - logging out user');
+        logout();
+      }
+    };
+
+    // Check immediately
+    checkMidnight();
+
+    // Check every minute
+    const interval = setInterval(checkMidnight, 60000);
+
+    return () => clearInterval(interval);
+  }, [user]);
+
   return (
     <UserContext.Provider
       value={{
@@ -251,7 +324,9 @@ export const UserProvider = ({ children }) => {
         authChecked,
         deleteBooks,
         updateName,
-        updatePassword
+        updatePassword,
+        sendPasswordRecovery,
+        resetPassword
       }}
     >
       {children}

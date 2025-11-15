@@ -3,7 +3,15 @@ import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useContext, useState } from 'react';
-import { Keyboard, Platform, Pressable, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  Keyboard,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Spacer from '../../components/Spacer';
 import ThemedButton from '../../components/ThemedButton';
@@ -22,8 +30,16 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showResetCode, setShowResetCode] = useState(false);
+  const [resetUserId, setResetUserId] = useState('');
+  const [resetSecret, setResetSecret] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
-  const { user, register } = useUser();
+  const { register, sendPasswordRecovery, resetPassword } = useUser();
   const { scheme } = useContext(ThemeContext);
   const theme = Colors[scheme] ?? Colors.dark;
 
@@ -46,6 +62,77 @@ const Register = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!recoveryEmail) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await sendPasswordRecovery(recoveryEmail);
+      setShowForgotPassword(false);
+      setShowResetCode(true);
+      Alert.alert(
+        'Check Your Email',
+        "We've sent you an email with a User ID and Secret code. Please check your email and enter the codes below to reset your password.",
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to send recovery email');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetUserId || !resetSecret || !newPassword || !confirmNewPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters long');
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await resetPassword(
+        resetUserId,
+        resetSecret,
+        newPassword,
+        confirmNewPassword
+      );
+      Alert.alert(
+        'Success',
+        'Your password has been reset successfully! You can now login with your new password.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              setShowResetCode(false);
+              setResetUserId('');
+              setResetSecret('');
+              setNewPassword('');
+              setConfirmNewPassword('');
+              setRecoveryEmail('');
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to reset password');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <ThemedView style={styles.container}>
       <KeyboardAwareScrollView
@@ -65,10 +152,6 @@ const Register = () => {
         <Pressable
           style={{ width: '100%', alignItems: 'center', paddingHorizontal: 0 }}
           onPress={Keyboard.dismiss}
-          android_ripple={{
-            color: 'rgba(255, 255, 240, 0.4)',
-            foreground: true,
-          }}
         >
           <ThemedLogoText width={200} height={200} />
           <Spacer height={30} />
@@ -136,9 +219,171 @@ const Register = () => {
                 </ThemedText>
               </View>
             )}
+            <Spacer height={20} />
+            <Pressable onPress={() => setShowForgotPassword(true)}>
+              <ThemedText
+                style={styles.forgotPasswordLink}
+                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              >
+                Forgot your password?
+              </ThemedText>
+            </Pressable>
           </View>
         </Pressable>
       </KeyboardAwareScrollView>
+
+      {/* Forgot Password Modal */}
+      <Modal
+        visible={showForgotPassword}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowForgotPassword(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowForgotPassword(false)}
+        >
+          <Pressable
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.uiBackground },
+            ]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <ThemedText title={true} style={styles.modalTitle}>
+              Reset Password
+            </ThemedText>
+            <Spacer height={10} />
+            <ThemedText style={styles.modalDescription}>
+              Enter your email address and we'll send you a link to reset your
+              password.
+            </ThemedText>
+            <Spacer height={20} />
+            <ThemedTextInput
+              style={styles.modalInput}
+              placeholder="Email address"
+              value={recoveryEmail}
+              onChangeText={setRecoveryEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <Spacer height={20} />
+            <View style={styles.modalButtons}>
+              <ThemedButton
+                onPress={() => setShowForgotPassword(false)}
+                style={[styles.modalButton, { opacity: 0.7 }]}
+              >
+                <ThemedText>Cancel</ThemedText>
+              </ThemedButton>
+              <ThemedButton
+                onPress={handleForgotPassword}
+                style={styles.modalButton}
+                disabled={isSubmitting}
+              >
+                <ThemedText>
+                  {isSubmitting ? 'Sending...' : 'Send Link'}
+                </ThemedText>
+              </ThemedButton>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Reset Password with Code Modal */}
+      <Modal
+        visible={showResetCode}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowResetCode(false)}
+      >
+        <KeyboardAwareScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          enableOnAndroid={true}
+          extraScrollHeight={20}
+        >
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setShowResetCode(false)}
+          >
+            <Pressable
+              style={[
+                styles.modalContent,
+                styles.largeModalContent,
+                { backgroundColor: theme.uiBackground },
+              ]}
+              onPress={(e) => e.stopPropagation()}
+            >
+              <ThemedText title={true} style={styles.modalTitle}>
+                Enter Reset Code
+              </ThemedText>
+              <Spacer height={10} />
+              <ThemedText style={styles.modalDescription}>
+                Check your email for the User ID and Secret code, then enter
+                them below with your new password.
+              </ThemedText>
+              <Spacer height={20} />
+
+              <ThemedText style={styles.inputLabel}>User ID</ThemedText>
+              <ThemedTextInput
+                style={styles.modalInput}
+                placeholder="User ID from email"
+                value={resetUserId}
+                onChangeText={setResetUserId}
+                autoCapitalize="none"
+              />
+              <Spacer height={15} />
+
+              <ThemedText style={styles.inputLabel}>Secret Code</ThemedText>
+              <ThemedTextInput
+                style={styles.modalInput}
+                placeholder="Secret code from email"
+                value={resetSecret}
+                onChangeText={setResetSecret}
+                autoCapitalize="none"
+              />
+              <Spacer height={15} />
+
+              <ThemedText style={styles.inputLabel}>New Password</ThemedText>
+              <ThemedPasswordInput
+                style={styles.modalInput}
+                placeholder="New password (min 8 characters)"
+                value={newPassword}
+                onChangeText={setNewPassword}
+              />
+              <Spacer height={15} />
+
+              <ThemedText style={styles.inputLabel}>
+                Confirm Password
+              </ThemedText>
+              <ThemedPasswordInput
+                style={styles.modalInput}
+                placeholder="Confirm new password"
+                value={confirmNewPassword}
+                onChangeText={setConfirmNewPassword}
+              />
+              <Spacer height={25} />
+
+              <View style={styles.modalButtons}>
+                <ThemedButton
+                  onPress={() => setShowResetCode(false)}
+                  style={[styles.modalButton, { opacity: 0.7 }]}
+                >
+                  <ThemedText>Cancel</ThemedText>
+                </ThemedButton>
+                <ThemedButton
+                  onPress={handleResetPassword}
+                  style={styles.modalButton}
+                  disabled={isSubmitting}
+                >
+                  <ThemedText>
+                    {isSubmitting ? 'Resetting...' : 'Reset Password'}
+                  </ThemedText>
+                </ThemedButton>
+              </View>
+            </Pressable>
+          </Pressable>
+        </KeyboardAwareScrollView>
+      </Modal>
     </ThemedView>
   );
 };
@@ -221,5 +466,54 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     textShadow: '0px 1px 2px rgba(0, 0, 0, 0.25)',
+  },
+  forgotPasswordLink: {
+    fontSize: 14,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+    opacity: 0.8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '85%',
+    maxWidth: 400,
+    borderRadius: 10,
+    padding: 16,
+    boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.25)',
+  },
+  modalTitle: {
+    fontSize: 20,
+    textAlign: 'center',
+    letterSpacing: 1,
+  },
+  modalDescription: {
+    fontSize: 14,
+    textAlign: 'center',
+    opacity: 0.8,
+  },
+  modalInput: {
+    width: '100%',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  modalButton: {
+    flex: 1,
+  },
+  largeModalContent: {
+    maxWidth: 450,
+    maxHeight: '90%',
+  },
+  inputLabel: {
+    fontSize: 13,
+    marginBottom: 6,
+    opacity: 0.9,
   },
 });

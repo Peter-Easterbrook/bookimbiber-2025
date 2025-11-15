@@ -27,7 +27,20 @@
         "backgroundColor": "#000000"
       },
       "softwareKeyboardLayoutMode": "pan",
-      "userInterfaceStyle": "automatic"
+      "userInterfaceStyle": "automatic",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "bookimbiber2025",
+              "host": "reset-password"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "updates": {
       "enabled": true,
