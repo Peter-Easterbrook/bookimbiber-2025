@@ -206,7 +206,8 @@ export const UserProvider = ({ children }) => {
       }
 
       // Use app's deep link URL - when user clicks email link, it opens the app
-      const recoveryUrl = 'bookimbiber2025://reset-password';
+      // Format: scheme://hostname/path
+      const recoveryUrl = 'bookimbiber2025://reset-password/verify';
 
       await account.createRecovery(email, recoveryUrl);
 
