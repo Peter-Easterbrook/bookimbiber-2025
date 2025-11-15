@@ -62,6 +62,17 @@ const Register = () => {
     }
   };
 
+  // TEMPORARY: Simplified forgot password for free tier
+  // TODO: Re-enable full password reset flow when Appwrite platform is properly configured
+  const handleForgotPasswordClick = () => {
+    Alert.alert(
+      'Forgot Password?',
+      'Please contact support@onestepweb.dev for password reset assistance.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  // Original forgot password handler (kept for future use)
   const handleForgotPassword = async () => {
     if (!recoveryEmail) {
       Alert.alert('Error', 'Please enter your email address');
@@ -220,11 +231,11 @@ const Register = () => {
               </View>
             )}
             <Spacer height={20} />
-            <Pressable onPress={() => setShowForgotPassword(true)}>
-              <ThemedText
-                style={styles.forgotPasswordLink}
-                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-              >
+            <Pressable
+              onPress={handleForgotPasswordClick}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            >
+              <ThemedText style={styles.forgotPasswordLink}>
                 Forgot your password?
               </ThemedText>
             </Pressable>
