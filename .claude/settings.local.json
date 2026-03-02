@@ -12,7 +12,9 @@
       "Read(/C:\\Users\\GitHub\\bookimbiber-2025\\app/**)",
       "Read(/C:\\Users\\GitHub\\bookimbiber-2025\\components/**)",
       "Read(/C:\\Users\\GitHub\\bookimbiber-2025\\lib/**)",
-      "Read(/C:\\Users\\GitHub\\bookimbiber-2025\\app/**)"
+      "Read(/C:\\Users\\GitHub\\bookimbiber-2025\\app/**)",
+      "Bash(npm install:*)",
+      "Bash(npx expo:*)"
     ],
     "deny": [],
     "ask": []
