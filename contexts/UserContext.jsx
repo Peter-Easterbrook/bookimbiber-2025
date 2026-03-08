@@ -234,7 +234,7 @@ export const UserProvider = ({ children }) => {
         throw new Error('Passwords do not match');
       }
 
-      await account.updateRecovery(userId, secret, newPassword, confirmPassword);
+      await account.updateRecovery(userId, secret, newPassword);
 
       return true;
     } catch (error) {

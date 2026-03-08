@@ -14,7 +14,9 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-localization"
+      "expo-localization",
+      "expo-camera",
+      "expo-notifications"
     ],
     "description": "Book Imbiber is an app for book lovers to track their reading habits and share recommendations.",
     "splash": {
@@ -27,7 +29,8 @@
       "package": "com.petereasterbro1.bookimbiber2025",
       "permissions": [
         "android.permission.INTERNET",
-        "android.permission.ACCESS_NETWORK_STATE"
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.CAMERA"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
