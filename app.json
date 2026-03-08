@@ -12,6 +12,7 @@
       "web"
     ],
     "plugins": [
+      "./app.plugin.js",
       "expo-router",
       "expo-font",
       "expo-localization",
