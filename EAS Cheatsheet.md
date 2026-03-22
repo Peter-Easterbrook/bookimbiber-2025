@@ -305,8 +305,8 @@ npm run bump-version patch
 # npm run bump-version major   (1.0.12 -> 2.0.0)
 
 # Clean and rebuild
-Remove-Item -Recurse -Force node_modules, package-lock.json
 npx rm -rf node_modules package-lock.json
+Remove-Item -Recurse -Force node_modules, package-lock.json
 npm cache clean --force
 npm install
 npx expo-doctor
