@@ -3,7 +3,7 @@
     "name": "Book Imbiber",
     "slug": "bookimbiber2025",
     "scheme": "bookimbiber2025",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -17,7 +17,8 @@
       "expo-font",
       "expo-localization",
       "expo-camera",
-      "expo-notifications"
+      "expo-notifications",
+      "expo-sharing"
     ],
     "description": "Book Imbiber is an app for book lovers to track their reading habits and share recommendations.",
     "splash": {
