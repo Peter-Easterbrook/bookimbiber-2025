@@ -3,14 +3,11 @@
     "name": "Book Imbiber",
     "slug": "bookimbiber2025",
     "scheme": "bookimbiber2025",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "platforms": [
-      "android",
-      "web"
-    ],
+    "platforms": ["android", "web"],
     "plugins": [
       "./app.plugin.js",
       "expo-router",
@@ -50,10 +47,7 @@
               "host": "reset-password"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },
@@ -73,7 +67,6 @@
     },
     "runtimeVersion": {
       "policy": "appVersion"
-    },
-    "ios": {}
+    }
   }
 }
