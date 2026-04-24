@@ -324,6 +324,7 @@ git push
 # Build for production
 npx eas build -p android --profile production
 # Or push an update without rebuilding
-eas update --branch production --message "Fixes category issue"
+eas update --branch production --platform android --message "Just an update"
+
 eas update:list --branch production
 ```
