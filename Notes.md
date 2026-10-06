@@ -4,8 +4,8 @@
 
 ## Position (2026-10-06)
 
-- Backend moved from Appwrite (deleted) to Firebase Auth + Firestore. All code is committed on branch **`firebase-migration`** (`8e3fe3d`), **not pushed, not merged**.
-- `master` also has two unpushed commits (untracking `login-data.txt` and the keystore). Pushing the branch carries them too.
+- Backend moved from Appwrite (deleted) to Firebase Auth + Firestore. All code is on branch **`firebase-migration`** (migration commit `3592421`), pushed to GitHub, **not merged** into `master`.
+- Git history was rewritten (2026-10-06) to remove `login-data.txt` and the `.jks` from every commit, then force-pushed (`master`, `claude-edits`, `firebase-migration`). Every commit hash from before then changed.
 - Verified: `expo-doctor` 20/20, `npx expo export --platform android` bundles, web app runs, and a new account was registered successfully in the browser.
 - Firestore rules and Realtime DB rules are published in the console. `.env` holds the six `EXPO_PUBLIC_FIREBASE_*` values (gitignored, local only).
 - App version is still 1.1.3. The 1.1.x build on Play can't log in until 1.2.0 ships (expected; no other users).
@@ -18,7 +18,7 @@
 2. Dev build: `eas build --profile development -p android`, install, `npx expo start --dev-client -c`.
 3. Work through the Phase 3 checklist in `docs/firebase-migration.md` (login persists after app kill, reset email, name/password change, books live-update, follow authors, second account isolation, delete account). Use an email not used in other apps: accounts are shared across the Firebase project.
 4. Phase 4 (`docs/firebase-migration.md`): update `app/privacy-policy.jsx` (Firebase as processor, account deletion) and the Play **Data safety** form, run `npm run bump-version minor` (→ 1.2.0), then `npx expo export --platform android` and `eas build -p android --profile production --auto-submit` → internal track.
-5. Merge `firebase-migration` into `master` and push (ask the user before pushing).
+5. Merge `firebase-migration` into `master` and push (ask the user before pushing; auto mode blocks force-pushes, so the user runs those).
 6. Phase 5: update `CLAUDE.md` (still says SDK 53 / Appwrite), `EASCheatsheet.md` (Appwrite troubleshooting lines and checklist item) and `README.md` (stale Appwrite function starter text). Optionally delete `.claude/skills/appwrite-*`.
 
 ## Parked (unpark when the user asks)
@@ -27,7 +27,6 @@
 - `app.json`: move `splash` into the `expo-splash-screen` plugin, add `adaptiveIcon.monochromeImage`, add a notification `icon`/`color` to the `expo-notifications` plugin.
 - `lib/googleBooks.js` sends no API key, so it uses the small anonymous quota (likely cause of past quota problems).
 - About 40 `console.log` calls; `react-native-reanimated/plugin` in `babel.config.js` is probably redundant on SDK 55.
-- Scrubbing `login-data.txt` / the `.jks` from git history (`git filter-repo` + force-push). Only worth it after the credentials are rotated.
 
 ## Facts worth not recomputing
 
@@ -49,7 +48,6 @@
 
 ## User actions outstanding
 
-- Rotate the credentials that were in `login-data.txt` (still visible in public git history).
 - If the `.jks` was the Play upload key: request an upload-key reset in Play Console.
 
 ## How the user works
