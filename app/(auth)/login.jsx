@@ -1,9 +1,8 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import {
   Alert,
   Keyboard,
@@ -32,14 +31,9 @@ const Login = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showResetCode, setShowResetCode] = useState(false);
-  const [resetUserId, setResetUserId] = useState('');
-  const [resetSecret, setResetSecret] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   const navigation = useRouter();
-  const { login, sendPasswordRecovery, resetPassword } = useUser();
+  const { login, sendPasswordRecovery } = useUser();
 
   const { scheme } = useContext(ThemeContext);
   const theme = Colors[scheme] ?? Colors.dark;
@@ -49,49 +43,6 @@ const Login = () => {
   const warningBg =
     (theme && theme.warningBackground) || Colors.warningBackground;
 
-  // Handle deep links from password reset emails
-  useEffect(() => {
-    const handleDeepLink = async () => {
-      const url = await Linking.getInitialURL();
-      if (url) {
-        handleUrl(url);
-      }
-    };
-
-    handleDeepLink();
-
-    // Listen for deep links while app is running
-    const subscription = Linking.addEventListener('url', ({ url }) => {
-      handleUrl(url);
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, []);
-
-  const handleUrl = (url) => {
-    const parsed = Linking.parse(url);
-
-    // Check if this is a password reset link
-    if (parsed.hostname === 'reset-password' && parsed.queryParams) {
-      const { userId, secret } = parsed.queryParams;
-
-      if (userId && secret) {
-        // Auto-fill the reset form
-        setResetUserId(userId);
-        setResetSecret(secret);
-        setShowResetCode(true);
-
-        Alert.alert(
-          'Password Reset',
-          'The reset codes have been filled in automatically. Please enter your new password.',
-          [{ text: 'OK' }]
-        );
-      }
-    }
-  };
-
   const handleSubmit = async () => {
     setError(null);
     try {
@@ -99,21 +50,15 @@ const Login = () => {
       navigation.navigate('/profile');
     } catch (error) {
       console.error('Error logging in:', error);
-      setError('Please check your input.');
+      setError(error.message || 'Please check your input.');
     }
   };
 
-  // TEMPORARY: Simplified forgot password for free tier
-  // TODO: Re-enable full password reset flow when Appwrite platform is properly configured
   const handleForgotPasswordClick = () => {
-    Alert.alert(
-      'Forgot Password?',
-      'Please contact support@onestepweb.dev for password reset assistance.',
-      [{ text: 'OK' }]
-    );
+    setRecoveryEmail(email);
+    setShowForgotPassword(true);
   };
 
-  // Original forgot password handler (kept for future use)
   const handleForgotPassword = async () => {
     if (!recoveryEmail) {
       Alert.alert('Error', 'Please enter your email address');
@@ -124,62 +69,13 @@ const Login = () => {
     try {
       await sendPasswordRecovery(recoveryEmail);
       setShowForgotPassword(false);
-      setShowResetCode(true);
       Alert.alert(
         'Check Your Email',
-        "We've sent you an email with a User ID and Secret code. Please check your email and enter the codes below to reset your password.",
+        'If an account exists for this email, we have sent a link to reset your password. Check your spam folder if it does not arrive.',
         [{ text: 'OK' }]
       );
     } catch (error) {
       Alert.alert('Error', error.message || 'Failed to send recovery email');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleResetPassword = async () => {
-    if (!resetUserId || !resetSecret || !newPassword || !confirmNewPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      Alert.alert('Error', 'Password must be at least 8 characters long');
-      return;
-    }
-
-    if (newPassword !== confirmNewPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await resetPassword(
-        resetUserId,
-        resetSecret,
-        newPassword,
-        confirmNewPassword
-      );
-      Alert.alert(
-        'Success',
-        'Your password has been reset successfully! You can now login with your new password.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              setShowResetCode(false);
-              setResetUserId('');
-              setResetSecret('');
-              setNewPassword('');
-              setConfirmNewPassword('');
-              setRecoveryEmail('');
-            },
-          },
-        ]
-      );
-    } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to reset password');
     } finally {
       setIsSubmitting(false);
     }
@@ -333,102 +229,6 @@ const Login = () => {
           </Pressable>
         </Pressable>
       </Modal>
-
-      {/* Reset Password with Code Modal */}
-      <Modal
-        visible={showResetCode}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowResetCode(false)}
-      >
-        <KeyboardAwareScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          enableOnAndroid={true}
-          extraScrollHeight={20}
-        >
-          <Pressable
-            style={styles.modalOverlay}
-            onPress={() => setShowResetCode(false)}
-          >
-            <Pressable
-              style={[
-                styles.modalContent,
-                styles.largeModalContent,
-                { backgroundColor: theme.uiBackground },
-              ]}
-              onPress={(e) => e.stopPropagation()}
-            >
-              <ThemedText title={true} style={styles.modalTitle}>
-                Enter Reset Code
-              </ThemedText>
-              <Spacer height={10} />
-              <ThemedText style={styles.modalDescription}>
-                Check your email for the User ID and Secret code, then enter
-                them below with your new password.
-              </ThemedText>
-              <Spacer height={20} />
-
-              <ThemedText style={styles.inputLabel}>User ID</ThemedText>
-              <ThemedTextInput
-                style={styles.modalInput}
-                placeholder="User ID from email"
-                value={resetUserId}
-                onChangeText={setResetUserId}
-                autoCapitalize="none"
-              />
-              <Spacer height={15} />
-
-              <ThemedText style={styles.inputLabel}>Secret Code</ThemedText>
-              <ThemedTextInput
-                style={styles.modalInput}
-                placeholder="Secret code from email"
-                value={resetSecret}
-                onChangeText={setResetSecret}
-                autoCapitalize="none"
-              />
-              <Spacer height={15} />
-
-              <ThemedText style={styles.inputLabel}>New Password</ThemedText>
-              <ThemedPasswordInput
-                style={styles.modalInput}
-                placeholder="New password (min 8 characters)"
-                value={newPassword}
-                onChangeText={setNewPassword}
-              />
-              <Spacer height={15} />
-
-              <ThemedText style={styles.inputLabel}>
-                Confirm Password
-              </ThemedText>
-              <ThemedPasswordInput
-                style={styles.modalInput}
-                placeholder="Confirm new password"
-                value={confirmNewPassword}
-                onChangeText={setConfirmNewPassword}
-              />
-              <Spacer height={25} />
-
-              <View style={styles.modalButtons}>
-                <ThemedButton
-                  onPress={() => setShowResetCode(false)}
-                  style={[styles.modalButton, { opacity: 0.7 }]}
-                >
-                  <ThemedText>Cancel</ThemedText>
-                </ThemedButton>
-                <ThemedButton
-                  onPress={handleResetPassword}
-                  style={styles.modalButton}
-                  disabled={isSubmitting}
-                >
-                  <ThemedText>
-                    {isSubmitting ? 'Resetting...' : 'Reset Password'}
-                  </ThemedText>
-                </ThemedButton>
-              </View>
-            </Pressable>
-          </Pressable>
-        </KeyboardAwareScrollView>
-      </Modal>
     </ThemedView>
   );
 };
@@ -534,14 +334,5 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-  },
-  largeModalContent: {
-    maxWidth: 450,
-    maxHeight: '90%',
-  },
-  inputLabel: {
-    fontSize: 13,
-    marginBottom: 6,
-    opacity: 0.9,
   },
 });

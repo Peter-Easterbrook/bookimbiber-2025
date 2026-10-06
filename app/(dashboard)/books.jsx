@@ -80,7 +80,7 @@ const Books = () => {
       ) : (
         <FlatList
           data={books || []}
-          keyExtractor={(item) => item.$id}
+          keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           extraData={[followedAuthors, scheme, theme]} // Add scheme and theme to force re-render
           renderItem={({ item }) => {
@@ -97,7 +97,7 @@ const Books = () => {
                 ]}
               >
                 <Pressable
-                  onPress={() => router.push(`/books/${item.$id}`)}
+                  onPress={() => router.push(`/books/${item.id}`)}
                   android_ripple={{
                     color: 'rgba(255, 255, 240, 0.4)',
                     foreground: true,

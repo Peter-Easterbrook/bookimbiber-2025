@@ -1,45 +1,59 @@
-import { createContext, useEffect, useState } from 'react';
-import { ID, Permission, Query, Role } from 'react-native-appwrite';
+import {
+  addDoc,
+  deleteDoc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc,
+  writeBatch,
+} from 'firebase/firestore';
+import { createContext, useEffect, useMemo, useState } from 'react';
 import { useUser } from '../hooks/useUser';
-import { client, databases } from '../lib/appwrite';
-
-const DATABASE_ID = '681e133100381d53f199';
-const COLLECTION_ID = '681e13450007197b1942';
+import { db, fromSnapshot, userCollection, userDoc } from '../lib/firebase';
 
 export const BooksContext = createContext();
 
+const isRead = (book) => book.read || !!book.readAt;
+
+// How long a just-read book stays in the unread list showing "Read!"
+const READ_DISPLAY_MS = 2000;
+
 export function BooksProvider({ children }) {
-  const [books, setBooks] = useState([]); // Only unread books
-  const [readBooks, setReadBooks] = useState([]); // Only read books
+  const [allBooks, setAllBooks] = useState([]);
+  const [recentlyRead, setRecentlyRead] = useState([]); // ids still shown as "Read!"
   const [booksLoading, setBooksLoading] = useState(false);
   const { user } = useUser();
+  const uid = user?.id;
+
+  const booksQuery = () =>
+    query(userCollection(uid, 'books'), orderBy('createdAt', 'desc'));
+
+  // Unread books, newest first; just-read books linger here briefly
+  const books = useMemo(
+    () =>
+      allBooks.filter((book) => !isRead(book) || recentlyRead.includes(book.id)),
+    [allBooks, recentlyRead]
+  );
+
+  // Read books, most recently finished first
+  const readBooks = useMemo(
+    () =>
+      allBooks
+        .filter((book) => isRead(book) && !recentlyRead.includes(book.id))
+        .sort((a, b) => new Date(b.readAt) - new Date(a.readAt)),
+    [allBooks, recentlyRead]
+  );
 
   async function fetchBooks() {
-    if (!user || !user.$id) return;
+    if (!uid) return;
 
     setBooksLoading(true);
     try {
-      const response = await databases.listDocuments(
-        DATABASE_ID,
-        COLLECTION_ID,
-        [
-          Query.equal('userId', user.$id),
-          Query.orderDesc('$createdAt'), // Sort by creation date, newest first
-        ]
-      );
-
-      // Separate books into read and unread
-      const allBooks = response.documents;
-      const unreadBooks = allBooks.filter((book) => !book.read && !book.readAt);
-      const booksAlreadyRead = allBooks.filter(
-        (book) => book.read || book.readAt
-      );
-
-      // Sort read books by readAt date, descending
-      booksAlreadyRead.sort((a, b) => new Date(b.readAt) - new Date(a.readAt));
-
-      setBooks(unreadBooks);
-      setReadBooks(booksAlreadyRead);
+      const snapshot = await getDocs(booksQuery());
+      setAllBooks(snapshot.docs.map(fromSnapshot));
     } catch (error) {
       console.error(error.message);
     } finally {
@@ -48,29 +62,26 @@ export function BooksProvider({ children }) {
   }
 
   async function fetchBookById(id) {
+    if (!uid) return;
     try {
-      const response = await databases.getDocument(
-        DATABASE_ID,
-        COLLECTION_ID,
-        id
-      );
-
-      return response;
+      const snapshot = await getDoc(userDoc(uid, 'books', id));
+      return snapshot.exists() ? fromSnapshot(snapshot) : undefined;
     } catch (error) {
       console.log(error.message);
     }
   }
+
   async function createBook(data) {
-    if (!user || !user.$id) throw new Error('No user ID for book creation');
+    if (!uid) throw new Error('No user ID for book creation');
     try {
       // Filter data to only include the fields we support
       const filteredData = {
         title: data.title,
         author: data.author,
         description: data.description,
-        userId: user.$id,
         read: data.read || false,
-        // Optional Google Books fields (only if they exist in the database)
+        createdAt: serverTimestamp(),
+        // Optional Google Books fields
         ...(data.googleBooksId && { googleBooksId: data.googleBooksId }),
         ...(data.categories && { categories: data.categories }),
         ...(data.publishedDate && { publishedDate: data.publishedDate }),
@@ -83,65 +94,18 @@ export function BooksProvider({ children }) {
         ...(data.pageCount && { pageCount: data.pageCount }),
       };
 
-      const result = await databases.createDocument(
-        DATABASE_ID,
-        COLLECTION_ID,
-        ID.unique(),
-        filteredData,
-        [
-          Permission.read(Role.user(user.$id)),
-          Permission.update(Role.user(user.$id)),
-          Permission.delete(Role.user(user.$id)),
-        ]
-      );
-
-      return result;
+      const ref = await addDoc(userCollection(uid, 'books'), filteredData);
+      return { id: ref.id, ...filteredData };
     } catch (error) {
-      console.error('Error creating book:', error);
-      console.error('Error details:', {
-        message: error.message,
-        code: error.code,
-        type: error.type,
-        response: error.response,
-      });
-
-      // If it's a database schema error, try creating with basic fields only
-      if (error.message.includes('attribute') || error.code === 400) {
-        try {
-          const basicData = {
-            title: data.title,
-            author: data.author,
-            description: data.description,
-            userId: user.$id,
-            read: data.read || false,
-          };
-
-          const basicResult = await databases.createDocument(
-            DATABASE_ID,
-            COLLECTION_ID,
-            ID.unique(),
-            basicData,
-            [
-              Permission.read(Role.user(user.$id)),
-              Permission.update(Role.user(user.$id)),
-              Permission.delete(Role.user(user.$id)),
-            ]
-          );
-
-          return basicResult;
-        } catch (basicError) {
-          console.error('Error creating book with basic fields:', basicError);
-          throw basicError;
-        }
-      }
-
+      console.error('Error creating book:', error.code, error.message);
       throw error;
     }
   }
 
   async function updateBook(id, data) {
+    if (!uid) return;
     try {
-      await databases.updateDocument(DATABASE_ID, COLLECTION_ID, id, data);
+      await updateDoc(userDoc(uid, 'books', id), data);
     } catch (err) {
       console.error(err);
     }
@@ -149,26 +113,13 @@ export function BooksProvider({ children }) {
 
   async function markAsRead(id) {
     try {
-      const readAt = new Date().toISOString();
-      await updateBook(id, { read: true, readAt });
+      // Keep the book in the unread list showing "Read!" for a moment
+      setRecentlyRead((prev) => [...prev, id]);
+      setTimeout(() => {
+        setRecentlyRead((prev) => prev.filter((bookId) => bookId !== id));
+      }, READ_DISPLAY_MS);
 
-      // Find the book being marked as read
-      const bookToMove = books.find((book) => book.$id === id);
-      if (bookToMove) {
-        const updatedBook = { ...bookToMove, read: true, readAt };
-
-        // Update books state immediately to show "Read!" status
-        setBooks((prevBooks) =>
-          prevBooks.map((book) => (book.$id === id ? updatedBook : book))
-        );
-
-        // After 2 seconds, only remove from books - let real-time subscription handle readBooks
-        setTimeout(() => {
-          setBooks((prevBooks) => prevBooks.filter((book) => book.$id !== id));
-          // ❌ Remove this line - don't manually add to readBooks
-          // setReadBooks((prevReadBooks) => [...prevReadBooks, updatedBook]);
-        }, 2000);
-      }
+      await updateBook(id, { read: true, readAt: new Date().toISOString() });
     } catch (error) {
       console.error('Error marking book as read:', error);
       throw error;
@@ -176,48 +127,40 @@ export function BooksProvider({ children }) {
   }
 
   async function deleteBook(id) {
+    if (!uid) return;
     try {
-      await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, id);
-
-      // Remove from both arrays
-      setBooks((prevBooks) => prevBooks.filter((book) => book.$id !== id));
-      setReadBooks((prevReadBooks) =>
-        prevReadBooks.filter((book) => book.$id !== id)
-      );
+      await deleteDoc(userDoc(uid, 'books', id));
+      // The snapshot listener also removes it; this just makes it instant
+      setAllBooks((prev) => prev.filter((book) => book.id !== id));
     } catch (error) {
       console.log(error.message);
       throw error;
     }
   }
 
+  // Deletes all of the user's books, read and unread
   async function deleteBooks() {
-    if (!user) {
+    if (!uid) {
       throw new Error('No user is currently logged in');
     }
 
     try {
       setBooksLoading(true);
 
-      // Check if there are books to delete
-      if (!books || books.length === 0) {
+      const snapshot = await getDocs(userCollection(uid, 'books'));
+      if (snapshot.empty) {
         console.log('No books to delete');
         return;
       }
 
-      // Delete each book with proper error handling for IDs
-      const promises = books.map((book) => {
-        if (!book.$id) {
-          console.error('Missing document ID for book:', book);
-          return Promise.resolve(); // Skip this book
-        }
-        return databases.deleteDocument(DATABASE_ID, COLLECTION_ID, book.$id);
-      });
+      // A batch holds up to 500 writes
+      for (let i = 0; i < snapshot.docs.length; i += 500) {
+        const batch = writeBatch(db);
+        snapshot.docs.slice(i, i + 500).forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+      }
 
-      await Promise.all(promises);
-
-      // Clear the local state
-      setBooks([]);
-      setReadBooks && setReadBooks([]);
+      setAllBooks([]);
     } catch (error) {
       console.error('Error deleting books:', error);
       throw new Error('Failed to delete books. Please try again.');
@@ -226,76 +169,35 @@ export function BooksProvider({ children }) {
     }
   }
 
-  // Update the real-time subscription to handle both arrays
+  // Live listener: Firestore pushes every add/update/delete for this user's books
   useEffect(() => {
-    let unsubscribe;
-    const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`;
-
-    if (user) {
-      fetchBooks();
-
-      unsubscribe = client.subscribe(channel, (response) => {
-        const { payload, events } = response;
-
-        if (events[0].includes('create')) {
-          // New books are always unread
-          setBooks((prevBooks) => [...prevBooks, payload]);
-        }
-
-        if (events[0].includes('update')) {
-          const isRead = payload.read || payload.readAt;
-
-          if (isRead) {
-            // Move from books to readBooks
-            setBooks((prevBooks) =>
-              prevBooks.filter((book) => book.$id !== payload.$id)
-            );
-            setReadBooks((prevReadBooks) => {
-              const exists = prevReadBooks.some(
-                (book) => book.$id === payload.$id
-              );
-              if (exists) {
-                return prevReadBooks.map((book) =>
-                  book.$id === payload.$id ? payload : book
-                );
-              }
-              // Add new read book to the beginning of the list
-              return [payload, ...prevReadBooks];
-            });
-          } else {
-            // Update in books array
-            setBooks((prevBooks) =>
-              prevBooks.map((book) =>
-                book.$id === payload.$id ? payload : book
-              )
-            );
-          }
-        }
-
-        if (events[0].includes('delete')) {
-          setBooks((prevBooks) =>
-            prevBooks.filter((book) => book.$id !== payload.$id)
-          );
-          setReadBooks((prevReadBooks) =>
-            prevReadBooks.filter((book) => book.$id !== payload.$id)
-          );
-        }
-      });
-    } else {
-      setBooks([]);
-      setReadBooks([]);
+    if (!uid) {
+      setAllBooks([]);
+      setRecentlyRead([]);
+      return;
     }
 
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, [user]);
+    setBooksLoading(true);
+    const unsubscribe = onSnapshot(
+      booksQuery(),
+      (snapshot) => {
+        setAllBooks(snapshot.docs.map(fromSnapshot));
+        setBooksLoading(false);
+      },
+      (error) => {
+        console.error('Books listener error:', error.code, error.message);
+        setBooksLoading(false);
+      }
+    );
+
+    return unsubscribe;
+  }, [uid]);
 
   return (
     <BooksContext.Provider
       value={{
         books,
-        readBooks, // Add readBooks to context
+        readBooks,
         booksLoading,
         fetchBooks,
         fetchBookById,

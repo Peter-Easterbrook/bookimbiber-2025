@@ -32,9 +32,6 @@ npm-debug.log*
 *.pem
 admin-data.txt
 
-# Appwrite CLI local development
-.appwrite
-
 # Claude Code personal settings
 .claude/settings.local.json
 

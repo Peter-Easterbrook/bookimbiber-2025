@@ -65,11 +65,11 @@ export default function PrivacyPolicy() {
 
         <View style={styles.listContainer}>
           <ThemedText style={styles.listItem}>
-            • Download and use our mobile application (Book Imbiber), or any
+            • Download and use our mobile application (Bookimbiber), or any
             other application of ours that links to this Privacy Notice
           </ThemedText>
           <ThemedText style={styles.listItem}>
-            • Use Book Imbiber. Book Imbiber is a personal book tracking
+            • Use Bookimbiber. Bookimbiber is a personal book tracking
             application that allows users to manage their reading collection.
             The app helps readers catalogue books they've read or want to read,
             search for new books via Google Books API, and track their reading

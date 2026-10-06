@@ -102,26 +102,12 @@ const Create = () => {
 
       const result = await createBook(bookData);
       console.log('📚 Book created successfully:', result);
-      // Show success message if book was created with basic fields only
-      if (
-        selectedBook &&
-        result &&
-        !result.categories &&
-        selectedBook.categories
-      ) {
-        setError(
-          'Book created successfully, but some Google Books metadata could not be saved due to database limitations.'
-        );
-      }
     } catch (e) {
       console.error('Create book error:', e);
       let errorMessage = e.message;
 
       // Provide more user-friendly error messages
-      if (errorMessage.includes('attribute')) {
-        errorMessage =
-          'Some book information could not be saved due to database limitations. The book was created with basic information only.';
-      } else if (
+      if (
         errorMessage.includes('network') ||
         errorMessage.includes('fetch')
       ) {

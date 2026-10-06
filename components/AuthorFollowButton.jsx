@@ -38,7 +38,7 @@ const AuthorFollowButton = ({
     setLocalLoading(true);
     try {
       if (isFollowing && followedAuthor) {
-        await unfollowAuthor(followedAuthor.$id);
+        await unfollowAuthor(followedAuthor.id);
       } else {
         await followAuthor({
           name: authorName,
