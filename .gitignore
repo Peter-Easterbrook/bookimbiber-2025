@@ -30,7 +30,7 @@ coverage
 *.lcov
 
 # Test login data
-.login-data.txt
+admin-data.txt
 
 # nyc test coverage
 .nyc_output
