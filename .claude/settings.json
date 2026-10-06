@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm ls *)",
+      "Bash(npm view *)",
+      "Bash(npx eas-cli update:list *)",
+      "Bash(npx eas-cli env:list *)",
+      "Bash(npx eas-cli build:list *)",
+      "Bash(npx expo-doctor *)",
+      "mcp__claude-in-chrome__find",
+      "mcp__claude-in-chrome__get_page_text",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__claude-in-chrome__read_console_messages",
+      "mcp__context7__query-docs",
+      "mcp__context7__resolve-library-id",
+      "mcp__plugin_expo_expo__read_documentation"
+    ]
+  }
+}
