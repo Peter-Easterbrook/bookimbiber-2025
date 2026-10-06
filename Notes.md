@@ -1,25 +1,58 @@
-## 🚀 Next Steps
+# Bookimbiber — start here
 
-You can now build your app using the commands from your **EAS Cheatsheet**:
+**Read this first:** next job is Phase 3 testing of the Firebase migration on a native dev build. Open `docs/firebase-migration.md` → *Phase 3: Test* for the checklist. Do job 1 below before building.
 
-- **Development build:**
+## Position (2026-10-06)
 
-  ```sh
-  npx eas build --profile development --platform android
-  ```
+- Backend moved from Appwrite (deleted) to Firebase Auth + Firestore. All code is committed on branch **`firebase-migration`** (`8e3fe3d`), **not pushed, not merged**.
+- `master` also has two unpushed commits (untracking `login-data.txt` and the keystore). Pushing the branch carries them too.
+- Verified: `expo-doctor` 20/20, `npx expo export --platform android` bundles, web app runs, and a new account was registered successfully in the browser.
+- Firestore rules and Realtime DB rules are published in the console. `.env` holds the six `EXPO_PUBLIC_FIREBASE_*` values (gitignored, local only).
+- App version is still 1.1.3. The 1.1.x build on Play can't log in until 1.2.0 ships (expected; no other users).
 
-- **Preview build:**
+## Next jobs
 
-  ```sh
-  npx eas build -p android --profile preview
-  ```
+1. **Add the Firebase config to EAS** (builds don't see `.env`). Run once per variable for each of `development`, `preview` and `production`:
+   `eas env:set --name EXPO_PUBLIC_FIREBASE_API_KEY --value "..." --environment development --visibility plaintext`
+   Values: Firebase console → Project settings → General → Your apps → Bookimbiber web app → Config.
+2. Dev build: `eas build --profile development -p android`, install, `npx expo start --dev-client -c`.
+3. Work through the Phase 3 checklist in `docs/firebase-migration.md` (login persists after app kill, reset email, name/password change, books live-update, follow authors, second account isolation, delete account). Use an email not used in other apps: accounts are shared across the Firebase project.
+4. Phase 4 (`docs/firebase-migration.md`): update `app/privacy-policy.jsx` (Firebase as processor, account deletion) and the Play **Data safety** form, run `npm run bump-version minor` (→ 1.2.0), then `npx expo export --platform android` and `eas build -p android --profile production --auto-submit` → internal track.
+5. Merge `firebase-migration` into `master` and push (ask the user before pushing).
+6. Phase 5: update `CLAUDE.md` (still says SDK 53 / Appwrite), `EASCheatsheet.md` (Appwrite troubleshooting lines and checklist item) and `README.md` (stale Appwrite function starter text). Optionally delete `.claude/skills/appwrite-*`.
 
-- **Production build:**
-  ```sh
-  npx eas build -p android --profile production
-  ```
-- **Check the Google API:**
+## Parked (unpark when the user asks)
 
-```
-https://www.googleapis.com/books/v1/volumes?q=flowers+inauthor:keyes
-```
+- `eas.json`: set `cli.appVersionSource` (`"remote"` recommended; first set the remote versionCode above 16, the last upload), raise `cli.version`, fill in `submit.production`.
+- `app.json`: move `splash` into the `expo-splash-screen` plugin, add `adaptiveIcon.monochromeImage`, add a notification `icon`/`color` to the `expo-notifications` plugin.
+- `lib/googleBooks.js` sends no API key, so it uses the small anonymous quota (likely cause of past quota problems).
+- About 40 `console.log` calls; `react-native-reanimated/plugin` in `babel.config.js` is probably redundant on SDK 55.
+- Scrubbing `login-data.txt` / the `.jks` from git history (`git filter-repo` + force-push). Only worth it after the credentials are rotated.
+
+## Facts worth not recomputing
+
+- Firebase project: `react-http-7b17c`, shared with other hobby apps (their data is in the Realtime DB). Bookimbiber uses the `(default)` Firestore database only.
+- Data paths: `bookimbiber_users/{uid}/books/{id}` and `.../authors/{id}`; rules in `firestore.rules` (repo copy of what's published).
+- Code entry points: `lib/firebase.js` (init, `userCollection`, `userDoc`, `fromSnapshot`), `contexts/UserContext.jsx` (user = `{ id, name, email }`, `deleteAccount(password)`), `contexts/BooksContext.jsx`, `contexts/AuthorContext.jsx`.
+- Realtime DB rules: `recipe` write and `expenses` read/write locked to the owner's UID; `orders`/`meals`/`goals` writes are open until 1 Jan 2027 (`now < 1798718400000`).
+- Expo/EAS project ID `857bd7f6-dcc6-4786-9aed-5e8e74ef8e50`; Android package `com.petereasterbro1.bookimbiber2025`; scheme `bookimbiber2025`; `runtimeVersion` policy `appVersion`.
+- App name is **Bookimbiber** (one word) everywhere.
+- Plan and decisions: `docs/firebase-migration.md`. Build/deploy workflow: `EASCheatsheet.md`.
+
+## Working cheaply
+
+- To check `.env` without opening it: `npx expo config --type public | grep ^env:` lists the variable names it loads. Reading `.env` or `admin-data.txt` directly gets blocked.
+- `git commit -- <paths>` re-adds files that were `git rm --cached` but still exist on disk. Stage the removal, then commit **without** a path list.
+- `npx expo install --fix` may fail at the final "apply config plugins" step after upgrading `expo` itself mid-run. The version fixes have already applied; verify with `npx expo install --check`.
+- `babel-preset-expo` must stay a direct devDependency (npm once left it nested inside `expo`, which broke bundling).
+- `expo-file-system` no longer needs to be a direct dependency or override (that rule existed only for `react-native-appwrite`).
+
+## User actions outstanding
+
+- Rotate the credentials that were in `login-data.txt` (still visible in public git history).
+- If the `.jks` was the Play upload key: request an upload-key reset in Play Console.
+
+## How the user works
+
+- Windows, VS Code, PowerShell; Android + web only.
+- Wants plain explanations and an appraisal before big changes. Confirm before pushing or other outward-facing actions.
