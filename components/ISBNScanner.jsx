@@ -1,13 +1,18 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { searchByISBN } from '../lib/googleBooks';
 
 const ISBNScanner = ({ onBookFound, onClose }) => {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
+  // The camera reports the same barcode several times before `scanned`
+  // re-renders; the ref blocks the repeats immediately
+  const scanLock = useRef(false);
 
   const handleBarcodeScanned = async ({ data }) => {
+    if (scanLock.current) return;
+    scanLock.current = true;
     setScanned(true);
     console.log('Barcode scanned:', data);
 

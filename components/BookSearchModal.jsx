@@ -254,7 +254,9 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
       ) : (
         <FlatList
           data={searchResults}
-          keyExtractor={(item) => item.googleBooksId}
+          keyExtractor={(item) =>
+            item.googleBooksId || item.isbn13 || item.title
+          }
           renderItem={renderBookItem}
           style={styles.resultsList}
           showsVerticalScrollIndicator={false}
