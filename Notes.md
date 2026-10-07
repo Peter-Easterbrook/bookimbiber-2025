@@ -13,11 +13,13 @@
 ## Next jobs
 
 1. ✅ Firebase config is in EAS (all six variables, done 2026-10-07). If `.env` changes, re-push: see `EASCheatsheet.md` → *Firebase config*.
-2. Dev build: `eas build --profile development -p android`, install, `npx expo start --dev-client -c`.
+2. ✅ Dev build installed on the phone (2026-10-07). To use it: in the project folder run `npx expo start --dev-client -c`, then open Bookimbiber on the phone (same Wi-Fi) and tap the server it lists, or scan the terminal's QR code.
 3. Work through the Phase 3 checklist in `docs/firebase-migration.md` (login persists after app kill, reset email, name/password change, books live-update, follow authors, second account isolation, delete account). Use an email not used in other apps: accounts are shared across the Firebase project.
-4. Phase 4 (`docs/firebase-migration.md`): `app/privacy-policy.jsx` already updated (2026-10-07). Still to do: the Play **Data safety** form, then run `eas build:version:set -p android` and enter **17** (EAS now keeps the versionCode remotely; it must be above 16), `npm run bump-version minor` (→ 1.2.0), `npx expo export --platform android`, and `eas build -p android --profile production --auto-submit` → internal track → test → promote to **closed testing**.
+4. Phase 4 (`docs/firebase-migration.md`): `app/privacy-policy.jsx` already updated (2026-10-07). Then: `eas build:version:set -p android` and enter **17** (EAS keeps the versionCode remotely; it must be above 16), `npm run bump-version minor` (→ 1.2.0), `npx expo export --platform android`, and `eas build -p android --profile production --auto-submit` → **internal testing** track. The user distributes via internal testing only (testers added by email); no closed/production release planned. Fill in the Play **Data safety** form only if Play Console demands it.
 5. Merge `firebase-migration` into `master` and push (ask the user before pushing; auto mode blocks force-pushes, so the user runs those).
-6. Phase 5 docs are done (`CLAUDE.md`, `EASCheatsheet.md`, `README.md` rewritten for Firebase, 2026-10-07). The Appwrite agent skills (`.agents/`, `.claude/skills/`, `skills-lock.json`) were removed 2026-10-07: their symlinks broke `eas build` on Windows.
+6. **Upgrade the Expo SDK** after the merge (not before: keep Firebase and SDK changes separate). App is on SDK 55; latest stable is 57 (Jun 2026); 58 was in beta (`next` tag) on 2026-10-07. Go one SDK at a time (55 → 56 → 57 → 58 once stable): `npx expo install expo@^N --fix`, read that SDK's breaking changes, `npx expo-doctor`, dev build, test. Rooster Recipes and ESL Exercises are already on 57. Use the `expo:expo-upgrade` skill.
+
+Done: Phase 5 docs (`CLAUDE.md`, `EASCheatsheet.md`, `README.md` rewritten for Firebase); Appwrite agent skills removed (their symlinks broke `eas build` on Windows). Web demos via EAS Hosting were considered and dropped (2026-10-07): not worth the effort.
 
 ## Parked (unpark when the user asks)
 
