@@ -1,91 +1,111 @@
-# Bookimbiber
+# 📚 Bookimbiber
 
 ![Bookimbiber: track, discover & imbibe in your organised bookshelf](assets/Banner.png)
 
-A personal reading tracker for Android (and the web). Catalogue the books you want to read, mark them read when you finish, keep a dated reading history, and hear about new releases from the authors you follow.
+**Your personal reading tracker.** Catalogue the books you want to read, scan them straight off the shelf, mark them read when you finish, and hear about new releases from the authors you follow.
 
-Built with React Native and Expo, with Firebase for accounts and data and the Google Books API for book search.
+![Android](https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white)
+![Expo SDK 55](https://img.shields.io/badge/Expo-SDK%2055-000020?logo=expo&logoColor=white)
+![React Native 0.83](https://img.shields.io/badge/React%20Native-0.83-61DAFB?logo=react&logoColor=black)
+![Firebase](https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?logo=firebase&logoColor=black)
+![Version 1.2.0](https://img.shields.io/badge/version-1.2.0-blue)
 
-## Features
+## ✨ Features
 
-- **Personal bookshelf:** add books to your reading list, newest first.
-- **Book search:** search Google Books by title, author or ISBN. ISBNs typed into the search box are detected automatically.
-- **Barcode scanner:** scan a book's ISBN barcode (EAN-13, 978/979) with the camera to look it up.
-- **Reading history:** mark a book as read (with a little confetti) and it moves to your history with its completion date.
-- **Author following:** follow favourite authors and check for their recent releases, with notifications. Books you already own are filtered out.
-- **Amazon links:** jump to a book on your local Amazon store.
-- **Profile:** change your name, password and profile photo; reset a forgotten password by email; delete your account and all its data.
-- **Dark and light themes,** following the system setting or toggled by hand.
-- **Easy on the API quota:** Google Books results are cached (6 hours for searches, 24 hours for author lookups, 7 days for ISBNs), and the new-release check is limited to once an hour.
+| | Feature | What it does |
+| --- | --- | --- |
+| 🔎 | **Book search** | Search Google Books by title, author or ISBN. Typed ISBNs are recognised automatically. |
+| 📷 | **Barcode scanner** | Point the camera at a book's barcode to look it up instantly. |
+| 🇩🇪 | **German editions too** | ISBNs Google doesn't know are looked up in the German National Library (Deutsche Nationalbibliothek) catalogue, covers included. |
+| 📖 | **Reading list** | Your to-read shelf, newest first, live-synced to the cloud. |
+| 🎉 | **Reading history** | Mark a book as read (with confetti) and it moves to your history with its completion date. |
+| ✍️ | **Follow authors** | Follow favourite authors and check for their recent releases, with notifications. Books you already own are filtered out. |
+| 🛒 | **Amazon links** | Jump to any book on your local Amazon store. |
+| 👤 | **Your profile** | Change your name, password and photo, reset a forgotten password by email, or delete your account and all its data. |
+| 🌗 | **Dark and light themes** | Follows your system setting, or toggle it yourself. |
 
-## Tech stack
+## 🧰 Tech stack
 
-| Area | What it uses |
+| Area | Built with |
 | --- | --- |
-| App | Expo SDK 55, React Native 0.83, React 19, Expo Router (file-based routing) |
-| Accounts | Firebase Authentication (email and password), via the Firebase JS SDK |
-| Data | Cloud Firestore, live-updating with `onSnapshot` |
-| Book data | Google Books API |
-| State | React Context (`UserContext`, `BooksContext`, `AuthorContext`, `ThemeContext`) |
-| Builds and updates | EAS Build, EAS Update (over-the-air JavaScript updates) |
+| 📱 App | Expo SDK 55 · React Native 0.83 · React 19 · Expo Router (file-based routing) |
+| 🔐 Accounts | Firebase Authentication (email and password), via the Firebase JS SDK |
+| ☁️ Data | Cloud Firestore, updating live with `onSnapshot` |
+| 📚 Book data | Google Books API, with the German National Library as an ISBN fallback |
+| 🧠 State | React Context: `UserContext`, `BooksContext`, `AuthorContext`, `ThemeContext` |
+| 🚀 Delivery | EAS Build and EAS Update (over-the-air JavaScript updates) |
 
-## Getting started
+### ⚡ Easy on the API quota
 
-Requirements: Node.js, npm, and an Android device or emulator with a development build installed (the app uses native modules, so Expo Go is not enough).
+Google Books has a daily quota, so the app treats it with care:
 
-1. Install dependencies from the lockfile:
+- Results are cached on the device: 6 hours for searches, 24 hours for author lookups, 7 days for ISBNs.
+- Failed requests are never cached, so a brief outage can't leave you stuck with empty results.
+- The new-release check runs only when you ask, at most once an hour, and checks authors in small batches.
+
+## 🚀 Getting started
+
+**You'll need** Node.js, npm, and an Android device or emulator with a development build installed. The app uses native modules (camera, notifications), so Expo Go isn't enough.
+
+1. **Install dependencies** from the lockfile:
 
    ```sh
    npm ci
    ```
 
-2. Create a `.env` file in the project root with your Firebase web app config (Firebase console → Project settings → General → Your apps → Config):
+2. **Create a `.env` file** in the project root:
 
    ```sh
+   # Firebase console → Project settings → General → Your apps → Config
    EXPO_PUBLIC_FIREBASE_API_KEY=...
    EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=...
    EXPO_PUBLIC_FIREBASE_PROJECT_ID=...
    EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=...
    EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
    EXPO_PUBLIC_FIREBASE_APP_ID=...
+   # Google Cloud Console → APIs & Services → Credentials (restrict it to the Books API)
    EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY=...
    ```
 
-   The Google Books key comes from Google Cloud Console (APIs & Services → Credentials, restricted to the Books API). Without it, searches use Google's shared anonymous quota, which is often exhausted.
+   > 💡 These are public identifiers, not secrets: the Firestore security rules in `firestore.rules` decide who can read and write what. `.env` is gitignored all the same.
 
-   These are public identifiers, not secrets: Firestore security rules (`firestore.rules`) control who can read and write what. `.env` is gitignored.
-
-3. Start the development server:
+3. **Start the development server:**
 
    ```sh
    npx expo start --dev-client -c   # Android development build
    npx expo start --web             # in the browser
    ```
 
-## Data
-
-Each user's data lives in Firestore under `bookimbiber_users/{uid}/`, in a `books` and an `authors` subcollection. The security rules let a signed-in user read and write only their own documents. Profile photos and new-release notifications stay on the device.
-
-## Project layout
+## 🗂️ Project layout
 
 ```
-app/            Screens (Expo Router): (auth) login/register, (dashboard) books, create, profile, notifications
-components/     Themed UI components, book search modal, ISBN scanner, new-releases card
-contexts/       User, books, authors and theme state
-lib/            Firebase setup, Google Books client, notifications, Amazon links, image optimisation
-utils/          API response cache and debouncer
-docs/           Design notes, including the Firebase migration plan
+app/          📱 Screens (Expo Router): (auth) login and register; (dashboard) books, create, profile, notifications
+components/   🧩 Themed UI components, book search modal, ISBN scanner, new-releases card
+contexts/     🧠 User, books, authors and theme state
+lib/          🔌 Firebase setup, Google Books and German National Library clients, notifications, Amazon links
+utils/        ⚡ API response cache and debouncer
+docs/         📝 Design notes, including the Firebase migration plan
 ```
 
-## Building and releasing
+## 🔒 Your data
 
-Builds run on EAS. The full workflow (when to ship an over-the-air update and when to rebuild, version bumps, release checklist) is in [EASCheatsheet.md](EASCheatsheet.md).
+Each user's books and followed authors live in Firestore under `bookimbiber_users/{uid}/`, and the security rules let a signed-in user read and write **only their own** documents. Your profile photo and new-release notifications never leave your device. Deleting your account removes everything.
+
+The full privacy policy is in the app and in [`app/privacy-policy.jsx`](app/privacy-policy.jsx).
+
+## 📦 Building and releasing
+
+Builds run on EAS. The full workflow is in [`EASCheatsheet.md`](EASCheatsheet.md): when an over-the-air update is enough and when to rebuild, version bumps, and the release checklist.
 
 ```sh
-eas build -p android --profile production --auto-submit   # new build → Play internal testing track
-eas update -p android --branch production --environment production -m "..."   # JS-only update
+eas build -p android --profile production --auto-submit   # new build → Play internal testing
+eas update -p android --branch production --environment production -m "..."   # JavaScript-only update
 ```
 
-## Privacy
+## 📲 Try it
 
-Bookimbiber stores only what it needs: your name, email address, and the books and authors you add. The in-app privacy policy is in [app/privacy-policy.jsx](app/privacy-policy.jsx).
+Bookimbiber is distributed through Google Play's internal testing. If you'd like to try it, get in touch at **support@onestepweb.dev** and I'll add you as a tester.
+
+---
+
+Made with ☕ and 📖 by Peter Easterbrook · [onestepweb.dev](https://www.onestepweb.dev)
