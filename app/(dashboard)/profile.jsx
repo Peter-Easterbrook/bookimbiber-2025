@@ -27,11 +27,13 @@ import { useUser } from '../../hooks/useUser';
 const Profile = () => {
   const { scheme } = useContext(ThemeContext);
   const theme = Colors[scheme] ?? Colors.dark;
-  const { user, deleteBooks, updateName, updatePassword } = useUser();
+  const { user, deleteAccount, updateName, updatePassword } = useUser();
   const { books, readBooks, booksLoading } = useBooks();
   const navigation = useRouter();
   const responsiveHeading = useResponsiveHeadingStyle();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [avatarUri, setAvatarUri] = useState(null);
@@ -47,7 +49,7 @@ const Profile = () => {
     const loadAvatar = async () => {
       if (user) {
         try {
-          const savedAvatar = await AsyncStorage.getItem(`avatar_${user.$id}`);
+          const savedAvatar = await AsyncStorage.getItem(`avatar_${user.id}`);
           if (savedAvatar) {
             setAvatarUri(savedAvatar);
           }
@@ -120,7 +122,7 @@ const Profile = () => {
         const uri = result.assets[0].uri;
         setAvatarUri(uri);
         // Save to AsyncStorage
-        await AsyncStorage.setItem(`avatar_${user.$id}`, uri);
+        await AsyncStorage.setItem(`avatar_${user.id}`, uri);
         Alert.alert('Success', 'Profile photo updated!');
       }
     } catch (error) {
@@ -132,7 +134,7 @@ const Profile = () => {
   const removeAvatar = async () => {
     try {
       setAvatarUri(null);
-      await AsyncStorage.removeItem(`avatar_${user.$id}`);
+      await AsyncStorage.removeItem(`avatar_${user.id}`);
       Alert.alert('Success', 'Profile photo removed');
     } catch (error) {
       console.error('Error removing avatar:', error);
@@ -228,10 +230,20 @@ const Profile = () => {
     );
   }
 
-  const handleDeleteBooks = () => {
+  const cancelDeleteAccount = () => {
+    setShowDeleteAccount(false);
+    setDeletePassword('');
+  };
+
+  const handleDeleteAccount = () => {
+    if (!deletePassword) {
+      Alert.alert('Password Required', 'Please enter your password to confirm.');
+      return;
+    }
+
     Alert.alert(
-      'Delete All Books',
-      'Are you sure you want to delete your books?\nThis action cannot be undone and all your book data will be permanently deleted.',
+      'Delete Account',
+      'This permanently deletes your account, all your books and followed authors.\nThis action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -240,7 +252,7 @@ const Profile = () => {
           onPress: async () => {
             setIsDeleting(true);
             try {
-              await deleteBooks();
+              await deleteAccount(deletePassword);
               navigation.replace('/login');
             } catch (error) {
               Alert.alert(
@@ -408,7 +420,7 @@ const Profile = () => {
           <>
             {[...readBooks].map((book) => (
               <View
-                key={book.$id || book.id}
+                key={book.id}
                 style={[
                   styles.readBookItem,
                   {
@@ -474,6 +486,64 @@ const Profile = () => {
           <ThemedText style={styles.readBookStatement}>
             No books read yet.
           </ThemedText>
+        )}
+        <Spacer height={40} />
+
+        {/* Delete Account Section */}
+        {!showDeleteAccount ? (
+          <ThemedButton
+            onPress={() => setShowDeleteAccount(true)}
+            style={styles.deleteButton}
+          >
+            <ThemedText style={styles.deleteButtonText}>
+              Delete Account
+            </ThemedText>
+            <Ionicons name="trash-outline" size={18} color={theme.iconColor} />
+          </ThemedButton>
+        ) : (
+          <View style={styles.editForm}>
+            <ThemedText title={true} style={styles.sectionTitle}>
+              Delete Account
+            </ThemedText>
+            <Spacer height={10} />
+            <ThemedText style={styles.deleteWarning}>
+              Your account, books and followed authors will be permanently
+              deleted. Enter your password to confirm.
+            </ThemedText>
+            <Spacer height={15} />
+            <ThemedTextInput
+              value={deletePassword}
+              onChangeText={setDeletePassword}
+              placeholder="Password"
+              secureTextEntry
+              style={styles.input}
+            />
+            <Spacer height={20} />
+            <View style={styles.buttonRow}>
+              <ThemedButton
+                onPress={cancelDeleteAccount}
+                style={[
+                  styles.actionButton,
+                  {
+                    backgroundColor: theme.uiBackground,
+                    borderColor: theme.uiBorder,
+                  },
+                ]}
+                disabled={isDeleting}
+              >
+                <ThemedText style={styles.buttonText}>Cancel</ThemedText>
+              </ThemedButton>
+              <ThemedButton
+                onPress={handleDeleteAccount}
+                style={[styles.actionButton, { opacity: isDeleting ? 0.5 : 1 }]}
+                disabled={isDeleting}
+              >
+                <ThemedText style={styles.buttonText}>
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </ThemedText>
+              </ThemedButton>
+            </View>
+          </View>
         )}
         <Spacer height={30} />
       </ScrollView>
@@ -654,6 +724,11 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontWeight: 'normal',
     textAlign: 'center',
+  },
+  deleteWarning: {
+    fontSize: 14,
+    textAlign: 'center',
+    opacity: 0.8,
   },
   privacyNote: {
     width: '100%',

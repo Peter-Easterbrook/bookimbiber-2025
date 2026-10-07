@@ -74,7 +74,7 @@ export default function CustomDrawerContent(props) {
       <View style={styles.drawerHeader}>
         <ThemedLogo width={80} height={80} />
         <ThemedText style={styles.appName} title={true}>
-          Book Imbiber
+          Bookimbiber
         </ThemedText>
         {user && (
           <ThemedText style={styles.userName}>Hello, {user.name}</ThemedText>

@@ -79,7 +79,8 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
       console.error('Search error:', error);
       Alert.alert(
         'Search Error',
-        'Failed to search for books. Please check your internet connection and try again.'
+        error.message ||
+          'Failed to search for books. Please check your internet connection and try again.'
       );
       setSearchResults([]);
     } finally {
@@ -253,7 +254,9 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
       ) : (
         <FlatList
           data={searchResults}
-          keyExtractor={(item) => item.googleBooksId}
+          keyExtractor={(item) =>
+            item.googleBooksId || item.isbn13 || item.title
+          }
           renderItem={renderBookItem}
           style={styles.resultsList}
           showsVerticalScrollIndicator={false}

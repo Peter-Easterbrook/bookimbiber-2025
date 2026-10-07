@@ -1,8 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { ID, Permission, Query, Role } from 'react-native-appwrite';
+import {
+  addDoc,
+  deleteDoc,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+} from 'firebase/firestore';
 import { useUser } from '../hooks/useUser';
-import { client, databases } from '../lib/appwrite';
+import { fromSnapshot, userCollection, userDoc } from '../lib/firebase';
 import { searchBooksByAuthor } from '../lib/googleBooks';
 import {
   incrementNotificationCount,
@@ -10,9 +18,6 @@ import {
 } from '../lib/notifications';
 import { Debouncer } from '../utils/api-cache';
 import { BooksContext } from './BooksContext';
-
-const DATABASE_ID = '681e133100381d53f199';
-const AUTHORS_COLLECTION_ID = 'authors';
 
 export const AuthorContext = createContext();
 
@@ -25,6 +30,7 @@ export function AuthorProvider({ children }) {
   const [newReleases, setNewReleases] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const { user } = useUser();
+  const uid = user?.id;
   const { books, readBooks } = useContext(BooksContext) || {
     books: [],
     readBooks: [],
@@ -87,15 +93,18 @@ export function AuthorProvider({ children }) {
   // ---- Notifications storage helpers ----
   const NOTIFS_KEY = (userId) => `bookimbiber_notifications_${userId}`;
 
+  const authorsQuery = () =>
+    query(userCollection(uid, 'authors'), orderBy('createdAt', 'desc'));
+
   const loadNotifications = async () => {
-    if (!user || !user.$id) {
+    if (!uid) {
       setNotifications([]);
       setNewReleases([]);
       return;
     }
 
     try {
-      const raw = await AsyncStorage.getItem(NOTIFS_KEY(user.$id));
+      const raw = await AsyncStorage.getItem(NOTIFS_KEY(uid));
       const existing = raw ? JSON.parse(raw) : [];
       setNotifications(existing);
       const unread = existing.filter((n) => !n.read);
@@ -113,10 +122,10 @@ export function AuthorProvider({ children }) {
   };
 
   const saveNotification = async (newNotification) => {
-    if (!user || !user.$id) return false;
+    if (!uid) return false;
 
     try {
-      const raw = await AsyncStorage.getItem(NOTIFS_KEY(user.$id));
+      const raw = await AsyncStorage.getItem(NOTIFS_KEY(uid));
       const existing = raw ? JSON.parse(raw) : [];
 
       const newKeys = (newNotification.books || []).map(bookIdFor).sort();
@@ -134,7 +143,7 @@ export function AuthorProvider({ children }) {
 
       existing.unshift(newNotification);
       const toSave = existing.slice(0, 50);
-      await AsyncStorage.setItem(NOTIFS_KEY(user.$id), JSON.stringify(toSave));
+      await AsyncStorage.setItem(NOTIFS_KEY(uid), JSON.stringify(toSave));
 
       setNotifications(toSave);
       const unread = toSave.filter((n) => !n.read);
@@ -155,15 +164,15 @@ export function AuthorProvider({ children }) {
   };
 
   const markNotificationRead = async (id) => {
-    if (!user || !user.$id) return;
+    if (!uid) return;
 
     try {
-      const raw = await AsyncStorage.getItem(NOTIFS_KEY(user.$id));
+      const raw = await AsyncStorage.getItem(NOTIFS_KEY(uid));
       const existing = raw ? JSON.parse(raw) : [];
       const next = existing.map((n) =>
         n.id === id ? { ...n, read: true } : n
       );
-      await AsyncStorage.setItem(NOTIFS_KEY(user.$id), JSON.stringify(next));
+      await AsyncStorage.setItem(NOTIFS_KEY(uid), JSON.stringify(next));
       setNotifications(next);
 
       const unread = next.filter((n) => !n.read);
@@ -181,13 +190,13 @@ export function AuthorProvider({ children }) {
   };
 
   const deleteNotification = async (id) => {
-    if (!user || !user.$id) return;
+    if (!uid) return;
 
     try {
-      const raw = await AsyncStorage.getItem(NOTIFS_KEY(user.$id));
+      const raw = await AsyncStorage.getItem(NOTIFS_KEY(uid));
       const existing = raw ? JSON.parse(raw) : [];
       const next = existing.filter((n) => n.id !== id);
-      await AsyncStorage.setItem(NOTIFS_KEY(user.$id), JSON.stringify(next));
+      await AsyncStorage.setItem(NOTIFS_KEY(uid), JSON.stringify(next));
       setNotifications(next);
       const unread = next.filter((n) => !n.read);
       setNewReleases(
@@ -206,17 +215,12 @@ export function AuthorProvider({ children }) {
   // ---- Authors / releases ----
 
   async function fetchFollowedAuthors() {
-    if (!user || !user.$id) return;
+    if (!uid) return;
 
     setAuthorsLoading(true);
     try {
-      const response = await databases.listDocuments(
-        DATABASE_ID,
-        AUTHORS_COLLECTION_ID,
-        [Query.equal('userId', user.$id), Query.orderDesc('$createdAt')]
-      );
-
-      setFollowedAuthors(response.documents || []);
+      const snapshot = await getDocs(authorsQuery());
+      setFollowedAuthors(snapshot.docs.map(fromSnapshot));
       await loadNotifications();
 
       // Don't automatically check on load - let user trigger it
@@ -229,7 +233,7 @@ export function AuthorProvider({ children }) {
   }
 
   async function followAuthor(authorData) {
-    if (!user || !user.$id) throw new Error('No user ID for following author');
+    if (!uid) throw new Error('No user ID for following author');
 
     try {
       const existing = followedAuthors.find(
@@ -241,29 +245,18 @@ export function AuthorProvider({ children }) {
       }
 
       const authorDoc = {
-        userId: user.$id,
         authorName: authorData.name,
         authorId: authorData.id || null,
         booksCount: authorData.booksCount || 0,
         genres: authorData.genres || [],
         lastChecked: new Date().toISOString(),
         isActive: true,
+        createdAt: serverTimestamp(),
       };
 
-      const result = await databases.createDocument(
-        DATABASE_ID,
-        AUTHORS_COLLECTION_ID,
-        ID.unique(),
-        authorDoc,
-        [
-          Permission.read(Role.user(user.$id)),
-          Permission.update(Role.user(user.$id)),
-          Permission.delete(Role.user(user.$id)),
-        ]
-      );
-
-      setFollowedAuthors((prev) => [result, ...prev]);
-      return result;
+      const ref = await addDoc(userCollection(uid, 'authors'), authorDoc);
+      // The snapshot listener adds it to followedAuthors
+      return { id: ref.id, ...authorDoc };
     } catch (error) {
       console.error('Error following author:', error);
       throw error;
@@ -272,12 +265,8 @@ export function AuthorProvider({ children }) {
 
   async function unfollowAuthor(authorId) {
     try {
-      await databases.deleteDocument(
-        DATABASE_ID,
-        AUTHORS_COLLECTION_ID,
-        authorId
-      );
-      setFollowedAuthors((prev) => prev.filter((a) => a.$id !== authorId));
+      await deleteDoc(userDoc(uid, 'authors', authorId));
+      setFollowedAuthors((prev) => prev.filter((a) => a.id !== authorId));
     } catch (error) {
       console.error('Error unfollowing author:', error);
       throw error;
@@ -292,11 +281,11 @@ export function AuthorProvider({ children }) {
     authors = followedAuthors,
     forceRefresh = false
   ) {
-    if (!authors || !authors.length || !user || !user.$id) return;
+    if (!authors || !authors.length || !uid) return;
 
     // Check debouncer unless force refresh
     if (!forceRefresh) {
-      const debounceKey = `check-releases-${user.$id}`;
+      const debounceKey = `check-releases-${uid}`;
       if (!refreshDebouncer.canProceed(debounceKey)) {
         const remainingMs = refreshDebouncer.getRemainingTime(debounceKey);
         console.log(
@@ -340,7 +329,7 @@ export function AuthorProvider({ children }) {
                 releases.push({ author: author.authorName, books: top });
 
                 const notificationData = {
-                  id: `${author.$id || author.authorName}-${Date.now()}`,
+                  id: `${author.id || author.authorName}-${Date.now()}`,
                   author: author.authorName,
                   books: top,
                   ts: new Date().toISOString(),
@@ -380,7 +369,7 @@ export function AuthorProvider({ children }) {
       }
 
       try {
-        const raw = await AsyncStorage.getItem(NOTIFS_KEY(user.$id));
+        const raw = await AsyncStorage.getItem(NOTIFS_KEY(uid));
         const existing = raw ? JSON.parse(raw) : [];
         const unread = existing.filter((n) => !n.read);
         if (unread.length > 0) {
@@ -438,47 +427,29 @@ export function AuthorProvider({ children }) {
     return suggestions.sort((a, b) => b.booksCount - a.booksCount).slice(0, 5);
   }
 
-  // Real-time subscription for authors
+  // Live listener: Firestore pushes every follow/unfollow for this user
   useEffect(() => {
-    let unsubscribe;
-    const channel = `databases.${DATABASE_ID}.collections.${AUTHORS_COLLECTION_ID}.documents`;
-
-    if (user) {
-      console.log('User changed, fetching followed authors for:', user.$id);
-      fetchFollowedAuthors();
-
-      unsubscribe = client.subscribe(channel, (response) => {
-        const { payload, events } = response;
-
-        if (events[0].includes('create')) {
-          setFollowedAuthors((prev) => [payload, ...prev]);
-        }
-
-        if (events[0].includes('update')) {
-          setFollowedAuthors((prev) =>
-            prev.map((author) =>
-              author.$id === payload.$id ? payload : author
-            )
-          );
-        }
-
-        if (events[0].includes('delete')) {
-          setFollowedAuthors((prev) =>
-            prev.filter((author) => author.$id !== payload.$id)
-          );
-        }
-      });
-    } else {
+    if (!uid) {
       console.log('No user, clearing all author data');
       setFollowedAuthors([]);
       setNewReleases([]);
       setNotifications([]);
+      return;
     }
 
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, [user, user?.$id]);
+    loadNotifications();
+    const unsubscribe = onSnapshot(
+      authorsQuery(),
+      (snapshot) => {
+        setFollowedAuthors(snapshot.docs.map(fromSnapshot));
+      },
+      (error) => {
+        console.error('Authors listener error:', error.code, error.message);
+      }
+    );
+
+    return unsubscribe;
+  }, [uid]);
 
   // REMOVED: Automatic periodic checks
   // Users will trigger checks manually via the refresh button

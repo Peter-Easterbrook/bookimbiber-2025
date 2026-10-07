@@ -57,7 +57,7 @@ const NewReleasesCard = ({ style }) => {
   const handleRefresh = async () => {
     if (isRefreshing || authorsLoading) return;
 
-    const debounceKey = `new-releases-refresh-${user?.$id}`;
+    const debounceKey = `new-releases-refresh-${user?.id}`;
 
     // Check if we're still in cooldown
     if (!uiDebouncer.canProceed(debounceKey)) {
