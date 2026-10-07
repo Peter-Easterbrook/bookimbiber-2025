@@ -63,7 +63,7 @@
 
 ### Firebase config (required for every build)
 
-The app reads its Firebase config from six `EXPO_PUBLIC_FIREBASE_*` variables (see `lib/firebase.js`). Locally they come from `.env` (gitignored). EAS builds run on Expo's servers and never see `.env`, so the same variables must exist in EAS. Otherwise the build succeeds, but the app can't reach Firebase.
+The app reads its Firebase config from six `EXPO_PUBLIC_FIREBASE_*` variables (see `lib/firebase.js`), plus `EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY` for book search (`lib/googleBooks.js`). Locally they come from `.env` (gitignored). EAS builds run on Expo's servers and never see `.env`, so the same variables must exist in EAS. Otherwise the build succeeds, but the app can't reach Firebase.
 
 - After creating or changing `.env`, push it to all three environments (`--force` skips the overwrite prompt):
 

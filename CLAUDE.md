@@ -15,7 +15,7 @@ Bookimbiber (one word) is a personal reading tracker: Expo / React Native app fo
 
 - Expo SDK 55, React Native 0.83, React 19, Expo Router (file-based; route groups `app/(auth)` and `app/(dashboard)`, each with its own `_layout.jsx`). Exact versions: `package.json`.
 - **Firebase JS SDK** (`firebase`, not `@react-native-firebase`): Auth (email/password) + Cloud Firestore. Set up in `lib/firebase.js`.
-- Google Books API via `lib/googleBooks.js`, with AsyncStorage caching in `utils/api-cache.js`.
+- Google Books API via `lib/googleBooks.js` (key: `EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY`), with AsyncStorage caching in `utils/api-cache.js`. API failures throw `BookSearchError` and are never cached; only genuine "no results" are.
 - State in React Context: `contexts/UserContext.jsx`, `BooksContext.jsx`, `AuthorContext.jsx`, `ThemeContext.jsx`, read through `hooks/useUser`, `useBooks`, `useAuthors`.
 - Builds and OTA updates with EAS; `runtimeVersion` policy `appVersion`.
 

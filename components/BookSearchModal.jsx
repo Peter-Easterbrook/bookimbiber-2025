@@ -79,7 +79,8 @@ const BookSearchModal = ({ visible, onClose, onBookSelect, theme }) => {
       console.error('Search error:', error);
       Alert.alert(
         'Search Error',
-        'Failed to search for books. Please check your internet connection and try again.'
+        error.message ||
+          'Failed to search for books. Please check your internet connection and try again.'
       );
       setSearchResults([]);
     } finally {

@@ -22,7 +22,10 @@ const ISBNScanner = ({ onBookFound, onClose }) => {
         }
       } catch (e) {
         console.error('Error fetching book data:', e);
-        Alert.alert('Error', 'Error fetching book data. Please try again.');
+        Alert.alert(
+          'Error',
+          e.message || 'Error fetching book data. Please try again.'
+        );
       }
     } else {
       Alert.alert('Invalid ISBN', 'Scanned code is not a valid ISBN.');
@@ -42,17 +45,16 @@ const ISBNScanner = ({ onBookFound, onClose }) => {
   if (!permission.granted) {
     return (
       <View style={styles.container}>
-        <Text style={styles.message}>Camera permission is required to scan barcodes</Text>
+        <Text style={styles.message}>
+          Camera permission is required to scan barcodes
+        </Text>
         <TouchableOpacity
           style={styles.permissionButton}
           onPress={requestPermission}
         >
           <Text style={styles.permissionButtonText}>Grant Permission</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={onClose}
-        >
+        <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
       </View>
@@ -74,10 +76,7 @@ const ISBNScanner = ({ onBookFound, onClose }) => {
           Point your camera at a book barcode
         </Text>
       </View>
-      <TouchableOpacity
-        style={styles.closeButton}
-        onPress={onClose}
-      >
+      <TouchableOpacity style={styles.closeButton} onPress={onClose}>
         <Text style={styles.closeButtonText}>Cancel</Text>
       </TouchableOpacity>
     </View>
