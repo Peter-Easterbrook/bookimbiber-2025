@@ -17,7 +17,7 @@
 3. Work through the Phase 3 checklist in `docs/firebase-migration.md` (login persists after app kill, reset email, name/password change, books live-update, follow authors, second account isolation, delete account). Use an email not used in other apps: accounts are shared across the Firebase project.
 4. Phase 4 (`docs/firebase-migration.md`): `app/privacy-policy.jsx` already updated (2026-10-07). Still to do: the Play **Data safety** form, then run `npm run bump-version minor` (→ 1.2.0), then `npx expo export --platform android` and `eas build -p android --profile production --auto-submit` → internal track.
 5. Merge `firebase-migration` into `master` and push (ask the user before pushing; auto mode blocks force-pushes, so the user runs those).
-6. Phase 5 docs are done (`CLAUDE.md`, `EASCheatsheet.md`, `README.md` rewritten for Firebase, 2026-10-07). Optionally delete `.claude/skills/appwrite-*`, and update the Appwrite notes in Claude's memory once 1.2.0 ships.
+6. Phase 5 docs are done (`CLAUDE.md`, `EASCheatsheet.md`, `README.md` rewritten for Firebase, 2026-10-07). The Appwrite agent skills (`.agents/`, `.claude/skills/`, `skills-lock.json`) were removed 2026-10-07: their symlinks broke `eas build` on Windows.
 
 ## Parked (unpark when the user asks)
 
