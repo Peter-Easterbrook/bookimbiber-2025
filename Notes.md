@@ -5,7 +5,7 @@
 ## Position (2026-10-07)
 
 - **1.2.0 is live** on Play's internal testing track (versionCode 18), installed on the user's phone and working. Distribution is internal testing only (testers added by email); no closed/production releases planned. The old closed-testing release (1.1.0, versionCode 16) is still on that track.
-- Backend: Firebase Auth + Firestore (Appwrite deleted). Merged into `master` as `e64eb4e` (2026-10-07); branch `firebase-migration` can be deleted once `master` is pushed.
+- Backend: Firebase Auth + Firestore (Appwrite deleted). Merged into `master` as `e64eb4e` (2026-10-07) and pushed; the `firebase-migration` branch has been deleted.
 - Book search uses the user's own Google Books API key (key "Bookimbiber Books" in Google Cloud project `react-http-7b17c`, restricted to Books API). ISBN lookups fall back to the German National Library (`lib/dnb.js`) when Google has no record, which is common for German editions.
 - `.env` holds six `EXPO_PUBLIC_FIREBASE_*` values plus `EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY`; all seven are also in EAS (development, preview, production). Re-push after any `.env` change: see `EASCheatsheet.md` → *Firebase config*.
 - EAS keeps the Android versionCode remotely (`appVersionSource: "remote"`, currently 18). `--auto-submit` uses the Rooster Recipes Play service account key, stored in Bookimbiber's EAS credentials.
