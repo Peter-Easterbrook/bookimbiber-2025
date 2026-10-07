@@ -1,26 +1,27 @@
 # Bookimbiber — start here
 
-**Read this first:** the SDK 57 upgrade is done in code on branch **`sdk-upgrade`** (not merged, not pushed). Next: dev build and test on the phone (job 1), then release 1.3.0 and merge.
+**Read this first:** first job is the 1.3.0 production build (job 1). Everything is ready on branch **`sdk-upgrade`** (SDK 57, tested on the phone, version already bumped to 1.3.0; not merged, not pushed). The phone currently has **no** Bookimbiber installed (dev build removed 2026-10-07). EAS free-tier builds can queue for hours.
 
 ## Position (2026-10-07)
 
+- **SDK 57 upgrade passed testing** on a dev build (2026-10-07): drawer, icons, confetti, auth screens, splash, scanner and ISBN lookups all fine. Some ISBNs genuinely aren't in Google Books or the DNB; that's a data gap, not a bug (Open Library could be a third fallback).
 - **1.2.0 is live** on Play's internal testing track (versionCode 18), installed on the user's phone and working. Distribution is internal testing only (testers added by email); no closed/production releases planned. The old closed-testing release (1.1.0, versionCode 16) is still on that track.
 - Backend: Firebase Auth + Firestore (Appwrite deleted). Merged into `master` as `e64eb4e` (2026-10-07) and pushed; the `firebase-migration` branch has been deleted.
 - Book search uses the user's own Google Books API key (key "Bookimbiber Books" in Google Cloud project `react-http-7b17c`, restricted to Books API). ISBN lookups fall back to the German National Library (`lib/dnb.js`) when Google has no record, which is common for German editions.
 - `.env` holds six `EXPO_PUBLIC_FIREBASE_*` values plus `EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY`; all seven are also in EAS (development, preview, production). Re-push after any `.env` change: see `EASCheatsheet.md` → *Firebase config*.
-- EAS keeps the Android versionCode remotely (`appVersionSource: "remote"`, currently 18). `--auto-submit` uses the Rooster Recipes Play service account key, stored in Bookimbiber's EAS credentials.
+- EAS keeps the Android versionCode remotely (`appVersionSource: "remote"`, currently 18; the 1.3.0 build will be 19). `--auto-submit` uses the Rooster Recipes Play service account key, stored in Bookimbiber's EAS credentials.
 - Git history was rewritten on 2026-10-06 to remove `login-data.txt` and the `.jks`; hashes from before then changed.
 
 ## Next jobs
 
-1. **Test the SDK 57 upgrade** (branch `sdk-upgrade`, commit `61315d6`). Went straight 55 → 57.0.27, skipping 56 (Hermes V1 memory regression with reanimated/worklets in 56 and early 57). `expo-doctor` 21/21; Android and web bundles build. Now: dev build (`eas build --profile development -p android`; uninstall the Play version first, since the signing keys differ), `npx expo start --dev-client -c`, and run the full Phase 3 checklist from `docs/firebase-migration.md`. Watch especially: drawer menu (imports moved to `expo-router/drawer`), icons, confetti on mark-as-read (Reanimated/Skia upgraded), login/register screens (`react-native-keyboard-aware-scroll-view` is old and unmaintained; replace with `react-native-keyboard-controller` if it misbehaves), splash screen (config moved into the plugin), barcode scanner.
-2. **Release 1.3.0:** `npm run bump-version minor`, `npx expo export --platform android`, `eas build -p android --profile production --auto-submit` → internal testing; uninstall the dev build, install from Play, check. Then merge `sdk-upgrade` into `master` and push (ask first).
+1. **Release 1.3.0:** run `eas build -p android --profile production --auto-submit` (version is already 1.3.0 in `app.json`/`package.json`; EAS assigns versionCode 19 and submits to internal testing with the stored Play key). Then install from the tester link on the phone, check Settings → Apps shows 1.3.0, log in, search, scan.
+2. **Merge** `sdk-upgrade` into `master` (merge commit), delete the branch, and push (ask first).
 3. SDK 58: was in beta (`next` tag) on 2026-10-07. Upgrade once it's stable, on its own branch, using the `expo:expo-upgrade` skill.
 
 ## Parked (unpark when the user asks)
 
 - `eas.json`: `appVersionSource: "remote"` is set (2026-10-07). Still parked: raise `cli.version`, fill in `submit.production`.
-- `app.json`: move `splash` into the `expo-splash-screen` plugin, add `adaptiveIcon.monochromeImage`, add a notification `icon`/`color` to the `expo-notifications` plugin.
+- `app.json`: add `adaptiveIcon.monochromeImage`, add a notification `icon`/`color` to the `expo-notifications` plugin.
 - Unused code: `lib/imageOptimization.js`, `lib/android14Features.js`, `lib/avatar.js`, `lib/cache-util.js`, `hooks/useEdgeToEdge.js` (nothing imports them); series view in `app/(dashboard)/books.jsx` was never implemented (`viewMode` unused). Delete or build out.
 - About 40 `console.log` calls.
 
