@@ -131,7 +131,8 @@ Requires Android Studio / SDK locally. Generates a native `android/` folder — 
 ```json
 {
   "cli": {
-    "version": ">= 16.3.1"
+    "version": ">= 16.3.1",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -163,7 +164,7 @@ Requires Android Studio / SDK locally. Generates a native `android/` folder — 
 
 **Notes on this config:**
 
-- `cli.appVersionSource` is **not set**, so EAS falls back to `local` and warns that the field will become required. EAS docs recommend `"remote"`. Before switching, run `eas build:version:get -p android` / `eas build:version:set -p android` so the remote `versionCode` starts **above the last uploaded one** (last build: 16). `app.json` still says `versionCode: 4`. If remote were initialized from that, Play would reject the upload.
+- `cli.appVersionSource` is `"remote"`: EAS stores the Android `versionCode` on its servers and `autoIncrement` raises it on every production build. The `versionCode` in `app.json` is ignored. Check it with `eas build:version:get -p android`; change it with `eas build:version:set -p android` (interactive). The last versionCode uploaded to Play was **16** (Mar 2026), so the remote value must be at least 17 before the next production build or Play rejects the upload.
 - `submit.production` is empty, so Android submissions go to the **internal** track by default.
 
 ---
@@ -257,7 +258,7 @@ If a build fails with a dependency sync or cache error, add `--clear-cache`.
 2. Confirm the new bundle appears under **App bundles**, _not_ **Deactivated app bundles**. If it's deactivated, the track silently serves the previous version and you'll test the wrong binary.
 3. Install from the internal track and confirm **Settings → Apps → Bookimbiber** shows the version you just built
 4. Smoke-test what the release touched (see checklist below)
-5. **Internal testing → Promote release → Production**
+5. **Internal testing → Promote release → Closed testing** (the app is on the closed testing track; promote to **Production** only once Play has granted production access)
 
 Promoting ships the identical artifact, with no rebuild needed.
 

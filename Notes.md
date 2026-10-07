@@ -8,20 +8,20 @@
 - Git history was rewritten (2026-10-06) to remove `login-data.txt` and the `.jks` from every commit, then force-pushed (`master`, `claude-edits`, `firebase-migration`). Every commit hash from before then changed.
 - Verified: `expo-doctor` 20/20, `npx expo export --platform android` bundles, web app runs, and a new account was registered successfully in the browser.
 - Firestore rules and Realtime DB rules are published in the console. `.env` holds the six `EXPO_PUBLIC_FIREBASE_*` values (gitignored, local only).
-- App version is still 1.1.3. The 1.1.x build on Play can't log in until 1.2.0 ships (expected; no other users).
+- App version is still 1.1.3. On Play the app is on the **closed testing** track (last release `bookimbiber-26`, versionCode 16, 8 Mar 2026). That build can't log in until 1.2.0 ships (expected; no active testers besides the user).
 
 ## Next jobs
 
 1. ✅ Firebase config is in EAS (all six variables, done 2026-10-07). If `.env` changes, re-push: see `EASCheatsheet.md` → *Firebase config*.
 2. Dev build: `eas build --profile development -p android`, install, `npx expo start --dev-client -c`.
 3. Work through the Phase 3 checklist in `docs/firebase-migration.md` (login persists after app kill, reset email, name/password change, books live-update, follow authors, second account isolation, delete account). Use an email not used in other apps: accounts are shared across the Firebase project.
-4. Phase 4 (`docs/firebase-migration.md`): `app/privacy-policy.jsx` already updated (2026-10-07). Still to do: the Play **Data safety** form, then run `npm run bump-version minor` (→ 1.2.0), then `npx expo export --platform android` and `eas build -p android --profile production --auto-submit` → internal track.
+4. Phase 4 (`docs/firebase-migration.md`): `app/privacy-policy.jsx` already updated (2026-10-07). Still to do: the Play **Data safety** form, then run `eas build:version:set -p android` and enter **17** (EAS now keeps the versionCode remotely; it must be above 16), `npm run bump-version minor` (→ 1.2.0), `npx expo export --platform android`, and `eas build -p android --profile production --auto-submit` → internal track → test → promote to **closed testing**.
 5. Merge `firebase-migration` into `master` and push (ask the user before pushing; auto mode blocks force-pushes, so the user runs those).
 6. Phase 5 docs are done (`CLAUDE.md`, `EASCheatsheet.md`, `README.md` rewritten for Firebase, 2026-10-07). The Appwrite agent skills (`.agents/`, `.claude/skills/`, `skills-lock.json`) were removed 2026-10-07: their symlinks broke `eas build` on Windows.
 
 ## Parked (unpark when the user asks)
 
-- `eas.json`: set `cli.appVersionSource` (`"remote"` recommended; first set the remote versionCode above 16, the last upload), raise `cli.version`, fill in `submit.production`.
+- `eas.json`: `appVersionSource: "remote"` is set (2026-10-07). Still parked: raise `cli.version`, fill in `submit.production`.
 - `app.json`: move `splash` into the `expo-splash-screen` plugin, add `adaptiveIcon.monochromeImage`, add a notification `icon`/`color` to the `expo-notifications` plugin.
 - `lib/googleBooks.js` sends no API key, so it uses the small anonymous quota (likely cause of past quota problems).
 - Unused code: `lib/imageOptimization.js`, `lib/android14Features.js`, `lib/avatar.js`, `lib/cache-util.js`, `hooks/useEdgeToEdge.js` (nothing imports them); series view in `app/(dashboard)/books.jsx` was never implemented (`viewMode` unused). Delete or build out.
