@@ -32,7 +32,6 @@
     ],
     "description": "Bookimbiber is an app for book lovers to track their reading habits and share recommendations.",
     "android": {
-      "versionCode": 4,
       "package": "com.petereasterbro1.bookimbiber2025",
       "permissions": [
         "android.permission.INTERNET",
