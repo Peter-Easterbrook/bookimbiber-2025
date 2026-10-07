@@ -1,6 +1,6 @@
 # Bookimbiber — start here
 
-**Read this first:** next job is finishing Phase 3 testing on the dev build (job 3 below lists what's left). Then push the Google Books key to EAS (job 4) before any EAS build.
+**Read this first:** 1.2.0 (versionCode 18) is built and live on Play's **internal testing** track, but the user's phone was still being served the old closed-testing 1.1.0 (versionCode 16) on 2026-10-07. Everything on the Play side was checked (Gmail in the ticked testers list, invite accepted, Play Store cache cleared); waiting for propagation. Next: confirm 1.2.0 installs and works, then merge (job 6).
 
 ## Position (2026-10-07)
 
@@ -15,9 +15,9 @@
 
 1. ✅ Firebase config is in EAS (all six variables, done 2026-10-07). If `.env` changes, re-push: see `EASCheatsheet.md` → *Firebase config*.
 2. ✅ Dev build installed on the phone (2026-10-07). To use it: in the project folder run `npx expo start --dev-client -c`, then open Bookimbiber on the phone (same Wi-Fi) and tap the server it lists, or scan the terminal's QR code.
-3. Finish the Phase 3 checklist in `docs/firebase-migration.md`. **Passed (2026-10-07):** login on the phone, title/author search, typed and scanned ISBNs (English via Google, German via the DNB). **Still to test:** login persists after killing the app, reset email, name/password change, mark read (→ Reading History), delete one book / Delete All Books, follow authors + new releases, second account sees none of your books, delete account (throwaway account: accounts are shared across the Firebase project).
-4. **Push the Google Books key to EAS** before any EAS build (it is only in `.env` so far): `eas env:push --path .env --environment development --environment preview --environment production`.
-5. Phase 4 (`docs/firebase-migration.md`): `app/privacy-policy.jsx` already updated (2026-10-07). Then: `eas build:version:set -p android` and enter **17** (EAS keeps the versionCode remotely; it must be above 16), `npm run bump-version minor` (→ 1.2.0), `npx expo export --platform android`, and `eas build -p android --profile production --auto-submit` → **internal testing** track. The user distributes via internal testing only (testers added by email); no closed/production release planned. Fill in the Play **Data safety** form only if Play Console demands it.
+3. ✅ Phase 3 tests all passed on the dev build (2026-10-07).
+4. ✅ Google Books key pushed to EAS (all three environments).
+5. ✅ 1.2.0 built (`eas build -p android --profile production --auto-submit`) and submitted to internal testing. EAS reused the Rooster Recipes Play service account key (`../recipe-rooster-2025/google-play-key.json`), now stored in Bookimbiber's EAS credentials. The remote versionCode is now 18. **Still to check:** the phone gets 1.2.0 from Play (Settings → Apps → Bookimbiber shows 1.2.0), then log in, search, scan a German ISBN. If Play keeps serving 1.1.0: last resort is uninstall + reinstall from the tester link, or promote 1.2.0 to closed testing (needs Google review).
 6. Merge `firebase-migration` into `master` and push (ask the user before pushing; auto mode blocks force-pushes, so the user runs those).
 7. **Upgrade the Expo SDK** after the merge (not before: keep Firebase and SDK changes separate). App is on SDK 55; latest stable is 57 (Jun 2026); 58 was in beta (`next` tag) on 2026-10-07. Go one SDK at a time (55 → 56 → 57 → 58 once stable): `npx expo install expo@^N --fix`, read that SDK's breaking changes, `npx expo-doctor`, dev build, test. Rooster Recipes and ESL Exercises are already on 57. Use the `expo:expo-upgrade` skill.
 
