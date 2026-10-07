@@ -1,6 +1,6 @@
 # Bookimbiber — start here
 
-**Read this first:** next job is Phase 3 testing of the Firebase migration on a native dev build. Open `docs/firebase-migration.md` → *Phase 3: Test* for the checklist. Do job 1 below before building.
+**Read this first:** next job is Phase 3 testing of the Firebase migration on a native dev build. Open `docs/firebase-migration.md` → _Phase 3: Test_ for the checklist. Do job 1 below before building.
 
 ## Position (2026-10-06)
 
@@ -12,14 +12,12 @@
 
 ## Next jobs
 
-1. **Add the Firebase config to EAS** (builds don't see `.env`). Run once per variable for each of `development`, `preview` and `production`:
-   `eas env:set --name EXPO_PUBLIC_FIREBASE_API_KEY --value "..." --environment development --visibility plaintext`
-   Values: Firebase console → Project settings → General → Your apps → Bookimbiber web app → Config.
+1. ✅ Firebase config is in EAS (all six variables, done 2026-10-07). If `.env` changes, re-push: see `EASCheatsheet.md` → *Firebase config*.
 2. Dev build: `eas build --profile development -p android`, install, `npx expo start --dev-client -c`.
 3. Work through the Phase 3 checklist in `docs/firebase-migration.md` (login persists after app kill, reset email, name/password change, books live-update, follow authors, second account isolation, delete account). Use an email not used in other apps: accounts are shared across the Firebase project.
-4. Phase 4 (`docs/firebase-migration.md`): update `app/privacy-policy.jsx` (Firebase as processor, account deletion) and the Play **Data safety** form, run `npm run bump-version minor` (→ 1.2.0), then `npx expo export --platform android` and `eas build -p android --profile production --auto-submit` → internal track.
+4. Phase 4 (`docs/firebase-migration.md`): `app/privacy-policy.jsx` already updated (2026-10-07). Still to do: the Play **Data safety** form, then run `npm run bump-version minor` (→ 1.2.0), then `npx expo export --platform android` and `eas build -p android --profile production --auto-submit` → internal track.
 5. Merge `firebase-migration` into `master` and push (ask the user before pushing; auto mode blocks force-pushes, so the user runs those).
-6. Phase 5: update `CLAUDE.md` (still says SDK 53 / Appwrite), `EASCheatsheet.md` (Appwrite troubleshooting lines and checklist item) and `README.md` (stale Appwrite function starter text). Optionally delete `.claude/skills/appwrite-*`.
+6. Phase 5: update `CLAUDE.md` (still says SDK 53 / Appwrite), and `EASCheatsheet.md` (Appwrite troubleshooting lines and checklist item). `README.md` was rewritten 2026-10-07. Optionally delete `.claude/skills/appwrite-*`.
 
 ## Parked (unpark when the user asks)
 
@@ -46,11 +44,7 @@
 - `babel-preset-expo` must stay a direct devDependency (npm once left it nested inside `expo`, which broke bundling).
 - `expo-file-system` no longer needs to be a direct dependency or override (that rule existed only for `react-native-appwrite`).
 
-## User actions outstanding
-
-- If the `.jks` was the Play upload key: request an upload-key reset in Play Console.
-
 ## How the user works
 
-- Windows, VS Code, PowerShell; Android + web only.
+- Windows, VS Code, bash, PowerShell; Android + web only.
 - Wants plain explanations and an appraisal before big changes. Confirm before pushing or other outward-facing actions.

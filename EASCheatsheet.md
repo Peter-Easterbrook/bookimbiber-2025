@@ -54,9 +54,26 @@
 | ---------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | `eas env:set --name EXPO_PUBLIC_X --value "..." --environment production --visibility plaintext`     | Create/update a variable           |
 | `eas env:list --environment production`                                                              | List variables for an environment  |
-| `eas env:pull --environment development`                                                             | Pull variables into a local `.env` |
+| `eas env:push --path .env --environment development --environment preview --environment production` | Upload every variable in `.env` to all three environments |
+| `eas env:pull --environment development --path .env`                                                 | Download variables into a local `.env` |
+
+> `push` and `pull` default to `.env.local`, so always pass `--path .env` for this project.
 
 > `EXPO_PUBLIC_*` values are inlined into the JS bundle — never put true secrets in them. Build profiles named `development`/`preview`/`production` use the matching EAS environment automatically.
+
+### Firebase config (required for every build)
+
+The app reads its Firebase config from six `EXPO_PUBLIC_FIREBASE_*` variables (see `lib/firebase.js`). Locally they come from `.env` (gitignored). EAS builds run on Expo's servers and never see `.env`, so the same variables must exist in EAS. Otherwise the build succeeds, but the app can't reach Firebase.
+
+- After creating or changing `.env`, push it to all three environments (`--force` skips the overwrite prompt):
+
+  ```powershell
+  eas env:push --path .env --environment development --environment preview --environment production
+  eas env:list --environment production   # check all six are there
+  ```
+
+- In the EAS website instead: create each variable once with **Development**, **Preview** and **Production** all ticked, visibility **Plain text** or **Sensitive**. Never **Secret**: `EXPO_PUBLIC_*` values end up in the app bundle anyway.
+- The values live in the Firebase console → Project settings → General → Your apps → Bookimbiber web app → Config.
 
 ## EAS Update vs New Build: When Do You Need to Rebuild?
 

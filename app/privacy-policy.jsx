@@ -51,7 +51,7 @@ export default function PrivacyPolicy() {
           PRIVACY POLICY
         </ThemedText>
         <ThemedText style={styles.subtitle}>
-          Last updated July 17, 2025
+          Last updated October 7, 2026
         </ThemedText>
 
         <Spacer height={20} />
@@ -138,6 +138,10 @@ export default function PrivacyPolicy() {
           <ThemedText style={styles.listItem}>• email addresses</ThemedText>
           <ThemedText style={styles.listItem}>• usernames</ThemedText>
           <ThemedText style={styles.listItem}>• passwords</ThemedText>
+          <ThemedText style={styles.listItem}>
+            • the books you add, their reading status and completion dates, and
+            the authors you follow
+          </ThemedText>
         </View>
 
         <ThemedText style={styles.paragraph}>
@@ -360,6 +364,21 @@ export default function PrivacyPolicy() {
 
         <View style={styles.listContainer}>
           <ThemedText style={styles.listItem}>
+            • <ThemedText style={styles.bold}>Service Providers. </ThemedText>
+            Your account (name, email address and password) is managed by
+            Google Firebase Authentication, and your books and followed authors
+            are stored in Google Cloud Firestore. Passwords are handled by
+            Firebase and are never visible to us. Book searches, including
+            scanned ISBNs, are sent to the Google Books API to find matching
+            books. Google processes this data on our behalf under its own
+            privacy and security terms.
+          </ThemedText>
+          <ThemedText style={styles.listItem}>
+            • <ThemedText style={styles.bold}>On Your Device. </ThemedText>
+            Your profile photo and new-release notifications are stored only on
+            your device and are not sent to us.
+          </ThemedText>
+          <ThemedText style={styles.listItem}>
             • <ThemedText style={styles.bold}>Business Transfers. </ThemedText>
             We may share or transfer your information in connection with, or
             during negotiations of, any merger, sale of company assets,
@@ -531,6 +550,14 @@ export default function PrivacyPolicy() {
           <ThemedText style={styles.listItem}>
             If you would at any time like to review or change the information in
             your account or terminate your account, you can:
+          </ThemedText>
+          <ThemedText style={styles.listItem}>
+            • Change your name or password on the Profile screen.
+          </ThemedText>
+          <ThemedText style={styles.listItem}>
+            • Delete your account on the Profile screen (Delete Account). This
+            immediately and permanently deletes your account, your books and
+            your followed authors.
           </ThemedText>
           <ThemedText style={styles.listItem}>
             • Contact us using the contact information provided.
