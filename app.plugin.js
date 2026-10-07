@@ -1,4 +1,4 @@
-const { withProjectBuildGradle } = require('@expo/config-plugins');
+const { withProjectBuildGradle } = require('expo/config-plugins');
 
 /**
  * Fixes a JitPack timeout issue where Gradle tries to resolve org.bouncycastle
