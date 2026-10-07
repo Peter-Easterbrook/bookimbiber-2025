@@ -1,7 +1,7 @@
-# Expo & EAS CLI Cheat Sheet — Book Imbiber
+# Expo & EAS CLI Cheat Sheet — Bookimbiber
 
 > **Targets:** Android (Google Play) and Web only. No iOS builds.
-> **Stack:** Expo SDK 55 · package `com.petereasterbro1.bookimbiber2025` · backend Appwrite (`fra.cloud.appwrite.io`)
+> **Stack:** Expo SDK 55 · package `com.petereasterbro1.bookimbiber2025` · backend Firebase Auth + Firestore (project `react-http-7b17c`, shared with other apps)
 > **OTA policy:** `runtimeVersion: { "policy": "appVersion" }` — read [Step 6](#step-6--deploy) before every deploy.
 
 ## Expo CLI Basics
@@ -80,7 +80,7 @@ The app reads its Firebase config from six `EXPO_PUBLIC_FIREBASE_*` variables (s
 ### Use EAS Update (no rebuild):
 
 - JavaScript changes — screens, components, contexts, styling
-- Logic changes and bug fixes (Appwrite queries, Google Books calls, caching, series detection)
+- Logic changes and bug fixes (Firestore queries, Google Books calls, caching)
 - New screens/features in pure JS
 - Content and text updates
 
@@ -99,7 +99,7 @@ Users receive the update on the next cold start after it downloads in the backgr
 
 ### Development Build (recommended)
 
-The app ships `expo-dev-client`, a custom config plugin (`app.plugin.js`) and native modules (camera, notifications, Skia, file system) — use a development build rather than Expo Go.
+The app ships `expo-dev-client`, a custom config plugin (`app.plugin.js`) and native modules (camera, notifications, Skia) — use a development build rather than Expo Go.
 
 1. Build dev client: `eas build --profile development -p android`
 2. Install the APK on the device
@@ -120,8 +120,9 @@ Requires Android Studio / SDK locally. Generates a native `android/` folder — 
 - **Dependency issues?** `npx expo install --fix`
 - **Build failing?** Open the logs from `eas build:list` (or the link printed by `eas build`). For dependency/cache errors, rebuild with `--clear-cache`.
 - **App crashing in production only?** Try `--no-dev --minify`, then check logcat: `adb logcat *:E ReactNativeJS:V`
-- **Login/data failing everywhere?** Appwrite free projects pause after ~2 weeks idle → https://cloud.appwrite.io → project → **Resume**
-- **Native module silently missing (e.g. Appwrite file/account calls)?** `expo-file-system` must stay a **direct dependency** *and* in `overrides` in `package.json` — `react-native-appwrite` imports it, and it won't autolink otherwise.
+- **Login/data failing in a build but fine locally?** The `EXPO_PUBLIC_FIREBASE_*` variables are missing from that EAS environment → see *Firebase config* under Environment Variables. The app logs "Firebase config missing" at startup.
+- **"Missing or insufficient permissions" from Firestore?** The published rules don't match `firestore.rules`, or the code wrote outside `bookimbiber_users/{uid}/...`. Re-paste `firestore.rules` in the Firebase console → Firestore → Rules.
+- **Bundling fails with "Cannot find module 'babel-preset-expo'"?** It must stay a direct devDependency: `npx expo install babel-preset-expo -- --save-dev`.
 - **Camera/notifications broken in a release build?** Confirm `expo-camera` and `expo-notifications` are still in `app.json` → `plugins`, and `android.permission.CAMERA` is in `android.permissions`.
 - **Debug network issues:** `EXPO_DEBUG=true npx expo start`
 
@@ -231,7 +232,7 @@ Write a real message. When you trace a build back six months later, the commit m
 - **JS-only change → OTA. Do NOT bump the version.** Bumping would orphan every installed build.
 - **Native change → bump the version, then build.** Never publish an OTA under an old version after a native change. Those users' binaries lack the new native code and will crash or white-screen.
 
-**JS only** (UI, Appwrite logic, Google Books logic, content — not dependency updates) → OTA:
+**JS only** (UI, Firestore logic, Google Books logic, content — not dependency updates) → OTA:
 
 ```powershell
 eas update -p android --branch production --environment production --message "describe the change"
@@ -254,7 +255,7 @@ If a build fails with a dependency sync or cache error, add `--clear-cache`.
 
 1. Play Console → **Test and release → Testing → Internal testing**
 2. Confirm the new bundle appears under **App bundles**, _not_ **Deactivated app bundles**. If it's deactivated, the track silently serves the previous version and you'll test the wrong binary.
-3. Install from the internal track and confirm **Settings → Apps → Book Imbiber** shows the version you just built
+3. Install from the internal track and confirm **Settings → Apps → Bookimbiber** shows the version you just built
 4. Smoke-test what the release touched (see checklist below)
 5. **Internal testing → Promote release → Production**
 
@@ -268,7 +269,6 @@ Copy into the release commit or an issue and work down it.
 
 ### Before building
 
-- [ ] Appwrite project is active (not paused)
 - [ ] `npm run bump-version`: only for a new build, never for an OTA
 - [ ] `npm ci` runs clean (proves `package.json` and the lockfile agree; EAS runs it too)
 - [ ] `npx expo-doctor` → 20/20 (or only known patch-version warnings)
@@ -292,14 +292,15 @@ Test on a real device, installed from the internal track.
 
 - [ ] Bundle listed under **App bundles**, not **Deactivated app bundles**
 - [ ] **Settings → Apps** reports the version you just built
-- [ ] Register / login / logout (Appwrite)
-- [ ] Password reset deep link opens the app (`bookimbiber2025://reset-password`)
+- [ ] Register / login / logout; still logged in after killing and reopening the app
+- [ ] Forgot password sends a reset email, and the new password works
 - [ ] Book search (title, author, typed ISBN) returns results
 - [ ] **ISBN barcode scanner** opens the camera and finds a book
 - [ ] Add a book, mark it read, and confetti plays
 - [ ] Author follow + new releases refresh; notification permission prompt
 - [ ] Amazon link opens in the browser
 - [ ] Profile edit (name / password); light/dark theme toggle
+- [ ] Delete account (use a throwaway test account: it removes the login for every app on the shared Firebase project)
 - [ ] Whatever this release actually changed
 
 ### After promoting

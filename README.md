@@ -8,7 +8,7 @@ Built with React Native and Expo, with Firebase for accounts and data and the Go
 
 ## Features
 
-- **Personal bookshelf:** add books to a reading list and see them grouped by series or as a plain list.
+- **Personal bookshelf:** add books to your reading list, newest first.
 - **Book search:** search Google Books by title, author or ISBN. ISBNs typed into the search box are detected automatically.
 - **Barcode scanner:** scan a book's ISBN barcode (EAN-13, 978/979) with the camera to look it up.
 - **Reading history:** mark a book as read (with a little confetti) and it moves to your history with its completion date.

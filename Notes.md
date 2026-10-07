@@ -17,13 +17,14 @@
 3. Work through the Phase 3 checklist in `docs/firebase-migration.md` (login persists after app kill, reset email, name/password change, books live-update, follow authors, second account isolation, delete account). Use an email not used in other apps: accounts are shared across the Firebase project.
 4. Phase 4 (`docs/firebase-migration.md`): `app/privacy-policy.jsx` already updated (2026-10-07). Still to do: the Play **Data safety** form, then run `npm run bump-version minor` (→ 1.2.0), then `npx expo export --platform android` and `eas build -p android --profile production --auto-submit` → internal track.
 5. Merge `firebase-migration` into `master` and push (ask the user before pushing; auto mode blocks force-pushes, so the user runs those).
-6. Phase 5: update `CLAUDE.md` (still says SDK 53 / Appwrite), and `EASCheatsheet.md` (Appwrite troubleshooting lines and checklist item). `README.md` was rewritten 2026-10-07. Optionally delete `.claude/skills/appwrite-*`.
+6. Phase 5 docs are done (`CLAUDE.md`, `EASCheatsheet.md`, `README.md` rewritten for Firebase, 2026-10-07). Optionally delete `.claude/skills/appwrite-*`, and update the Appwrite notes in Claude's memory once 1.2.0 ships.
 
 ## Parked (unpark when the user asks)
 
 - `eas.json`: set `cli.appVersionSource` (`"remote"` recommended; first set the remote versionCode above 16, the last upload), raise `cli.version`, fill in `submit.production`.
 - `app.json`: move `splash` into the `expo-splash-screen` plugin, add `adaptiveIcon.monochromeImage`, add a notification `icon`/`color` to the `expo-notifications` plugin.
 - `lib/googleBooks.js` sends no API key, so it uses the small anonymous quota (likely cause of past quota problems).
+- Unused code: `lib/imageOptimization.js`, `lib/android14Features.js`, `lib/avatar.js`, `lib/cache-util.js`, `hooks/useEdgeToEdge.js` (nothing imports them); series view in `app/(dashboard)/books.jsx` was never implemented (`viewMode` unused). Delete or build out.
 - About 40 `console.log` calls; `react-native-reanimated/plugin` in `babel.config.js` is probably redundant on SDK 55.
 
 ## Facts worth not recomputing
