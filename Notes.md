@@ -1,6 +1,6 @@
 # Bookimbiber — start here
 
-**Read this first:** the Firebase migration is finished and released. Next job is the Expo SDK upgrade (job 1 below).
+**Read this first:** the SDK 57 upgrade is done in code on branch **`sdk-upgrade`** (not merged, not pushed). Next: dev build and test on the phone (job 1), then release 1.3.0 and merge.
 
 ## Position (2026-10-07)
 
@@ -13,15 +13,16 @@
 
 ## Next jobs
 
-1. **Upgrade the Expo SDK.** App is on SDK 55; latest stable is 57 (Jun 2026); 58 was in beta (`next` tag) on 2026-10-07. Go one SDK at a time (55 → 56 → 57 → 58 once stable) on a branch: `npx expo install expo@^N --fix`, read that SDK's breaking changes, `npx expo-doctor`, dev build, test. Rooster Recipes and ESL Exercises are already on 57. Use the `expo:expo-upgrade` skill. A native change, so release as a new version (bump, build), never OTA.
-2. Dev build for testing: `eas build --profile development -p android`. It can't coexist with the Play install (different signing keys): uninstall one to install the other. Run `npx expo start --dev-client -c` in the project folder; the phone must be on the same Wi-Fi.
+1. **Test the SDK 57 upgrade** (branch `sdk-upgrade`, commit `61315d6`). Went straight 55 → 57.0.27, skipping 56 (Hermes V1 memory regression with reanimated/worklets in 56 and early 57). `expo-doctor` 21/21; Android and web bundles build. Now: dev build (`eas build --profile development -p android`; uninstall the Play version first, since the signing keys differ), `npx expo start --dev-client -c`, and run the full Phase 3 checklist from `docs/firebase-migration.md`. Watch especially: drawer menu (imports moved to `expo-router/drawer`), icons, confetti on mark-as-read (Reanimated/Skia upgraded), login/register screens (`react-native-keyboard-aware-scroll-view` is old and unmaintained; replace with `react-native-keyboard-controller` if it misbehaves), splash screen (config moved into the plugin), barcode scanner.
+2. **Release 1.3.0:** `npm run bump-version minor`, `npx expo export --platform android`, `eas build -p android --profile production --auto-submit` → internal testing; uninstall the dev build, install from Play, check. Then merge `sdk-upgrade` into `master` and push (ask first).
+3. SDK 58: was in beta (`next` tag) on 2026-10-07. Upgrade once it's stable, on its own branch, using the `expo:expo-upgrade` skill.
 
 ## Parked (unpark when the user asks)
 
 - `eas.json`: `appVersionSource: "remote"` is set (2026-10-07). Still parked: raise `cli.version`, fill in `submit.production`.
 - `app.json`: move `splash` into the `expo-splash-screen` plugin, add `adaptiveIcon.monochromeImage`, add a notification `icon`/`color` to the `expo-notifications` plugin.
 - Unused code: `lib/imageOptimization.js`, `lib/android14Features.js`, `lib/avatar.js`, `lib/cache-util.js`, `hooks/useEdgeToEdge.js` (nothing imports them); series view in `app/(dashboard)/books.jsx` was never implemented (`viewMode` unused). Delete or build out.
-- About 40 `console.log` calls; `react-native-reanimated/plugin` in `babel.config.js` is probably redundant on SDK 55.
+- About 40 `console.log` calls.
 
 ## Facts worth not recomputing
 
@@ -38,7 +39,7 @@
 - To check `.env` without opening it: `npx expo config --type public | grep ^env:` lists the variable names it loads. Reading `.env` or `admin-data.txt` directly gets blocked.
 - `git commit -- <paths>` re-adds files that were `git rm --cached` but still exist on disk. Stage the removal, then commit **without** a path list.
 - `npx expo install --fix` may fail at the final "apply config plugins" step after upgrading `expo` itself mid-run. The version fixes have already applied; verify with `npx expo install --check`.
-- `babel-preset-expo` must stay a direct devDependency (npm once left it nested inside `expo`, which broke bundling).
+- `babel-preset-expo` and `@expo/vector-icons` must stay direct dependencies (both broke bundling when only reachable through `expo`).
 - `expo-file-system` no longer needs to be a direct dependency or override (that rule existed only for `react-native-appwrite`).
 
 ## How the user works

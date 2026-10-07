@@ -13,7 +13,7 @@ Bookimbiber (one word) is a personal reading tracker: Expo / React Native app fo
 
 ## Stack
 
-- Expo SDK 55, React Native 0.83, React 19, Expo Router (file-based; route groups `app/(auth)` and `app/(dashboard)`, each with its own `_layout.jsx`). Exact versions: `package.json`.
+- Expo SDK 57, React Native 0.86, React 19, Expo Router (file-based; route groups `app/(auth)` and `app/(dashboard)`, each with its own `_layout.jsx`). Exact versions: `package.json`.
 - **Firebase JS SDK** (`firebase`, not `@react-native-firebase`): Auth (email/password) + Cloud Firestore. Set up in `lib/firebase.js`.
 - Google Books API via `lib/googleBooks.js` (key: `EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY`), with AsyncStorage caching in `utils/api-cache.js`. API failures throw `BookSearchError` and are never cached; only genuine "no results" are.
 - State in React Context: `contexts/UserContext.jsx`, `BooksContext.jsx`, `AuthorContext.jsx`, `ThemeContext.jsx`, read through `hooks/useUser`, `useBooks`, `useAuthors`.
@@ -38,7 +38,9 @@ Bookimbiber (one word) is a personal reading tracker: Expo / React Native app fo
 
 ## Gotchas
 
-- Keep `babel-preset-expo` a direct devDependency: npm once left it nested inside `expo`, which broke bundling.
+- Keep `babel-preset-expo` and `@expo/vector-icons` as direct dependencies: both were once only reachable through `expo`, which broke bundling. There is no `babel.config.js` on purpose (the preset adds the worklets plugin itself).
+- Import navigation from `expo-router` (`expo-router/drawer` for drawer components), never `@react-navigation/*` (SDK 56+ rule).
+- Upgrading the SDK: skip SDK 56 and any `expo@57` below 57.0.9 (Hermes V1 memory regression with reanimated/worklets).
 - `.env` and `admin-data.txt` hold credentials: reading them is blocked. To see which variables `.env` defines, run `npx expo config --type public` and read the `env:` line.
 - Force-pushes are blocked in auto mode: give the user the command to run.
 
