@@ -164,7 +164,7 @@ Requires Android Studio / SDK locally. Generates a native `android/` folder — 
 
 **Notes on this config:**
 
-- `cli.appVersionSource` is `"remote"`: EAS stores the Android `versionCode` on its servers and `autoIncrement` raises it on every production build. The `versionCode` in `app.json` is ignored. Check it with `eas build:version:get -p android`; change it with `eas build:version:set -p android` (interactive). The last versionCode uploaded to Play was **16** (Mar 2026), so the remote value must be at least 17 before the next production build or Play rejects the upload.
+- `cli.appVersionSource` is `"remote"`: EAS stores the Android `versionCode` on its servers and `autoIncrement` raises it on every production build. The `versionCode` in `app.json` is ignored. Check it with `eas build:version:get -p android`; change it with `eas build:version:set -p android` (interactive). The last versionCode uploaded to Play was **19** (1.3.0, Oct 2026); the remote value is 20 after a cancelled build, so the next build gets 21.
 - `submit.production` is empty, so Android submissions go to the **internal** track by default.
 
 ---

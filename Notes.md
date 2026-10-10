@@ -1,22 +1,20 @@
 # Bookimbiber — start here
 
-**Read this first:** first job is the 1.3.0 production build (job 1). Everything is ready on branch **`sdk-upgrade`** (SDK 57, tested on the phone, version already bumped to 1.3.0; not merged, not pushed). The phone currently has **no** Bookimbiber installed (dev build removed 2026-10-07). EAS free-tier builds can queue for hours.
+**Read this first:** 1.3.0 (SDK 57) is released and installed on the phone; `master` is current. Next job is the SDK 58 upgrade once it's stable. EAS free-tier builds can queue for hours.
 
-## Position (2026-10-07)
+## Position (2026-10-10)
 
-- **SDK 57 upgrade passed testing** on a dev build (2026-10-07): drawer, icons, confetti, auth screens, splash, scanner and ISBN lookups all fine. Some ISBNs genuinely aren't in Google Books or the DNB; that's a data gap, not a bug (Open Library could be a third fallback).
-- **1.2.0 is live** on Play's internal testing track (versionCode 18), installed on the user's phone and working. Distribution is internal testing only (testers added by email); no closed/production releases planned. The old closed-testing release (1.1.0, versionCode 16) is still on that track.
+- **1.3.0 is live** on Play's internal testing track (versionCode 19, SDK 57), installed on the user's phone and tested (2026-10-10). OTA update `7462a5d8` (Add Book keyboard fix + smaller logo, commit `6b3084e`) is published to the `production` branch for runtime 1.3.0. Some ISBNs genuinely aren't in Google Books or the DNB; that's a data gap, not a bug (Open Library could be a third fallback).
+- Distribution is internal testing only (testers added by email); no closed/production releases planned. The old closed-testing release (1.1.0, versionCode 16) is still on that track.
 - Backend: Firebase Auth + Firestore (Appwrite deleted). Merged into `master` as `e64eb4e` (2026-10-07) and pushed; the `firebase-migration` branch has been deleted.
 - Book search uses the user's own Google Books API key (key "Bookimbiber Books" in Google Cloud project `react-http-7b17c`, restricted to Books API). ISBN lookups fall back to the German National Library (`lib/dnb.js`) when Google has no record, which is common for German editions.
 - `.env` holds six `EXPO_PUBLIC_FIREBASE_*` values plus `EXPO_PUBLIC_GOOGLE_BOOKS_API_KEY`; all seven are also in EAS (development, preview, production). Re-push after any `.env` change: see `EASCheatsheet.md` → *Firebase config*.
-- EAS keeps the Android versionCode remotely (`appVersionSource: "remote"`, currently 18; the 1.3.0 build will be 19). `--auto-submit` uses the Rooster Recipes Play service account key, stored in Bookimbiber's EAS credentials.
+- EAS keeps the Android versionCode remotely (`appVersionSource: "remote"`). It is at **20**: a duplicate build (20) was cancelled on 2026-10-10, so the next production build will be 21. `--auto-submit` uses the Rooster Recipes Play service account key, stored in Bookimbiber's EAS credentials.
 - Git history was rewritten on 2026-10-06 to remove `login-data.txt` and the `.jks`; hashes from before then changed.
 
 ## Next jobs
 
-1. **Release 1.3.0:** run `eas build -p android --profile production --auto-submit` (version is already 1.3.0 in `app.json`/`package.json`; EAS assigns versionCode 19 and submits to internal testing with the stored Play key). Then install from the tester link on the phone, check Settings → Apps shows 1.3.0, log in, search, scan.
-2. **Merge** `sdk-upgrade` into `master` (merge commit), delete the branch, and push (ask first).
-3. SDK 58: was in beta (`next` tag) on 2026-10-07. Upgrade once it's stable, on its own branch, using the `expo:expo-upgrade` skill.
+1. SDK 58: was in beta (`next` tag) on 2026-10-07. Upgrade once it's stable, on its own branch, using the `expo:expo-upgrade` skill.
 
 ## Parked (unpark when the user asks)
 
