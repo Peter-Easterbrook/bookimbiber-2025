@@ -356,6 +356,7 @@ const Profile = () => {
               onChangeText={setCurrentPassword}
               placeholder="Current password"
               secureTextEntry
+              autoCapitalize="sentences"
               style={styles.input}
             />
             <Spacer height={10} />
@@ -364,6 +365,7 @@ const Profile = () => {
               onChangeText={setNewPassword}
               placeholder="New password (min 8 characters)"
               secureTextEntry
+              autoCapitalize="sentences"
               style={styles.input}
             />
             <Spacer height={10} />
@@ -372,6 +374,7 @@ const Profile = () => {
               onChangeText={setConfirmPassword}
               placeholder="Confirm new password"
               secureTextEntry
+              autoCapitalize="sentences"
               style={styles.input}
             />
             <Spacer height={25} />
@@ -516,6 +519,7 @@ const Profile = () => {
               onChangeText={setDeletePassword}
               placeholder="Password"
               secureTextEntry
+              autoCapitalize="sentences"
               style={styles.input}
             />
             <Spacer height={20} />

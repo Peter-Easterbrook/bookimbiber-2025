@@ -5,8 +5,8 @@
 **Your personal reading tracker.** Catalogue the books you want to read, scan them straight off the shelf, mark them read when you finish, and hear about new releases from the authors you follow.
 
 ![Android](https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white)
-![Expo SDK 55](https://img.shields.io/badge/Expo-SDK%2055-000020?logo=expo&logoColor=white)
-![React Native 0.83](https://img.shields.io/badge/React%20Native-0.83-61DAFB?logo=react&logoColor=black)
+![Expo SDK 57](https://img.shields.io/badge/Expo-SDK%2057-000020?logo=expo&logoColor=white)
+![React Native 0.86](https://img.shields.io/badge/React%20Native-0.86-61DAFB?logo=react&logoColor=black)
 ![Firebase](https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?logo=firebase&logoColor=black)
 ![Version 1.2.0](https://img.shields.io/badge/version-1.2.0-blue)
 
@@ -28,7 +28,7 @@
 
 | Area | Built with |
 | --- | --- |
-| 📱 App | Expo SDK 55 · React Native 0.83 · React 19 · Expo Router (file-based routing) |
+| 📱 App | Expo SDK 57 · React Native 0.86 · React 19 · Expo Router (file-based routing) |
 | 🔐 Accounts | Firebase Authentication (email and password), via the Firebase JS SDK |
 | ☁️ Data | Cloud Firestore, updating live with `onSnapshot` |
 | 📚 Book data | Google Books API, with the German National Library as an ISBN fallback |

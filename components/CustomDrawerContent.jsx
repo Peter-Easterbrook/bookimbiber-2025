@@ -1,10 +1,10 @@
 import { AntDesign, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import {
   DrawerContentScrollView,
   DrawerItem,
   DrawerItemList,
-} from '@react-navigation/drawer';
-import { useRouter } from 'expo-router';
+} from 'expo-router/drawer';
 import { useContext } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { Colors } from '../constants/Colors';

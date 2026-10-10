@@ -16,10 +16,10 @@ export default function ThemedPasswordInput({
   return (
     <View style={[styles.passwordContainer, style]}>
       <TextInput
+        autoCapitalize="sentences"
         {...props}
         secureTextEntry={!showPassword}
         placeholderTextColor={placeholderTextColor || `${theme.text}B3`}
-        autoCapitalize="none"
         style={[
           {
             backgroundColor: theme.uiBackground,

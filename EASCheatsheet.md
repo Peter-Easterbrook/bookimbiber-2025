@@ -1,7 +1,7 @@
 # Expo & EAS CLI Cheat Sheet — Bookimbiber
 
 > **Targets:** Android (Google Play) and Web only. No iOS builds.
-> **Stack:** Expo SDK 55 · package `com.petereasterbro1.bookimbiber2025` · backend Firebase Auth + Firestore (project `react-http-7b17c`, shared with other apps)
+> **Stack:** Expo SDK 57 · package `com.petereasterbro1.bookimbiber2025` · backend Firebase Auth + Firestore (project `react-http-7b17c`, shared with other apps)
 > **OTA policy:** `runtimeVersion: { "policy": "appVersion" }` — read [Step 6](#step-6--deploy) before every deploy.
 
 ## Expo CLI Basics
@@ -16,7 +16,7 @@
 | `npx expo start --web --no-dev --minify`     | Web app in production-like mode                        |
 | `npx expo start --android --no-dev --minify` | Android app in production-like mode                    |
 | `npx expo-doctor`                            | Check project health before building                   |
-| `npx expo install <package>`                 | Install a package at the version matching SDK 55       |
+| `npx expo install <package>`                 | Install a package at the version matching SDK 57       |
 | `npx expo install --check`                   | List outdated/incompatible dependencies                |
 | `npx expo install --fix`                     | Fix incorrect dependency versions for the SDK          |
 | `npx expo install expo@^56.0.0 --fix`        | Upgrade the Expo SDK (example: to SDK 56)              |
@@ -122,7 +122,7 @@ Requires Android Studio / SDK locally. Generates a native `android/` folder — 
 - **App crashing in production only?** Try `--no-dev --minify`, then check logcat: `adb logcat *:E ReactNativeJS:V`
 - **Login/data failing in a build but fine locally?** The `EXPO_PUBLIC_FIREBASE_*` variables are missing from that EAS environment → see *Firebase config* under Environment Variables. The app logs "Firebase config missing" at startup.
 - **"Missing or insufficient permissions" from Firestore?** The published rules don't match `firestore.rules`, or the code wrote outside `bookimbiber_users/{uid}/...`. Re-paste `firestore.rules` in the Firebase console → Firestore → Rules.
-- **Bundling fails with "Cannot find module 'babel-preset-expo'"?** It must stay a direct devDependency: `npx expo install babel-preset-expo -- --save-dev`.
+- **Bundling fails with "Cannot find module 'babel-preset-expo'" or "Unable to resolve @expo/vector-icons"?** Both must be direct dependencies: `npx expo install babel-preset-expo @expo/vector-icons`.
 - **Camera/notifications broken in a release build?** Confirm `expo-camera` and `expo-notifications` are still in `app.json` → `plugins`, and `android.permission.CAMERA` is in `android.permissions`.
 - **Debug network issues:** `EXPO_DEBUG=true npx expo start`
 
@@ -164,7 +164,7 @@ Requires Android Studio / SDK locally. Generates a native `android/` folder — 
 
 **Notes on this config:**
 
-- `cli.appVersionSource` is `"remote"`: EAS stores the Android `versionCode` on its servers and `autoIncrement` raises it on every production build. The `versionCode` in `app.json` is ignored. Check it with `eas build:version:get -p android`; change it with `eas build:version:set -p android` (interactive). The last versionCode uploaded to Play was **16** (Mar 2026), so the remote value must be at least 17 before the next production build or Play rejects the upload.
+- `cli.appVersionSource` is `"remote"`: EAS stores the Android `versionCode` on its servers and `autoIncrement` raises it on every production build. The `versionCode` in `app.json` is ignored. Check it with `eas build:version:get -p android`; change it with `eas build:version:set -p android` (interactive). The last versionCode uploaded to Play was **19** (1.3.0, Oct 2026); the remote value is 20 after a cancelled build, so the next build gets 21.
 - `submit.production` is empty, so Android submissions go to the **internal** track by default.
 
 ---
